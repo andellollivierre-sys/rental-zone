@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import LandingPage from './components/LandingPage';
 import BookingForm from './components/BookingForm';
 import AdminDashboard from './components/AdminDashboard';
 
 export default function App() {
-  const [isAdmin, setIsAdmin] = useState(window.location.hash === '#admin');
+  const [currentRoute, setCurrentRoute] = useState(window.location.hash || '#home');
 
   useEffect(() => {
     const handleHashChange = () => {
-      setIsAdmin(window.location.hash === '#admin');
+      setCurrentRoute(window.location.hash || '#home');
     };
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
@@ -42,8 +43,16 @@ export default function App() {
         </div>
         
         <div style={{ display: 'flex', gap: '20px' }}>
-          <a href="#" style={{ 
-            color: !isAdmin ? '#38bdf8' : '#94a3b8', 
+          <a href="#home" style={{ 
+            color: currentRoute === '#home' || currentRoute === '' ? '#38bdf8' : '#94a3b8', 
+            textDecoration: 'none', 
+            fontWeight: 'bold',
+            padding: '4px 0'
+          }}>
+            Home
+          </a>
+          <a href="#booking" style={{ 
+            color: currentRoute === '#booking' ? '#38bdf8' : '#94a3b8', 
             textDecoration: 'none', 
             fontWeight: 'bold',
             padding: '4px 0'
@@ -51,7 +60,7 @@ export default function App() {
             Booking
           </a>
           <a href="#admin" style={{ 
-            color: isAdmin ? '#38bdf8' : '#94a3b8', 
+            color: currentRoute === '#admin' ? '#38bdf8' : '#94a3b8', 
             textDecoration: 'none', 
             fontWeight: 'bold',
             padding: '4px 0'
@@ -61,9 +70,15 @@ export default function App() {
         </div>
       </nav>
 
-      {/* Main Content Container */}
+      {/* Main Content Router */}
       <main style={{ width: '100%', maxWidth: '800px', margin: '0 auto' }}>
-        {isAdmin ? <AdminDashboard /> : <BookingForm />}
+        {currentRoute === '#admin' ? (
+          <AdminDashboard />
+        ) : currentRoute === '#booking' ? (
+          <BookingForm />
+        ) : (
+          <LandingPage />
+        )}
       </main>
     </div>
   );
