@@ -81,10 +81,34 @@ export default function AdminDashboard() {
     }
   };
 
+  // Analytics calculations
+  const totalBookingsCount = bookings.length;
+  const confirmedCount = bookings.filter(b => (b.status || 'Pending') === 'Confirmed').length;
+  const pendingCount = bookings.filter(b => (b.status || 'Pending') === 'Pending' || b.status === 'Pending Deposit').length;
+  
+  const totalRevenuePipeline = bookings.reduce((sum, booking) => {
+    if (booking.status === 'Cancelled') return sum;
+    const pkgName = booking.package_type || '2 Hours';
+    const pkgInfo = packages[pkgName] || { price: 650 };
+    return sum + (booking.total_price || pkgInfo.price);
+  }, 0);
+
+  const confirmedRevenue = bookings.reduce((sum, booking) => {
+    if (booking.status === 'Confirmed' || booking.status === 'Completed') {
+      const pkgName = booking.package_type || '2 Hours';
+      const pkgInfo = packages[pkgName] || { price: 650 };
+      return sum + (booking.total_price || pkgInfo.price);
+    }
+    return sum;
+  }, 0);
+
   // Filter logic
   const filteredBookings = bookings.filter(b => {
-    const bookingStatus = b.status || 'Pending Deposit';
+    const bookingStatus = b.status || 'Pending';
     if (statusFilter === 'All') return true;
+    if (statusFilter === 'Pending') {
+      return bookingStatus === 'Pending' || bookingStatus === 'Pending Deposit';
+    }
     return bookingStatus.toLowerCase() === statusFilter.toLowerCase();
   });
 
@@ -102,11 +126,33 @@ export default function AdminDashboard() {
 
   return (
     <div style={{ padding: '24px 16px', maxWidth: '800px', margin: '0 auto', fontFamily: 'system-ui, sans-serif' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <h2 style={{ color: '#0f172a', margin: 0, fontSize: '20px' }}>🛡️ Rental Zone Admin Dashboard</h2>
         <button onClick={fetchBookings} style={{ background: '#2563eb', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}>
           Refresh
         </button>
+      </div>
+
+      {/* Analytics Summary Strip */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px', marginBottom: '20px' }}>
+        <div style={{ background: 'white', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
+          <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 'bold', textTransform: 'uppercase' }}>Confirmed Revenue</span>
+          <div style={{ fontSize: '18px', fontWeight: '800', color: '#166534', marginTop: '2px' }}>TT${confirmedRevenue}</div>
+        </div>
+        <div style={{ background: 'white', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
+          <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 'bold', textTransform: 'uppercase' }}>Pipeline Total</span>
+          <div style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', marginTop: '2px' }}>TT${totalRevenuePipeline}</div>
+        </div>
+        <div style={{ background: 'white', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
+          <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 'bold', textTransform: 'uppercase' }}>Active / Confirmed</span>
+          <div style={{ fontSize: '18px', fontWeight: '800', color: '#0284c7', marginTop: '2px' }}>
+            {confirmedCount} <span style={{ fontSize: '12px', fontWeight: 'normal', color: '#64748b' }}>/ {totalBookingsCount}</span>
+          </div>
+        </div>
+        <div style={{ background: 'white', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
+          <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 'bold', textTransform: 'uppercase' }}>Pending Deposits</span>
+          <div style={{ fontSize: '18px', fontWeight: '800', color: '#d97706', marginTop: '2px' }}>{pendingCount}</div>
+        </div>
       </div>
 
       {/* Control Bar: Filters & Sorting */}
@@ -123,7 +169,7 @@ export default function AdminDashboard() {
             style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
           >
             <option value="All">All Statuses</option>
-            <option value="Pending">Pending Deposit / Default</option>
+            <option value="Pending">Pending Deposit</option>
             <option value="Confirmed">Confirmed</option>
             <option value="Completed">Completed</option>
             <option value="Cancelled">Cancelled</option>
@@ -161,7 +207,6 @@ export default function AdminDashboard() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {sortedBookings.map((booking) => {
-            // Fallback pricing resolver if columns are missing/null
             const pkgName = booking.package_type || '2 Hours';
             const pkgInfo = packages[pkgName] || { price: 650, deposit: 100 };
             const totalPrice = booking.total_price || pkgInfo.price;
