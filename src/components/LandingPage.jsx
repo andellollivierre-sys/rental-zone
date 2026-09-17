@@ -17,7 +17,7 @@ export default function LandingPage() {
     },
     {
       q: "What do I need to provide on setup day?",
-      a: "A standard household electrical outlet within 50 feet of the setup area to power the blower continuously. If power isn't close to the yard, a reliable generator is required."
+      a: "A standard household electrical outlet within 100 feet of the setup area to power the blower continuously. If power isn't close to the yard, a reliable generator is required."
     },
     {
       q: "How does the deposit process work?",

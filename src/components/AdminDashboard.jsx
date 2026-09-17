@@ -6,6 +6,10 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [actionMessage, setActionMessage] = useState('');
 
+  // Filter and sort states
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [sortBy, setSortBy] = useState('date-asc');
+
   // Package lookup reference
   const packages = {
     '2 Hours': { price: 650, deposit: 100 },
@@ -77,6 +81,25 @@ export default function AdminDashboard() {
     }
   };
 
+  // Filter logic
+  const filteredBookings = bookings.filter(b => {
+    const bookingStatus = b.status || 'Pending Deposit';
+    if (statusFilter === 'All') return true;
+    return bookingStatus.toLowerCase() === statusFilter.toLowerCase();
+  });
+
+  // Sort logic
+  const sortedBookings = [...filteredBookings].sort((a, b) => {
+    if (sortBy === 'date-asc') {
+      return new Date(a.event_date) - new Date(b.event_date);
+    } else if (sortBy === 'date-desc') {
+      return new Date(b.event_date) - new Date(a.event_date);
+    } else if (sortBy === 'name') {
+      return (a.customer_name || '').localeCompare(b.customer_name || '');
+    }
+    return 0;
+  });
+
   return (
     <div style={{ padding: '24px 16px', maxWidth: '800px', margin: '0 auto', fontFamily: 'system-ui, sans-serif' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -84,6 +107,45 @@ export default function AdminDashboard() {
         <button onClick={fetchBookings} style={{ background: '#2563eb', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}>
           Refresh
         </button>
+      </div>
+
+      {/* Control Bar: Filters & Sorting */}
+      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '20px', background: 'white', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+        
+        {/* Status Filter Dropdown */}
+        <div style={{ flex: '1', minWidth: '150px' }}>
+          <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', marginBottom: '4px', textTransform: 'uppercase' }}>
+            Filter Status
+          </label>
+          <select 
+            value={statusFilter} 
+            onChange={(e) => setStatusFilter(e.target.value)}
+            style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+          >
+            <option value="All">All Statuses</option>
+            <option value="Pending">Pending Deposit / Default</option>
+            <option value="Confirmed">Confirmed</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+
+        {/* Date / Name Sorting Dropdown */}
+        <div style={{ flex: '1', minWidth: '150px' }}>
+          <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', marginBottom: '4px', textTransform: 'uppercase' }}>
+            Sort By
+          </label>
+          <select 
+            value={sortBy} 
+            onChange={(e) => setSortBy(e.target.value)}
+            style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+          >
+            <option value="date-asc">Event Date (Earliest First)</option>
+            <option value="date-desc">Event Date (Latest First)</option>
+            <option value="name">Client Name (A-Z)</option>
+          </select>
+        </div>
+
       </div>
 
       {actionMessage && (
@@ -94,11 +156,11 @@ export default function AdminDashboard() {
 
       {loading ? (
         <p style={{ color: '#64748b' }}>Loading bookings...</p>
-      ) : bookings.length === 0 ? (
-        <p style={{ color: '#64748b' }}>No bookings recorded yet.</p>
+      ) : sortedBookings.length === 0 ? (
+        <p style={{ color: '#64748b' }}>No bookings match this filter.</p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {bookings.map((booking) => {
+          {sortedBookings.map((booking) => {
             // Fallback pricing resolver if columns are missing/null
             const pkgName = booking.package_type || '2 Hours';
             const pkgInfo = packages[pkgName] || { price: 650, deposit: 100 };
