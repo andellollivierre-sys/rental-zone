@@ -7,6 +7,26 @@ export default function LandingPage() {
     'https://lh3.googleusercontent.com/d/1sWW7mmAEO5KEiuu9DYUXGhIvBpIX0qc4',
     'https://lh3.googleusercontent.com/d/1DY5NuxIhalDnKKbS8H5RjYulB9PnfZzz',
     'https://lh3.googleusercontent.com/d/10dR2By9pZeSMDU3C07zgkLpx-a352u8G',
+    'https://lh3.googleusercontent.com/d/1MZ0rSORuTHYgMdNT0yCxAT7jDkrjrohH'
+  ];
+
+  const faqs = [
+    {
+      q: "What are the space and clearance requirements?",
+      a: "The Spider-Man unit measures 26ft long x 13ft wide x 13ft high. You need a flat, clean surface (grass or smooth pavement) with clear overhead space free of low tree branches or wires."
+    },
+    {
+      q: "What do I need to provide on setup day?",
+      a: "A standard household electrical outlet within 50 feet of the setup area to power the blower continuously. If power isn't close to the yard, a reliable generator is required."
+    },
+    {
+      q: "How does the deposit process work?",
+      a: "To officially lock in your date, a TT$100 deposit is required. Your date is not secured until the deposit transfer and receipt screenshot are verified. The remaining balance is due upon delivery."
+    },
+    {
+      q: "What is your weather and cancellation policy?",
+      a: "Safety comes first. If severe weather (heavy tropical downpours or high wind warnings) makes setup unsafe, we will work with you to reschedule your booking for the next available date."
+    }
   ];
 
   return (
@@ -16,7 +36,7 @@ export default function LandingPage() {
         {/* Hero Section */}
         <div style={{ textAlign: 'center', padding: '12px 10px 32px 10px' }}>
           <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '5px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            The Rental Zone LTD: Trinidad and Tobago 
+            Premier Party Rentals in Trinidad
           </span>
           <h1 style={{ fontSize: '28px', fontWeight: '800', marginTop: '14px', marginBottom: '12px', color: '#0f172a', lineHeight: '1.25' }}>
             Bring The Ultimate Fun <br /> To Your Next Event!
@@ -97,6 +117,25 @@ export default function LandingPage() {
                   alt={`Rental Zone Gallery ${index + 1}`} 
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                 />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Q&A / Guidelines Section */}
+        <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '20px', marginBottom: '30px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.03)' }}>
+          <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#0f172a', marginBottom: '16px', textAlign: 'center' }}>
+            📋 Setup Guidelines & FAQ
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {faqs.map((item, idx) => (
+              <div key={idx} style={{ paddingBottom: '12px', borderBottom: idx < faqs.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+                <h4 style={{ fontSize: '14px', fontWeight: 'bold', color: '#1e293b', margin: '0 0 4px 0' }}>
+                  {idx + 1}. {item.q}
+                </h4>
+                <p style={{ fontSize: '13px', color: '#64748b', margin: '0', lineHeight: '1.4' }}>
+                  {item.a}
+                </p>
               </div>
             ))}
           </div>
