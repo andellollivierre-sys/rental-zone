@@ -1,42 +1,22 @@
 import React from 'react';
 
 export default function LandingPage() {
-  // Array of your gallery image IDs from Google Drive
   const galleryImages = [
     'https://lh3.googleusercontent.com/d/1R2HYZpIU2W0SVUAXHVKhqWh1EJjwStn_',
     'https://lh3.googleusercontent.com/d/1imAswvDpkNZh7hccA3KdISmGaWMbOEh4',
     'https://lh3.googleusercontent.com/d/1sWW7mmAEO5KEiuu9DYUXGhIvBpIX0qc4',
     'https://lh3.googleusercontent.com/d/1DY5NuxIhalDnKKbS8H5RjYulB9PnfZzz',
     'https://lh3.googleusercontent.com/d/10dR2By9pZeSMDU3C07zgkLpx-a352u8G',
-    'https://lh3.googleusercontent.com/d/1MZ0rSORuTHYgMdNT0yCxAT7jDkrjrohH'
   ];
 
   return (
-    <div style={{ width: '100%', padding: '0 0 16px 0', fontFamily: 'system-ui, sans-serif', color: '#0f172a', boxSizing: 'border-box', maxWidth: '600px', margin: '0 auto' }}>
+    <div style={{ width: '100%', padding: '16px 0', fontFamily: 'system-ui, sans-serif', color: '#0f172a', boxSizing: 'border-box', maxWidth: '800px', margin: '0 auto' }}>
       
-      {/* Header / Navbar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: '#0f172a', color: 'white', borderBottomLeftRadius: '12px', borderBottomRightRadius: '12px', marginBottom: '16px' }}>
-        {/* Brand / Logo Section */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}>
-          <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '10px', fontWeight: '800' }}>
-            TRZ
-          </div>
-          <span style={{ fontSize: '13px', letterSpacing: '-0.2px' }}>The Rental Zone</span>
-        </div>
-
-        {/* Navigation Links */}
-        <div style={{ display: 'flex', gap: '12px', fontSize: '13px' }}>
-          <a href="#home" style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: 'bold' }}>Home</a>
-          <a href="#booking" style={{ color: '#cbd5e1', textDecoration: 'none' }}>Booking</a>
-          <a href="#admin" style={{ color: '#cbd5e1', textDecoration: 'none' }}>Admin</a>
-        </div>
-      </div>
-
       <div style={{ padding: '0 16px' }}>
         {/* Hero Section */}
         <div style={{ textAlign: 'center', padding: '12px 10px 32px 10px' }}>
           <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '5px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            Premier Party Rentals in Trinidad
+            The Rental Zone LTD: Trinidad and Tobago 
           </span>
           <h1 style={{ fontSize: '28px', fontWeight: '800', marginTop: '14px', marginBottom: '12px', color: '#0f172a', lineHeight: '1.25' }}>
             Bring The Ultimate Fun <br /> To Your Next Event!
@@ -66,24 +46,19 @@ export default function LandingPage() {
           </a>
         </div>
 
-        {/* Featured Inventory Card (Spider-Man Focus) */}
+        {/* Featured Inventory Card */}
         <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)', marginBottom: '30px' }}>
           <div style={{ height: '240px', background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-            
-            {/* Badge */}
             <div style={{ position: 'absolute', top: '12px', left: '12px', zIndex: '10' }}>
               <span style={{ background: '#2563eb', color: 'white', fontSize: '11px', padding: '5px 10px', borderRadius: '6px', fontWeight: 'bold' }}>
                 Featured Inventory
               </span>
             </div>
-
-            {/* Main Featured Photo from Google Drive */}
             <img 
               src="https://lh3.googleusercontent.com/d/1FeDBro65spVaWCMeeEtLRBKtSyTWOLGK" 
               alt="Spider-Man Bouncy Castle" 
               style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
             />
-
           </div>
           
           <div style={{ padding: '20px' }}>
