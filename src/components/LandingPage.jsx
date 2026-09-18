@@ -7,7 +7,6 @@ export default function LandingPage() {
     'https://lh3.googleusercontent.com/d/1sWW7mmAEO5KEiuu9DYUXGhIvBpIX0qc4',
     'https://lh3.googleusercontent.com/d/1DY5NuxIhalDnKKbS8H5RjYulB9PnfZzz',
     'https://lh3.googleusercontent.com/d/10dR2By9pZeSMDU3C07zgkLpx-a352u8G',
-    'https://lh3.googleusercontent.com/d/1MZ0rSORuTHYgMdNT0yCxAT7jDkrjrohH'
   ];
 
   const faqs = [

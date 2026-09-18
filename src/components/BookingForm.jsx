@@ -148,15 +148,25 @@ export default function BookingForm() {
   const openWhatsApp = () => {
     if (!confirmedBooking) return;
     const whatsappNumber = '18682810670';
+
+    // Pure numerical code points completely bypass file encoding corruption
+    const userEmoji = String.fromCodePoint(0x1F464);
+    const phoneEmoji = String.fromCodePoint(0x1F4DE);
+    const dateEmoji = String.fromCodePoint(0x1F4C5);
+    const timeEmoji = String.fromCodePoint(0x23F0);
+    const moneyEmoji = String.fromCodePoint(0x1F4B0);
+    const pinEmoji = String.fromCodePoint(0x1F4CD);
+    const notesEmoji = String.fromCodePoint(0x1F4DD);
+
     const textMessage = encodeURIComponent(
       `Hi Rental Zone! I just booked the Spider-Man Bouncy Castle.\n\n` +
-      `👤 Name: ${confirmedBooking.customer_name}\n` +
-      `📞 Phone: ${confirmedBooking.phone}\n` +
-      `📅 Date: ${confirmedBooking.event_date}\n` +
-      `⏰ Time: ${confirmedBooking.start_time} - ${confirmedBooking.end_time} (${confirmedBooking.packageName})\n` +
-      `💰 Total: TT$${confirmedBooking.price} (Deposit: TT$${confirmedBooking.deposit} | Balance: TT$${confirmedBooking.balance})\n` +
-      `📍 Address: ${confirmedBooking.address}\n` +
-      (confirmedBooking.notes ? `📝 Notes: ${confirmedBooking.notes}\n\n` : '\n') +
+      `${userEmoji} Name: ${confirmedBooking.customer_name}\n` +
+      `${phoneEmoji} Phone: ${confirmedBooking.phone}\n` +
+      `${dateEmoji} Date: ${confirmedBooking.event_date}\n` +
+      `${timeEmoji} Time: ${confirmedBooking.start_time} - ${confirmedBooking.end_time} (${confirmedBooking.packageName})\n` +
+      `${moneyEmoji} Total: TT$${confirmedBooking.price} (Deposit: TT$${confirmedBooking.deposit} | Balance: TT$${confirmedBooking.balance})\n` +
+      `${pinEmoji} Address: ${confirmedBooking.address}\n` +
+      (confirmedBooking.notes ? `${notesEmoji} Notes: ${confirmedBooking.notes}\n\n` : '\n') +
       `Please let me know how to lock in my deposit!`
     );
     window.location.href = `https://wa.me/${whatsappNumber}?text=${textMessage}`;
