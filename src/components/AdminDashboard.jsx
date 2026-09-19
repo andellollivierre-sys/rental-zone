@@ -20,11 +20,11 @@ export default function AdminDashboard() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [sortBy, setSortBy] = useState('date-asc');
 
-  // Package lookup reference
+  // Package lookup reference with reserves mapped
   const packages = {
-    '2 Hours': { price: 650, deposit: 100 },
-    '3 Hours': { price: 900, deposit: 100 },
-    'Full Day / 8 Hours': { price: 1800, deposit: 100 }
+    '2 Hours': { price: 650, deposit: 100, cogs: 35, maintenance: 10 },
+    '3 Hours': { price: 900, deposit: 100, cogs: 45, maintenance: 15 },
+    'Full Day / 8 Hours': { price: 1800, deposit: 100, cogs: 220, maintenance: 40 }
   };
 
   // Check auth session on load
@@ -117,16 +117,50 @@ export default function AdminDashboard() {
     const success = await updateStatus(booking.id, 'Confirmed', booking);
     if (!success) return;
 
-    // Format the phone number (removes dashes/spaces/letters, ensures clean numbers)
     const cleanPhone = (booking.phone || '').replace(/[^0-9]/g, '');
-    
-    // Create custom confirmation message
     const message = encodeURIComponent(
       `Hi ${booking.customer_name}! 🎉 Your deposit has been verified, and your booking for The Rental Zone LTD on ${booking.event_date} (${booking.start_time} - ${booking.end_time}) is now fully CONFIRMED! We look forward to bringing the fun.`
     );
 
-    // Open WhatsApp Web/App with the pre-filled message
     window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
+  };
+
+  // Financial Split Logic triggered when marked as Completed
+  const handleMarkCompleted = async (booking) => {
+    setActionMessage('');
+    const pkgName = booking.package_type || '2 Hours';
+    const pkgInfo = packages[pkgName] || { price: 650, deposit: 100, cogs: 35, maintenance: 10 };
+    
+    const totalPrice = booking.total_price || pkgInfo.price;
+    const cogs = pkgInfo.cogs;
+    const maintenance = pkgInfo.maintenance;
+    const ownerDraw = totalPrice - (cogs + maintenance);
+
+    const financialSplit = {
+      gross_collected: totalPrice,
+      security_deposit: pkgInfo.deposit,
+      taxable_revenue: totalPrice,
+      cogs_reserve: cogs,
+      maintenance_reserve: maintenance,
+      tax_provision: 0.00, // Startup grace period rule active
+      owner_draw: ownerDraw
+    };
+
+    const { error } = await supabase
+      .from('bookings')
+      .update({ 
+        status: 'Completed',
+        ...financialSplit
+      })
+      .eq('id', booking.id);
+
+    if (error) {
+      console.error('Error completing booking:', error.message);
+      setActionMessage('❌ Failed to update booking and financial ledger.');
+    } else {
+      fetchBookings();
+      setActionMessage(`✅ Job marked Completed & financial split logged for ${booking.customer_name}!`);
+    }
   };
 
   const getStatusBadgeStyle = (status) => {
@@ -142,12 +176,10 @@ export default function AdminDashboard() {
     }
   };
 
-  // If session is checking, show loading indicator
   if (authLoading) {
     return <div style={{ textAlign: 'center', padding: '50px', fontFamily: 'system-ui' }}>Loading portal...</div>;
   }
 
-  // If user logged in with a different email, lock them out instantly
   if (session && session.user?.email?.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
     supabase.auth.signOut();
     return (
@@ -159,7 +191,6 @@ export default function AdminDashboard() {
     );
   }
 
-  // If not logged in at all, show login form
   if (!session) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh', fontFamily: 'system-ui, sans-serif' }}>
@@ -214,14 +245,22 @@ export default function AdminDashboard() {
     return sum + (booking.total_price || pkgInfo.price);
   }, 0);
 
+  // Confirmed Revenue Calculation (summing total price of Confirmed bookings)
   const confirmedRevenue = bookings.reduce((sum, booking) => {
-    if (booking.status === 'Confirmed' || booking.status === 'Completed') {
+    if (booking.status === 'Confirmed') {
       const pkgName = booking.package_type || '2 Hours';
       const pkgInfo = packages[pkgName] || { price: 650 };
       return sum + (booking.total_price || pkgInfo.price);
     }
     return sum;
   }, 0);
+
+  // Realized Financial Totals from Completed Jobs
+  const completedBookings = bookings.filter(b => b.status === 'Completed');
+  const realizedRevenue = completedBookings.reduce((sum, b) => sum + (b.gross_collected || 0), 0);
+  const totalMaintenanceReserve = completedBookings.reduce((sum, b) => sum + (b.maintenance_reserve || 0), 0);
+  const totalCogsReserve = completedBookings.reduce((sum, b) => sum + (b.cogs_reserve || 0), 0);
+  const totalOwnerDraw = completedBookings.reduce((sum, b) => sum + (b.owner_draw || 0), 0);
 
   // Filter logic
   const filteredBookings = bookings.filter(b => {
@@ -245,11 +284,10 @@ export default function AdminDashboard() {
     return 0;
   });
 
-  // Render full dashboard when successfully logged in as the owner
   return (
-    <div style={{ padding: '24px 16px', maxWidth: '800px', margin: '0 auto', fontFamily: 'system-ui, sans-serif' }}>
+    <div style={{ padding: '24px 16px', maxWidth: '850px', margin: '0 auto', fontFamily: 'system-ui, sans-serif' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <h2 style={{ color: '#0f172a', margin: 0, fontSize: '20px' }}>🛡️ Rental Zone Admin Dashboard</h2>
+        <h2 style={{ color: '#0f172a', margin: 0, fontSize: '20px' }}>🛡️ Rental Zone Admin & Ledger</h2>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button onClick={fetchBookings} style={{ background: '#2563eb', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}>
             Refresh
@@ -261,40 +299,57 @@ export default function AdminDashboard() {
       </div>
 
       {/* Analytics Summary Strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px', marginBottom: '20px' }}>
-        <div style={{ background: 'white', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px', marginBottom: '16px' }}>
+        <div style={{ background: 'white', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
           <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 'bold', textTransform: 'uppercase' }}>Confirmed Revenue</span>
           <div style={{ fontSize: '18px', fontWeight: '800', color: '#166534', marginTop: '2px' }}>TT${confirmedRevenue}</div>
         </div>
-        <div style={{ background: 'white', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
+        <div style={{ background: 'white', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
           <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 'bold', textTransform: 'uppercase' }}>Pipeline Total</span>
           <div style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', marginTop: '2px' }}>TT${totalRevenuePipeline}</div>
         </div>
-        <div style={{ background: 'white', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
+        <div style={{ background: 'white', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
           <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 'bold', textTransform: 'uppercase' }}>Active / Confirmed</span>
           <div style={{ fontSize: '18px', fontWeight: '800', color: '#0284c7', marginTop: '2px' }}>
             {confirmedCount} <span style={{ fontSize: '12px', fontWeight: 'normal', color: '#64748b' }}>/ {totalBookingsCount}</span>
           </div>
         </div>
-        <div style={{ background: 'white', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
+        <div style={{ background: 'white', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
           <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 'bold', textTransform: 'uppercase' }}>Pending Deposits</span>
           <div style={{ fontSize: '18px', fontWeight: '800', color: '#d97706', marginTop: '2px' }}>{pendingCount}</div>
         </div>
       </div>
 
+      {/* Trinidad Compliant Accounting Split Box (Realized from Completed Jobs) */}
+      <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #cbd5e1', marginBottom: '20px' }}>
+        <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#0f172a', margin: '0 0 10px 0', textTransform: 'uppercase' }}>
+          📊 Realized Financial Ledger ({completedBookings.length} Completed Jobs)
+        </h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '10px', fontSize: '13px' }}>
+          <div style={{ background: 'white', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+            <span style={{ color: '#64748b', fontSize: '11px', display: 'block' }}>Realized Revenue</span>
+            <strong style={{ color: '#0f172a', fontSize: '15px' }}>TT${realizedRevenue}</strong>
+          </div>
+          <div style={{ background: 'white', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+            <span style={{ color: '#64748b', fontSize: '11px', display: 'block' }}>Maintenance Reserve</span>
+            <strong style={{ color: '#0284c7', fontSize: '15px' }}>TT${totalMaintenanceReserve}</strong>
+          </div>
+          <div style={{ background: 'white', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+            <span style={{ color: '#64748b', fontSize: '11px', display: 'block' }}>Operations / Fuel (COGS)</span>
+            <strong style={{ color: '#d97706', fontSize: '15px' }}>TT${totalCogsReserve}</strong>
+          </div>
+          <div style={{ background: 'white', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+            <span style={{ color: '#64748b', fontSize: '11px', display: 'block' }}>Owner Take-Home Draw</span>
+            <strong style={{ color: '#166534', fontSize: '15px' }}>TT${totalOwnerDraw}</strong>
+          </div>
+        </div>
+      </div>
+
       {/* Control Bar: Filters & Sorting */}
       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '20px', background: 'white', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-        
-        {/* Status Filter Dropdown */}
         <div style={{ flex: '1', minWidth: '150px' }}>
-          <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', marginBottom: '4px', textTransform: 'uppercase' }}>
-            Filter Status
-          </label>
-          <select 
-            value={statusFilter} 
-            onChange={(e) => setStatusFilter(e.target.value)}
-            style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
-          >
+          <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', marginBottom: '4px', textTransform: 'uppercase' }}>Filter Status</label>
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}>
             <option value="All">All Statuses</option>
             <option value="Pending">Pending Deposit</option>
             <option value="Confirmed">Confirmed</option>
@@ -302,27 +357,18 @@ export default function AdminDashboard() {
             <option value="Cancelled">Cancelled</option>
           </select>
         </div>
-
-        {/* Date / Name Sorting Dropdown */}
         <div style={{ flex: '1', minWidth: '150px' }}>
-          <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', marginBottom: '4px', textTransform: 'uppercase' }}>
-            Sort By
-          </label>
-          <select 
-            value={sortBy} 
-            onChange={(e) => setSortBy(e.target.value)}
-            style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
-          >
+          <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', marginBottom: '4px', textTransform: 'uppercase' }}>Sort By</label>
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}>
             <option value="date-asc">Event Date (Earliest First)</option>
             <option value="date-desc">Event Date (Latest First)</option>
             <option value="name">Client Name (A-Z)</option>
           </select>
         </div>
-
       </div>
 
       {actionMessage && (
-        <div style={{ background: '#fee2e2', color: '#991b1b', padding: '10px 12px', borderRadius: '8px', marginBottom: '16px', fontSize: '13px' }}>
+        <div style={{ background: '#f1f5f9', color: '#0f172a', padding: '10px 12px', borderRadius: '8px', marginBottom: '16px', fontSize: '13px', border: '1px solid #cbd5e1' }}>
           {actionMessage}
         </div>
       )}
@@ -354,7 +400,12 @@ export default function AdminDashboard() {
                   <div>⏰ <b>Time:</b> {booking.start_time} - {booking.end_time} ({pkgName})</div>
                   <div>📍 <b>Address:</b> {booking.address}</div>
                   <div>💰 <b>Total:</b> TT${totalPrice} (Bal: TT${balanceDue})</div>
-                  {booking.notes && <div>📝 <b>Notes:</b> {booking.notes}</div>}
+                  {booking.status === 'Completed' && booking.owner_draw !== undefined && (
+                    <div style={{ color: '#166534', gridColumn: '1 / -1' }}>
+                      💼 <b>Ledger Split:</b> Owner Draw: TT${booking.owner_draw} | Maint: TT${booking.maintenance_reserve} | COGS: TT${booking.cogs_reserve}
+                    </div>
+                  )}
+                  {booking.notes && <div style={{ gridColumn: '1 / -1' }}>📝 <b>Notes:</b> {booking.notes}</div>}
                 </div>
 
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', borderTop: '1px solid #f1f5f9', paddingTop: '10px' }}>
@@ -364,8 +415,8 @@ export default function AdminDashboard() {
                     </button>
                   )}
                   {booking.status !== 'Completed' && (
-                    <button onClick={() => updateStatus(booking.id, 'Completed', booking)} style={{ background: '#0284c7', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
-                      Mark Completed
+                    <button onClick={() => handleMarkCompleted(booking)} style={{ background: '#0284c7', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
+                      Mark Completed & Split Ledger
                     </button>
                   )}
                   {booking.status !== 'Cancelled' && (
