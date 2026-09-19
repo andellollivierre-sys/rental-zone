@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
+// Put your exact admin email here to lock it down exclusively to you
+const ADMIN_EMAIL = 'andell.ollivierre@gmail.com'; 
+
 export default function AdminDashboard() {
+  // Authentication states
+  const [session, setSession] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState(null);
+
+  // Dashboard states
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionMessage, setActionMessage] = useState('');
@@ -17,9 +28,42 @@ export default function AdminDashboard() {
     'Full Day / 8 Hours': { price: 1800, deposit: 100 }
   };
 
+  // Check auth session on load
   useEffect(() => {
-    fetchBookings();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setAuthLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setAuthLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
+
+  // Fetch bookings only when authenticated
+  useEffect(() => {
+    if (session) {
+      fetchBookings();
+    }
+  }, [session]);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoginError(null);
+    
+    if (email.trim().toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+      setLoginError('Access denied. Unauthorized account.');
+      return;
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      setLoginError(error.message);
+    }
+  };
 
   const fetchBookings = async () => {
     setLoading(true);
@@ -81,6 +125,66 @@ export default function AdminDashboard() {
     }
   };
 
+  // If session is checking, show loading indicator
+  if (authLoading) {
+    return <div style={{ textAlign: 'center', padding: '50px', fontFamily: 'system-ui' }}>Loading portal...</div>;
+  }
+
+  // If user logged in with a different email, lock them out instantly
+  if (session && session.user?.email?.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+    supabase.auth.signOut();
+    return (
+      <div style={{ textAlign: 'center', padding: '50px', fontFamily: 'system-ui' }}>
+        <h2 style={{ color: '#dc2626' }}>⛔ Access Denied</h2>
+        <p>This admin dashboard is strictly restricted to the owner.</p>
+        <button onClick={() => window.location.reload()} style={{ marginTop: '10px', padding: '8px 16px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Back to Login</button>
+      </div>
+    );
+  }
+
+  // If not logged in at all, show login form
+  if (!session) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh', fontFamily: 'system-ui, sans-serif' }}>
+        <form onSubmit={handleLogin} style={{ background: 'white', padding: '30px', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', width: '100%', maxWidth: '360px' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '8px', color: '#0f172a', textAlign: 'center' }}>🔒 Owner Admin Login</h2>
+          <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '20px', textAlign: 'center' }}>Enter your credentials to view management controls.</p>
+          
+          <div style={{ marginBottom: '12px' }}>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#475569', marginBottom: '4px' }}>Email</label>
+            <input 
+              type="email" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              required
+              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }}
+            />
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#475569', marginBottom: '4px' }}>Password</label>
+            <input 
+              type="password" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              required
+              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }}
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            style={{ width: '100%', background: '#2563eb', color: 'white', padding: '12px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}
+          >
+            Sign In
+          </button>
+
+          {loginError && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '12px', textAlign: 'center' }}>{loginError}</p>}
+        </form>
+      </div>
+    );
+  }
+
   // Analytics calculations
   const totalBookingsCount = bookings.length;
   const confirmedCount = bookings.filter(b => (b.status || 'Pending') === 'Confirmed').length;
@@ -124,13 +228,19 @@ export default function AdminDashboard() {
     return 0;
   });
 
+  // Render full dashboard when successfully logged in as the owner
   return (
     <div style={{ padding: '24px 16px', maxWidth: '800px', margin: '0 auto', fontFamily: 'system-ui, sans-serif' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <h2 style={{ color: '#0f172a', margin: 0, fontSize: '20px' }}>🛡️ Rental Zone Admin Dashboard</h2>
-        <button onClick={fetchBookings} style={{ background: '#2563eb', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}>
-          Refresh
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button onClick={fetchBookings} style={{ background: '#2563eb', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}>
+            Refresh
+          </button>
+          <button onClick={() => supabase.auth.signOut()} style={{ background: '#ef4444', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}>
+            Sign Out
+          </button>
+        </div>
       </div>
 
       {/* Analytics Summary Strip */}
