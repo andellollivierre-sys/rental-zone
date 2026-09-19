@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
-// Put your exact admin email here to lock it down exclusively to you
 const ADMIN_EMAIL = 'andell.ollivierre@gmail.com'; 
 
 export default function AdminDashboard() {
@@ -94,7 +93,7 @@ export default function AdminDashboard() {
 
         if (hasConflict) {
           setActionMessage(`❌ Cannot confirm: Time conflict with another confirmed booking on ${currentBooking.event_date}!`);
-          return;
+          return false;
         }
       }
     }
@@ -107,9 +106,27 @@ export default function AdminDashboard() {
     if (error) {
       console.error('Error updating status:', error.message);
       setActionMessage('❌ Failed to update booking status.');
+      return false;
     } else {
       fetchBookings();
+      return true;
     }
+  };
+
+  const handleConfirmAndMessage = async (booking) => {
+    const success = await updateStatus(booking.id, 'Confirmed', booking);
+    if (!success) return;
+
+    // Format the phone number (removes dashes/spaces/letters, ensures clean numbers)
+    const cleanPhone = (booking.phone || '').replace(/[^0-9]/g, '');
+    
+    // Create custom confirmation message
+    const message = encodeURIComponent(
+      `Hi ${booking.customer_name}! 🎉 Your deposit has been verified, and your booking for The Rental Zone LTD on ${booking.event_date} (${booking.start_time} - ${booking.end_time}) is now fully CONFIRMED! We look forward to bringing the fun.`
+    );
+
+    // Open WhatsApp Web/App with the pre-filled message
+    window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
   };
 
   const getStatusBadgeStyle = (status) => {
@@ -342,8 +359,8 @@ export default function AdminDashboard() {
 
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', borderTop: '1px solid #f1f5f9', paddingTop: '10px' }}>
                   {booking.status !== 'Confirmed' && (
-                    <button onClick={() => updateStatus(booking.id, 'Confirmed', booking)} style={{ background: '#22c55e', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
-                      Confirm
+                    <button onClick={() => handleConfirmAndMessage(booking)} style={{ background: '#22c55e', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
+                      Confirm & WhatsApp Client
                     </button>
                   )}
                   {booking.status !== 'Completed' && (
