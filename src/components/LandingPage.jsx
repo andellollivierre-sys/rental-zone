@@ -4,12 +4,12 @@ export default function LandingPage() {
   const [selectedImage, setSelectedImage] = useState(null);
 
   const galleryImages = [
-    'https://lh3.googleusercontent.com/d/1CYeOf510LsWbRRwAxu-bdw6fq8YMnc4o',
-    'https://lh3.googleusercontent.com/d/1Z7bKyxNZfIRwyvn3XNGeWfkbCYytONwr',
-    'https://lh3.googleusercontent.com/d/1RtJodpyMb7u8yOEbaq0jBks491BQoSwo'
+    '/image 1.png',
+    '/image 2.png',
+    '/image 3.jpg'
   ];
 
-  const featuredImage = 'https://lh3.googleusercontent.com/d/1FeDBro65spVaWCMeeEtLRBKtSyTWOLGK';
+  const featuredImage = '/featured image.jpg';
 
   const faqs = [
     {
