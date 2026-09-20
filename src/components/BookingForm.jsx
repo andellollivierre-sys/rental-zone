@@ -223,7 +223,7 @@ export default function BookingForm() {
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <div>
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#334155', marginBottom: '4px' }}>Full Name</label>
-            <input type="text" name="customer_name" value={formData.customer_name} onChange={handleChange} required style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }} placeholder="Andell Ollivierre" />
+            <input type="text" name="customer_name" value={formData.customer_name} onChange={handleChange} required style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }} placeholder="John Doe" />
           </div>
 
           <div>
