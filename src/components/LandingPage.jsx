@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function LandingPage() {
+  const [selectedImage, setSelectedImage] = useState(null);
+
   const galleryImages = [
     'https://lh3.googleusercontent.com/d/1CYeOf510LsWbRRwAxu-bdw6fq8YMnc4o',
     'https://lh3.googleusercontent.com/d/1Z7bKyxNZfIRwyvn3XNGeWfkbCYytONwr',
     'https://lh3.googleusercontent.com/d/1RtJodpyMb7u8yOEbaq0jBks491BQoSwo'
   ];
+
+  const featuredImage = 'https://lh3.googleusercontent.com/d/1FeDBro65spVaWCMeeEtLRBKtSyTWOLGK';
 
   const faqs = [
     {
@@ -72,9 +76,11 @@ export default function LandingPage() {
               </span>
             </div>
             <img 
-              src="https://lh3.googleusercontent.com/d/1FeDBro65spVaWCMeeEtLRBKtSyTWOLGK" 
+              src={featuredImage} 
               alt="Spider-Man Bouncy Castle" 
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+              style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }} 
+              onClick={() => setSelectedImage(featuredImage)}
+              title="Click to zoom image"
             />
           </div>
           
@@ -108,11 +114,12 @@ export default function LandingPage() {
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
             {galleryImages.map((imgUrl, index) => (
-              <div key={index} style={{ height: '140px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', background: '#f8fafc' }}>
+              <div key={index} style={{ height: '140px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer' }} onClick={() => setSelectedImage(imgUrl)}>
                 <img 
                   src={imgUrl} 
                   alt={`Rental Zone Gallery ${index + 1}`} 
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  title="Click to zoom image"
                 />
               </div>
             ))}
@@ -139,6 +146,70 @@ export default function LandingPage() {
         </div>
 
       </div>
+
+      {/* Lightbox Modal Popup */}
+      {selectedImage && (
+        <div 
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            background: 'rgba(0, 0, 0, 0.85)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px'
+          }}
+          onClick={() => setSelectedImage(null)}
+        >
+          <div 
+            style={{
+              position: 'relative',
+              maxWidth: '900px',
+              width: '100%',
+              maxHeight: '90vh',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              style={{
+                position: 'absolute',
+                top: '-45px',
+                right: '0',
+                color: 'white',
+                background: 'rgba(255, 255, 255, 0.2)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
+                fontSize: '20px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onClick={() => setSelectedImage(null)}
+            >
+              &times;
+            </button>
+            <img 
+              src={selectedImage} 
+              alt="Enlarged view" 
+              style={{
+                maxWidth: '100%',
+                maxHeight: '85vh',
+                objectFit: 'contain',
+                borderRadius: '8px',
+                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)'
+              }}
+            />
+          </div>
+        </div>
+      )}
 
     </div>
   );
