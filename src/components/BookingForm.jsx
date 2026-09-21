@@ -105,6 +105,26 @@ export default function BookingForm() {
 
     const balanceDue = selectedPkg.price - selectedPkg.deposit;
 
+    // 1. Admin/Dev Mode Exemption & UTM Tracking Capture
+    const isAdminOrDev = 
+      localStorage.getItem('dev_mode') === 'true' || 
+      localStorage.getItem('is_admin') === 'true' ||
+      window.location.hostname === 'localhost';
+
+    let storedTracking = {};
+    try {
+      storedTracking = JSON.parse(sessionStorage.getItem('trz_tracking')) || {};
+    } catch (err) {
+      storedTracking = {};
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const trafficSource = storedTracking.traffic_source || urlParams.get('utm_source') || 'direct';
+    const utmMedium = storedTracking.utm_medium || urlParams.get('utm_medium') || (urlParams.get('fbclid') ? 'social_ad' : 'none');
+    const utmCampaign = storedTracking.utm_campaign || urlParams.get('utm_campaign') || 'none';
+    const clickId = storedTracking.click_id || urlParams.get('fbclid') || urlParams.get('gclid') || null;
+    const deviceType = /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop';
+
     try {
       const { error } = await supabase
         .from('bookings')
@@ -121,13 +141,18 @@ export default function BookingForm() {
             balance_due: balanceDue,
             address: formData.address,
             notes: formData.notes || '',
-            status: 'Pending'
+            status: 'Pending',
+            traffic_source: trafficSource,
+            utm_medium: utmMedium,
+            utm_campaign: utmCampaign,
+            click_id: clickId,
+            device_type: deviceType,
+            is_test: isAdminOrDev
           }
         ]);
 
       if (error) throw error;
 
-      // Save receipt details to state instead of instantly redirecting
       setConfirmedBooking({
         ...formData,
         end_time: endTime,
@@ -149,7 +174,6 @@ export default function BookingForm() {
     if (!confirmedBooking) return;
     const whatsappNumber = '18682810670';
 
-    // Pure numerical code points completely bypass file encoding corruption
     const userEmoji = String.fromCodePoint(0x1F464);
     const phoneEmoji = String.fromCodePoint(0x1F4DE);
     const dateEmoji = String.fromCodePoint(0x1F4C5);
@@ -175,7 +199,6 @@ export default function BookingForm() {
   const currentPkg = packages[formData.package_type];
   const computedEnd = calculateEndTime(formData.start_time, currentPkg.hours);
 
-  // If successfully booked, render the Client Receipt / Success View
   if (confirmedBooking) {
     return (
       <div style={{ padding: '30px 16px', maxWidth: '500px', margin: '0 auto', fontFamily: 'system-ui, sans-serif' }}>

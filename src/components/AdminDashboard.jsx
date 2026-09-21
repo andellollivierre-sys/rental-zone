@@ -18,6 +18,7 @@ export default function AdminDashboard() {
 
   // Filter and sort states
   const [statusFilter, setStatusFilter] = useState('All');
+  const [sourceFilter, setSourceFilter] = useState('All');
   const [sortBy, setSortBy] = useState('date-asc');
 
   // Package lookup reference with reserves mapped
@@ -142,7 +143,7 @@ export default function AdminDashboard() {
       taxable_revenue: totalPrice,
       cogs_reserve: cogs,
       maintenance_reserve: maintenance,
-      tax_provision: 0.00, // Startup grace period rule active
+      tax_provision: 0.00,
       owner_draw: ownerDraw
     };
 
@@ -233,20 +234,20 @@ export default function AdminDashboard() {
     );
   }
 
-  // Analytics calculations
-  const totalBookingsCount = bookings.length;
-  const confirmedCount = bookings.filter(b => (b.status || 'Pending') === 'Confirmed').length;
-  const pendingCount = bookings.filter(b => (b.status || 'Pending') === 'Pending' || b.status === 'Pending Deposit').length;
+  // Analytics calculations (excluding test bookings from core revenue metrics if desired)
+  const validBookings = bookings.filter(b => !b.is_test);
+  const totalBookingsCount = validBookings.length;
+  const confirmedCount = validBookings.filter(b => (b.status || 'Pending') === 'Confirmed').length;
+  const pendingCount = validBookings.filter(b => (b.status || 'Pending') === 'Pending' || b.status === 'Pending Deposit').length;
   
-  const totalRevenuePipeline = bookings.reduce((sum, booking) => {
+  const totalRevenuePipeline = validBookings.reduce((sum, booking) => {
     if (booking.status === 'Cancelled') return sum;
     const pkgName = booking.package_type || '2 Hours';
     const pkgInfo = packages[pkgName] || { price: 650 };
     return sum + (booking.total_price || pkgInfo.price);
   }, 0);
 
-  // Confirmed Revenue Calculation (summing total price of Confirmed bookings)
-  const confirmedRevenue = bookings.reduce((sum, booking) => {
+  const confirmedRevenue = validBookings.reduce((sum, booking) => {
     if (booking.status === 'Confirmed') {
       const pkgName = booking.package_type || '2 Hours';
       const pkgInfo = packages[pkgName] || { price: 650 };
@@ -255,8 +256,7 @@ export default function AdminDashboard() {
     return sum;
   }, 0);
 
-  // Realized Financial Totals from Completed Jobs
-  const completedBookings = bookings.filter(b => b.status === 'Completed');
+  const completedBookings = validBookings.filter(b => b.status === 'Completed');
   const realizedRevenue = completedBookings.reduce((sum, b) => sum + (b.gross_collected || 0), 0);
   const totalMaintenanceReserve = completedBookings.reduce((sum, b) => sum + (b.maintenance_reserve || 0), 0);
   const totalCogsReserve = completedBookings.reduce((sum, b) => sum + (b.cogs_reserve || 0), 0);
@@ -265,11 +265,15 @@ export default function AdminDashboard() {
   // Filter logic
   const filteredBookings = bookings.filter(b => {
     const bookingStatus = b.status || 'Pending';
-    if (statusFilter === 'All') return true;
-    if (statusFilter === 'Pending') {
-      return bookingStatus === 'Pending' || bookingStatus === 'Pending Deposit';
-    }
-    return bookingStatus.toLowerCase() === statusFilter.toLowerCase();
+    
+    // Status Filter
+    if (statusFilter === 'Pending' && bookingStatus !== 'Pending' && bookingStatus !== 'Pending Deposit') return false;
+    if (statusFilter !== 'All' && statusFilter !== 'Pending' && bookingStatus.toLowerCase() !== statusFilter.toLowerCase()) return false;
+
+    // Traffic Source Filter
+    if (sourceFilter !== 'All' && (b.traffic_source || 'direct').toLowerCase() !== sourceFilter.toLowerCase()) return false;
+
+    return true;
   });
 
   // Sort logic
@@ -320,7 +324,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Trinidad Compliant Accounting Split Box (Realized from Completed Jobs) */}
+      {/* Trinidad Compliant Accounting Split Box */}
       <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #cbd5e1', marginBottom: '20px' }}>
         <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#0f172a', margin: '0 0 10px 0', textTransform: 'uppercase' }}>
           📊 Realized Financial Ledger ({completedBookings.length} Completed Jobs)
@@ -347,7 +351,7 @@ export default function AdminDashboard() {
 
       {/* Control Bar: Filters & Sorting */}
       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '20px', background: 'white', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-        <div style={{ flex: '1', minWidth: '150px' }}>
+        <div style={{ flex: '1', minWidth: '140px' }}>
           <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', marginBottom: '4px', textTransform: 'uppercase' }}>Filter Status</label>
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}>
             <option value="All">All Statuses</option>
@@ -357,7 +361,16 @@ export default function AdminDashboard() {
             <option value="Cancelled">Cancelled</option>
           </select>
         </div>
-        <div style={{ flex: '1', minWidth: '150px' }}>
+        <div style={{ flex: '1', minWidth: '140px' }}>
+          <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', marginBottom: '4px', textTransform: 'uppercase' }}>Traffic Source</label>
+          <select value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value)} style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}>
+            <option value="All">All Sources</option>
+            <option value="direct">Direct / Organic</option>
+            <option value="facebook">Facebook / Instagram</option>
+            <option value="google">Google Ads</option>
+          </select>
+        </div>
+        <div style={{ flex: '1', minWidth: '140px' }}>
           <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', marginBottom: '4px', textTransform: 'uppercase' }}>Sort By</label>
           <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}>
             <option value="date-asc">Event Date (Earliest First)</option>
@@ -386,9 +399,14 @@ export default function AdminDashboard() {
             const balanceDue = booking.balance_due !== null && booking.balance_due !== undefined ? booking.balance_due : (totalPrice - pkgInfo.deposit);
 
             return (
-              <div key={booking.id} style={{ background: 'white', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+              <div key={booking.id} style={{ background: booking.is_test ? '#fffbeb' : 'white', padding: '16px', borderRadius: '10px', border: booking.is_test ? '1px dashed #f59e0b' : '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', alignItems: 'center' }}>
-                  <span style={{ fontWeight: 'bold', color: '#0f172a', fontSize: '15px' }}>{booking.customer_name}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontWeight: 'bold', color: '#0f172a', fontSize: '15px' }}>{booking.customer_name}</span>
+                    {booking.is_test && (
+                      <span style={{ background: '#fef3c7', color: '#b45309', padding: '1px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold' }}>🧪 TEST</span>
+                    )}
+                  </div>
                   <span style={{ padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold', ...getStatusBadgeStyle(booking.status) }}>
                     {booking.status || 'Pending'}
                   </span>
@@ -400,6 +418,8 @@ export default function AdminDashboard() {
                   <div>⏰ <b>Time:</b> {booking.start_time} - {booking.end_time} ({pkgName})</div>
                   <div>📍 <b>Address:</b> {booking.address}</div>
                   <div>💰 <b>Total:</b> TT${totalPrice} (Bal: TT${balanceDue})</div>
+                  <div>📢 <b>Source:</b> {booking.traffic_source || 'direct'} {booking.utm_campaign && booking.utm_campaign !== 'none' ? `(${booking.utm_campaign})` : ''}</div>
+                  
                   {booking.status === 'Completed' && booking.owner_draw !== undefined && (
                     <div style={{ color: '#166534', gridColumn: '1 / -1' }}>
                       💼 <b>Ledger Split:</b> Owner Draw: TT${booking.owner_draw} | Maint: TT${booking.maintenance_reserve} | COGS: TT${booking.cogs_reserve}
