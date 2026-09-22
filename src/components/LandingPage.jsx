@@ -4,10 +4,16 @@ import { supabase } from '../supabaseClient'; // Make sure this path matches you
 export default function LandingPage() {
   const [selectedImage, setSelectedImage] = useState(null);
 
-  // Visitor Tracking Hook
+  // Visitor Tracking Hook (Skipped if logged in as admin)
   useEffect(() => {
     const logVisitor = async () => {
       try {
+        // 1. Check if an admin/user is currently logged in so we don't skew analytics
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          return; // Skip logging if admin is browsing/testing logged in
+        }
+
         const params = new URLSearchParams(window.location.search);
         const utmSource = params.get('utm_source') || params.get('traffic_source') || 'direct';
         const utmCampaign = params.get('utm_campaign') || 'none';
