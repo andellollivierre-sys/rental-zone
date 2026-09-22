@@ -231,7 +231,7 @@ export default function AdminDashboard() {
     );
   }
 
-  // Analytics & Filtering calculations
+  // Analytics & Filtering calculations (using LIVE non-test data for accurate analytics)
   const liveVisitors = visitors.filter(v => !v.is_test);
   const liveBookings = bookings.filter(b => !b.is_test);
 
@@ -311,7 +311,7 @@ export default function AdminDashboard() {
   return (
     <div style={{ width: '100%', padding: '16px', fontFamily: 'system-ui, sans-serif', color: '#0f172a', boxSizing: 'border-box', maxWidth: '900px', margin: '0 auto' }}>
       
-      {/* Header matching exact layout from your screenshot */}
+      {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h2 style={{ fontSize: '20px', fontWeight: '800', margin: 0, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
           🛡️ Rental Zone Admin & Ledger
