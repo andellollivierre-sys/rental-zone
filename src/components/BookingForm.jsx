@@ -7,7 +7,7 @@ export default function BookingForm() {
     phone: '',
     event_date: '',
     start_time: '',
-    package_type: '2_hours',
+    package_type: '3_hours', // Default to Most Popular
     address: '',
     notes: ''
   });
@@ -20,11 +20,31 @@ export default function BookingForm() {
   // Success state for displaying the receipt view
   const [confirmedBooking, setConfirmedBooking] = useState(null);
 
-  // Package definitions & pricing
+  // Package definitions & pricing (Corrected 2-Hour Price: TT$650)
   const packages = {
-    '2_hours': { name: '2 Hours', hours: 2, price: 650, deposit: 100 },
-    '3_hours': { name: '3 Hours', hours: 3, price: 900, deposit: 100 },
-    'full_day': { name: 'Full Day / 8 Hours', hours: 8, price: 1800, deposit: 100 }
+    '2_hours': { 
+      name: '2 Hours', 
+      hours: 2, 
+      price: 650, 
+      deposit: 100 
+    },
+    '3_hours': { 
+      name: '3 Hours', 
+      hours: 3, 
+      price: 900, 
+      deposit: 100, 
+      oldPrice: 975, 
+      savings: 'SAVE TT$75', 
+      badge: '🔥 Most Popular' 
+    },
+    'full_day': { 
+      name: 'Full Day / 8 Hours', 
+      hours: 8, 
+      price: 1800, 
+      deposit: 100, 
+      oldPrice: 2600, 
+      savings: 'SAVE TT$800' 
+    }
   };
 
   const handleChange = (e) => {
@@ -105,7 +125,7 @@ export default function BookingForm() {
 
     const balanceDue = selectedPkg.price - selectedPkg.deposit;
 
-    // 1. Admin/Dev Mode Exemption & UTM Tracking Capture
+    // Admin/Dev Mode Exemption & UTM Tracking Capture
     const isAdminOrDev = 
       localStorage.getItem('dev_mode') === 'true' || 
       localStorage.getItem('is_admin') === 'true' ||
@@ -214,8 +234,7 @@ export default function BookingForm() {
             <div>⏰ <b>Time:</b> {confirmedBooking.start_time} - {confirmedBooking.end_time} ({confirmedBooking.packageName})</div>
             <div>📍 <b>Address:</b> {confirmedBooking.address}</div>
             <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '8px', marginTop: '4px' }}>
-              💰 <b>Total Price:</b> TT${confirmedBooking.price}<br/>
-              🔒 <b>Required Deposit:</b> TT${confirmedBooking.deposit}<br/>
+              💰 <b>Total Price:</b> TT${confirmedBooking.price}<br/>               🔒 <b>Required Deposit:</b> TT$${confirmedBooking.deposit}<br/>
               💵 <b>Balance Due on Delivery:</b> TT${confirmedBooking.balance}
             </div>
           </div>
@@ -233,7 +252,7 @@ export default function BookingForm() {
   }
 
   return (
-    <div style={{ padding: '30px 16px', maxWidth: '500px', margin: '0 auto', fontFamily: 'system-ui, sans-serif' }}>
+    <div style={{ padding: '30px 16px', maxWidth: '520px', margin: '0 auto', fontFamily: 'system-ui, sans-serif' }}>
       <div style={{ background: '#ffffff', padding: '24px', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)' }}>
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
           <span style={{ background: '#eff6ff', color: '#2563eb', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' }}>Featured Inventory</span>
@@ -254,13 +273,70 @@ export default function BookingForm() {
             <input type="tel" name="phone" value={formData.phone} onChange={handleChange} required style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }} placeholder="868-000-0000" />
           </div>
 
+          {/* PACKAGE SELECTION CARDS */}
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#334155', marginBottom: '4px' }}>Select Rental Package</label>
-            <select name="package_type" value={formData.package_type} onChange={handleChange} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', background: 'white' }}>
-              <option value="2_hours">2 Hours — TT$650</option>
-              <option value="3_hours">3 Hours — TT$900</option>
-              <option value="full_day">Full Day / 8 Hours — TT$1,800</option>
-            </select>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#334155', marginBottom: '8px' }}>Select Rental Package</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              
+              {/* Package 1: 2 Hours */}
+              <div 
+                onClick={() => setFormData(prev => ({ ...prev, package_type: '2_hours' }))}
+                style={{ 
+                  border: formData.package_type === '2_hours' ? '2px solid #2563eb' : '1px solid #cbd5e1',
+                  background: formData.package_type === '2_hours' ? '#eff6ff' : '#ffffff',
+                  padding: '12px 16px', borderRadius: '10px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s'
+                }}>
+                <div>
+                  <div style={{ fontWeight: 'bold', color: '#1e293b', fontSize: '14px' }}>2 Hours Package</div>
+                  <div style={{ fontSize: '12px', color: '#64748b' }}>Standard short party rental</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontWeight: 'bold', color: '#0f172a', fontSize: '16px' }}>TT$650</div>
+                </div>
+              </div>
+
+              {/* Package 2: 3 Hours (Most Popular with Badge & Savings) */}
+              <div 
+                onClick={() => setFormData(prev => ({ ...prev, package_type: '3_hours' }))}
+                style={{ 
+                  border: formData.package_type === '3_hours' ? '2px solid #2563eb' : '1px solid #cbd5e1',
+                  background: formData.package_type === '3_hours' ? '#eff6ff' : '#ffffff',
+                  padding: '12px 16px', borderRadius: '10px', cursor: 'pointer', position: 'relative', transition: 'all 0.2s'
+                }}>
+                <div style={{ position: 'absolute', top: '-10px', right: '12px', background: '#2563eb', color: 'white', fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '10px' }}>
+                  🔥 Most Popular
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontWeight: 'bold', color: '#1e293b', fontSize: '14px' }}>3 Hours Package</div>
+                    <div style={{ fontSize: '12px', color: '#166534', fontWeight: '600' }}>SAVE TT$75</div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '12px', color: '#94a3b8', textDecoration: 'line-through' }}>TT$975</div>
+                    <div style={{ fontWeight: 'bold', color: '#2563eb', fontSize: '18px' }}>TT$900</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Package 3: Full Day / 8 Hours (With Big Savings) */}
+              <div 
+                onClick={() => setFormData(prev => ({ ...prev, package_type: 'full_day' }))}
+                style={{ 
+                  border: formData.package_type === 'full_day' ? '2px solid #2563eb' : '1px solid #cbd5e1',
+                  background: formData.package_type === 'full_day' ? '#eff6ff' : '#ffffff',
+                  padding: '12px 16px', borderRadius: '10px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s'
+                }}>
+                <div>
+                  <div style={{ fontWeight: 'bold', color: '#1e293b', fontSize: '14px' }}>Full Day / 8 Hours</div>
+                  <div style={{ fontSize: '12px', color: '#166534', fontWeight: '600' }}>SAVE TT$800</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '12px', color: '#94a3b8', textDecoration: 'line-through' }}>TT$2,600</div>
+                  <div style={{ fontWeight: 'bold', color: '#0f172a', fontSize: '16px' }}>TT$1,800</div>
+                </div>
+              </div>
+
+            </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>

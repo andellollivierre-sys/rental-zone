@@ -1,7 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient'; // Make sure this path matches your project structure
 
 export default function LandingPage() {
   const [selectedImage, setSelectedImage] = useState(null);
+
+  // Visitor Tracking Hook
+  useEffect(() => {
+    const logVisitor = async () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const utmSource = params.get('utm_source') || params.get('traffic_source') || 'direct';
+        const utmCampaign = params.get('utm_campaign') || 'none';
+        
+        // Detect mobile vs desktop
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        const deviceType = isMobile ? 'Mobile' : 'Desktop';
+        
+        // Check for admin/test flag
+        const isTest = params.get('test') === 'true' || window.location.hostname === 'localhost';
+
+        await supabase.from('page_visits').insert([
+          {
+            traffic_source: utmSource.toLowerCase(),
+            utm_campaign: utmCampaign,
+            device_type: deviceType,
+            is_test: isTest,
+            landing_page: window.location.pathname
+          }
+        ]);
+      } catch (err) {
+        // Fail silently so it never breaks the user experience
+        console.error('Visitor tracking error:', err);
+      }
+    };
+
+    logVisitor();
+  }, []);
 
   const galleryImages = [
     '/image 1.png',
