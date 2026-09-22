@@ -4,11 +4,21 @@ import { supabase } from '../supabaseClient'; // Make sure this path matches you
 export default function LandingPage() {
   const [selectedImage, setSelectedImage] = useState(null);
 
-  // Visitor Tracking Hook (Skipped if logged in as admin)
+  // Visitor Tracking Hook with Browser Push Notifications
   useEffect(() => {
+    // Request permission for browser notifications on first load
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+
     const logVisitor = async () => {
       try {
-        // 1. Check if an admin/user is currently logged in so we don't skew analytics
+        // 1. Hard stop if manual admin ignore flag is set in localStorage
+        if (localStorage.getItem('ignore_visits') === 'true') {
+          return;
+        }
+
+        // 2. Check if an admin/user session is currently active
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           return; // Skip logging if admin is browsing/testing logged in
@@ -34,6 +44,15 @@ export default function LandingPage() {
             landing_page: window.location.pathname
           }
         ]);
+
+        // 3. Trigger Native Browser Push Notification for Real Visitors
+        if ("Notification" in window && Notification.permission === "granted" && !isTest) {
+          new Notification("🎉 New Page Visitor!", {
+            body: `Source: ${utmSource.toUpperCase()} (${deviceType})`,
+            icon: '/favicon.ico'
+          });
+        }
+
       } catch (err) {
         // Fail silently so it never breaks the user experience
         console.error('Visitor tracking error:', err);
