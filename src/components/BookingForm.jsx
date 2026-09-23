@@ -21,9 +21,22 @@ export default function BookingForm() {
   const [checkingAvailability, setCheckingAvailability] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState(null);
 
-  // Log initial form view on mount
+  // Log initial form view on mount & trigger browser notification
   useEffect(() => {
     logFunnelStep('viewed_form');
+
+    // 🔥 INSTANT NOTIFICATION WHEN VISITOR HITS THE BOOKING FORM
+    const bookingNotified = sessionStorage.getItem('booking_form_alert_sent');
+    const isAdminOrDev = localStorage.getItem('dev_mode') === 'true' || localStorage.getItem('is_admin') === 'true' || window.location.hostname === 'localhost';
+
+    if (!bookingNotified && "Notification" in window && Notification.permission === "granted" && !isAdminOrDev) {
+      sessionStorage.setItem('booking_form_alert_sent', 'true');
+      
+      new Notification("🎯 Visitor Reached Booking Form!", {
+        body: "A prospect just navigated to the booking section.",
+        icon: '/favicon.ico'
+      });
+    }
   }, []);
 
   const logFunnelStep = async (stepName, packageType = null) => {
@@ -244,7 +257,8 @@ export default function BookingForm() {
             <div>⏰ <b>Time:</b> {confirmedBooking.start_time} - {confirmedBooking.end_time} ({confirmedBooking.packageName})</div>
             <div>📍 <b>Address:</b> {confirmedBooking.address}</div>
             <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '8px', marginTop: '4px' }}>
-              💰 <b>Total Price:</b> TT${confirmedBooking.price}<br/>               🔒 <b>Required Deposit:</b> TT$${confirmedBooking.deposit}<br/>
+              💰 <b>Total Price:</b> TT${confirmedBooking.price}<br/>
+              🔒 <b>Required Deposit:</b> TT${confirmedBooking.deposit}<br/>
               💵 <b>Balance Due on Delivery:</b> TT${confirmedBooking.balance}
             </div>
           </div>
