@@ -4,7 +4,7 @@ import { supabase } from '../supabaseClient'; // Make sure this path matches you
 export default function LandingPage() {
   const [selectedImage, setSelectedImage] = useState(null);
 
-  // Visitor Tracking Hook with Browser Push Notifications
+  // Visitor Tracking Hook with Browser Push Notifications & Funnel Logging
   useEffect(() => {
     // Request permission for browser notifications on first load
     if ("Notification" in window && Notification.permission === "default") {
@@ -44,6 +44,25 @@ export default function LandingPage() {
             landing_page: window.location.pathname
           }
         ]);
+
+        // --- Log Funnel Event (Viewed Form) Safely ---
+        let sessionId = sessionStorage.getItem('rental_session_id');
+        if (!sessionId) {
+          sessionId = 'sess_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+          sessionStorage.setItem('rental_session_id', sessionId);
+        }
+
+        const funnelLogged = sessionStorage.getItem('funnel_viewed_logged');
+        if (!funnelLogged) {
+          await supabase.from('booking_funnel_events').insert([
+            {
+              session_id: sessionId,
+              step_name: 'viewed_form'
+            }
+          ]);
+          sessionStorage.setItem('funnel_viewed_logged', 'true');
+        }
+        // ---------------------------------------------
 
         // 3. Trigger Native Browser Push Notification for Real Visitors
         if ("Notification" in window && Notification.permission === "granted" && !isTest) {
