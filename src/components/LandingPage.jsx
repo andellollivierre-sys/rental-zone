@@ -1,57 +1,65 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient'; // Make sure this path matches your project structure
+import { supabase } from '../supabaseClient';
 
 export default function LandingPage() {
   const [selectedImage, setSelectedImage] = useState(null);
+  const [showBookingPopup, setShowBookingPopup] = useState(false);
 
-  // Visitor Tracking Hook with Browser Push Notifications & Funnel Logging
+  // Visitor Tracking Hook with Unique Session Control & Admin Ignore
   useEffect(() => {
-    // Request permission for browser notifications on first load
     if ("Notification" in window && Notification.permission === "default") {
       Notification.requestPermission();
     }
 
     const logVisitor = async () => {
       try {
-        // 1. Hard stop if manual admin ignore flag is set in localStorage
         if (localStorage.getItem('ignore_visits') === 'true') {
           return;
         }
 
-        // 2. Check if an admin/user session is currently active
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          return; // Skip logging if admin is browsing/testing logged in
+          return; // Skip logging if admin is logged in
         }
 
-        const params = new URLSearchParams(window.location.search);
-        const utmSource = params.get('utm_source') || params.get('traffic_source') || 'direct';
-        const utmCampaign = params.get('utm_campaign') || 'none';
-        
-        // Detect mobile vs desktop
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        const deviceType = isMobile ? 'Mobile' : 'Desktop';
-        
-        // Check for admin/test flag
-        const isTest = params.get('test') === 'true' || window.location.hostname === 'localhost';
-
-        await supabase.from('page_visits').insert([
-          {
-            traffic_source: utmSource.toLowerCase(),
-            utm_campaign: utmCampaign,
-            device_type: deviceType,
-            is_test: isTest,
-            landing_page: window.location.pathname
-          }
-        ]);
-
-        // --- Log Funnel Event (Viewed Form) Safely ---
+        // Unique Session Management
         let sessionId = sessionStorage.getItem('rental_session_id');
         if (!sessionId) {
           sessionId = 'sess_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
           sessionStorage.setItem('rental_session_id', sessionId);
         }
 
+        // 1. Log Unique Page Visit
+        const pageVisitLogged = sessionStorage.getItem('page_visit_logged');
+        if (!pageVisitLogged) {
+          const params = new URLSearchParams(window.location.search);
+          const utmSource = params.get('utm_source') || params.get('traffic_source') || 'direct';
+          const utmCampaign = params.get('utm_campaign') || 'none';
+          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+          const deviceType = isMobile ? 'Mobile' : 'Desktop';
+          const isTest = params.get('test') === 'true' || window.location.hostname === 'localhost';
+
+          await supabase.from('page_visits').insert([
+            {
+              traffic_source: utmSource.toLowerCase(),
+              utm_campaign: utmCampaign,
+              device_type: deviceType,
+              is_test: isTest,
+              landing_page: window.location.pathname
+            }
+          ]);
+
+          sessionStorage.setItem('page_visit_logged', 'true');
+
+          if ("Notification" in window && Notification.permission === "granted" && !isTest) {
+            new Notification("🎉 New Unique Visitor!", {
+              body: `Source: ${utmSource.toUpperCase()} (${deviceType})`,
+              icon: '/favicon.ico'
+            });
+          }
+        }
+
+        // 2. Log Funnel View Event (Once per session)
         const funnelLogged = sessionStorage.getItem('funnel_viewed_logged');
         if (!funnelLogged) {
           await supabase.from('booking_funnel_events').insert([
@@ -62,23 +70,23 @@ export default function LandingPage() {
           ]);
           sessionStorage.setItem('funnel_viewed_logged', 'true');
         }
-        // ---------------------------------------------
-
-        // 3. Trigger Native Browser Push Notification for Real Visitors
-        if ("Notification" in window && Notification.permission === "granted" && !isTest) {
-          new Notification("🎉 New Page Visitor!", {
-            body: `Source: ${utmSource.toUpperCase()} (${deviceType})`,
-            icon: '/favicon.ico'
-          });
-        }
 
       } catch (err) {
-        // Fail silently so it never breaks the user experience
         console.error('Visitor tracking error:', err);
       }
     };
 
     logVisitor();
+
+    // Optional: Auto-trigger popup once per session after 3 seconds, or let CTA buttons handle it
+    const hasSeenPopup = sessionStorage.getItem('seen_booking_popup');
+    if (!hasSeenPopup) {
+      const timer = setTimeout(() => {
+        setShowBookingPopup(true);
+        sessionStorage.setItem('seen_booking_popup', 'true');
+      }, 3500);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   const galleryImages = [
@@ -121,10 +129,10 @@ export default function LandingPage() {
             Bring The Ultimate Fun <br /> To Your Next Event!
           </h1>
           <p style={{ color: '#475569', fontSize: '14px', maxWidth: '100%', margin: '0 auto 20px auto', lineHeight: '1.5', padding: '0 10px' }}>
-            Safe, clean, high-energy bouncy castles delivered straight to your yard. Secure your date in seconds.
+            Safe, clean, high-energy bouncy castles delivered straight to your yard. Secure your date with zero upfront risk.
           </p>
-          <a 
-            href="#booking" 
+          <button 
+            onClick={() => setShowBookingPopup(true)}
             style={{ 
               display: 'block',
               width: '100%',
@@ -135,14 +143,16 @@ export default function LandingPage() {
               fontWeight: 'bold', 
               padding: '14px 0', 
               borderRadius: '12px', 
+              border: 'none',
               textDecoration: 'none',
               boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)',
               fontSize: '15px',
-              textAlign: 'center'
+              textAlign: 'center',
+              cursor: 'pointer'
             }}
           >
-            Book Your Date Now
-          </a>
+            Check Availability & Book
+          </button>
         </div>
 
         {/* Featured Inventory Card */}
@@ -175,12 +185,12 @@ export default function LandingPage() {
                 <span style={{ display: 'block', fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: 'bold' }}>Starting at</span>
                 <span style={{ color: '#2563eb', fontWeight: 'bold', fontSize: '17px' }}>TT$650</span>
               </div>
-              <a 
-                href="#booking" 
-                style={{ background: '#0f172a', color: 'white', fontSize: '13px', fontWeight: 'bold', padding: '10px 18px', borderRadius: '8px', textDecoration: 'none' }}
+              <button 
+                onClick={() => setShowBookingPopup(true)}
+                style={{ background: '#0f172a', color: 'white', fontSize: '13px', fontWeight: 'bold', padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}
               >
                 Select & Book
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -225,7 +235,93 @@ export default function LandingPage() {
 
       </div>
 
-      {/* Lightbox Modal Popup */}
+      {/* Booking Teaser Popup Modal */}
+      {showBookingPopup && (
+        <div 
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 10000,
+            background: 'rgba(0, 0, 0, 0.75)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px'
+          }}
+          onClick={() => setShowBookingPopup(false)}
+        >
+          <div 
+            style={{
+              background: 'white',
+              borderRadius: '20px',
+              padding: '28px 24px',
+              maxWidth: '420px',
+              width: '100%',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
+              textAlign: 'center',
+              position: 'relative'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              onClick={() => setShowBookingPopup(false)}
+              style={{
+                position: 'absolute',
+                top: '14px',
+                right: '16px',
+                background: '#f1f5f9',
+                border: 'none',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                fontSize: '18px',
+                fontWeight: 'bold',
+                color: '#64748b',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              &times;
+            </button>
+
+            <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '6px 14px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              ⚡ No Cost to Book Spot
+            </span>
+
+            <h3 style={{ fontSize: '22px', fontWeight: '800', color: '#0f172a', margin: '16px 0 10px 0' }}>
+              Check Availability & Lock In Your Date!
+            </h3>
+
+            <p style={{ fontSize: '14px', color: '#475569', lineHeight: '1.5', margin: '0 0 24px 0' }}>
+              Select your package, send your details instantly via WhatsApp, and we'll contact you. **No cost required to reserve your spot!**
+            </p>
+
+            <a 
+              href="#booking"
+              onClick={() => setShowBookingPopup(false)}
+              style={{
+                display: 'block',
+                width: '100%',
+                background: '#2563eb',
+                color: 'white',
+                fontWeight: 'bold',
+                padding: '14px 0',
+                borderRadius: '12px',
+                textDecoration: 'none',
+                fontSize: '15px',
+                boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)',
+                boxSizing: 'border-box'
+              }}
+            >
+              Let's Go To Booking Form
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox Modal Popup for Images */}
       {selectedImage && (
         <div 
           style={{
