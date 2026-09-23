@@ -21,36 +21,34 @@ export default function BookingForm() {
   const [checkingAvailability, setCheckingAvailability] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState(null);
 
-  // Log initial form view on mount & trigger browser notification
+  // Log initial form view on mount & ping Discord instantly
   useEffect(() => {
     logFunnelStep('viewed_form');
 
-    // 🔥 INSTANT NOTIFICATION WHEN VISITOR HITS THE BOOKING PAGE
-    const triggerVisitorNotification = async () => {
-      if (!("Notification" in window)) return;
+    const notifyDiscordOnView = async () => {
+      try {
+        if (!DISCORD_WEBHOOK_URL) return;
 
-      let permission = Notification.permission;
-      if (permission === "default") {
-        permission = await Notification.requestPermission();
-      }
+        // Prevent spamming Discord if the same visitor refreshes the page multiple times in a session
+        const alreadyAlerted = sessionStorage.getItem('discord_booking_view_sent');
+        if (alreadyAlerted) return;
+        sessionStorage.setItem('discord_booking_view_sent', 'true');
 
-      if (permission === "granted") {
-        const bookingNotified = sessionStorage.getItem('booking_form_alert_sent');
-        if (!bookingNotified) {
-          sessionStorage.setItem('booking_form_alert_sent', 'true');
-          
-          try {
-            new Notification("🎯 Visitor Reached Booking Form!", {
-              body: "A prospect just navigated to the booking section."
-            });
-          } catch (err) {
-            console.error('Notification error:', err);
-          }
-        }
+        const discordMessage = {
+          content: `👀 **A prospect just opened the Booking Form page!**`
+        };
+
+        await fetch(DISCORD_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(discordMessage)
+        });
+      } catch (err) {
+        console.error('Discord page-view ping failed:', err);
       }
     };
 
-    triggerVisitorNotification();
+    notifyDiscordOnView();
   }, []);
 
   const logFunnelStep = async (stepName, packageType = null) => {
