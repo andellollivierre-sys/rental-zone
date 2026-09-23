@@ -25,18 +25,32 @@ export default function BookingForm() {
   useEffect(() => {
     logFunnelStep('viewed_form');
 
-    // 🔥 INSTANT NOTIFICATION WHEN VISITOR HITS THE BOOKING FORM
-    const bookingNotified = sessionStorage.getItem('booking_form_alert_sent');
-    const isAdminOrDev = localStorage.getItem('dev_mode') === 'true' || localStorage.getItem('is_admin') === 'true' || window.location.hostname === 'localhost';
+    // 🔥 INSTANT NOTIFICATION WHEN VISITOR HITS THE BOOKING PAGE
+    const triggerVisitorNotification = async () => {
+      if (!("Notification" in window)) return;
 
-    if (!bookingNotified && "Notification" in window && Notification.permission === "granted" && !isAdminOrDev) {
-      sessionStorage.setItem('booking_form_alert_sent', 'true');
-      
-      new Notification("🎯 Visitor Reached Booking Form!", {
-        body: "A prospect just navigated to the booking section.",
-        icon: '/favicon.ico'
-      });
-    }
+      let permission = Notification.permission;
+      if (permission === "default") {
+        permission = await Notification.requestPermission();
+      }
+
+      if (permission === "granted") {
+        const bookingNotified = sessionStorage.getItem('booking_form_alert_sent');
+        if (!bookingNotified) {
+          sessionStorage.setItem('booking_form_alert_sent', 'true');
+          
+          try {
+            new Notification("🎯 Visitor Reached Booking Form!", {
+              body: "A prospect just navigated to the booking section."
+            });
+          } catch (err) {
+            console.error('Notification error:', err);
+          }
+        }
+      }
+    };
+
+    triggerVisitorNotification();
   }, []);
 
   const logFunnelStep = async (stepName, packageType = null) => {
@@ -183,10 +197,8 @@ export default function BookingForm() {
 
       if (error) throw error;
 
-      // Log successful funnel completion
       await logFunnelStep('submitted', selectedPkg.name);
 
-      // 🔥 FIRE DISCORD NOTIFICATION FOR BOOKING
       if (DISCORD_WEBHOOK_URL) {
         const discordMessage = {
           content: `🚨 **NEW BOOKING SUBMITTED!** ${isAdminOrDev ? '(TEST)' : ''}\n` +
@@ -301,7 +313,6 @@ export default function BookingForm() {
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#334155', marginBottom: '8px' }}>Select Rental Package</label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               
-              {/* Package 1: 2 Hours */}
               <div 
                 onClick={() => handlePackageSelect('2_hours')}
                 style={{ 
@@ -318,7 +329,6 @@ export default function BookingForm() {
                 </div>
               </div>
 
-              {/* Package 2: 3 Hours */}
               <div 
                 onClick={() => handlePackageSelect('3_hours')}
                 style={{ 
@@ -341,7 +351,6 @@ export default function BookingForm() {
                 </div>
               </div>
 
-              {/* Package 3: Full Day */}
               <div 
                 onClick={() => handlePackageSelect('full_day')}
                 style={{ 
