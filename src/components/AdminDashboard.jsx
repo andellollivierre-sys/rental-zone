@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import FunnelAnalytics from './FunnelAnalytics';
 
 const ADMIN_EMAIL = 'andell.ollivierre@gmail.com'; 
 
@@ -16,7 +17,7 @@ export default function AdminDashboard() {
   const [visitors, setVisitors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionMessage, setActionMessage] = useState('');
-  const [activeTab, setActiveTab] = useState('bookings'); // 'bookings' or 'analytics'
+  const [activeTab, setActiveTab] = useState('bookings'); // 'bookings', 'analytics', or 'funnel'
 
   // Filter and sort states
   const [statusFilter, setStatusFilter] = useState('All');
@@ -418,6 +419,12 @@ export default function AdminDashboard() {
         >
           📊 Traffic & Analytics
         </button>
+        <button 
+          onClick={() => setActiveTab('funnel')} 
+          style={{ background: activeTab === 'funnel' ? '#0f172a' : '#f1f5f9', color: activeTab === 'funnel' ? 'white' : '#475569', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
+        >
+          📉 Funnel & Drop-Offs
+        </button>
       </div>
 
       {/* CONDITIONAL TAB VIEW */}
@@ -476,6 +483,8 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
+      ) : activeTab === 'funnel' ? (
+        <FunnelAnalytics />
       ) : (
         /* --- BOOKINGS & MANAGEMENT VIEW --- */
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>

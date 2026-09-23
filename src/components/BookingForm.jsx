@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
+// Integrated Discord Webhook URL
+const DISCORD_WEBHOOK_URL = 'Https://discord.com/api/webhooks/1551792830639382571/dxVXhU-U6CJxCGdUfBypOxjy3uOPK1mjismTZgLGNP3kyGPuh0Dn3YAlgmjcFLtHcXpU';
+
 export default function BookingForm() {
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -169,6 +172,25 @@ export default function BookingForm() {
 
       // Log successful funnel completion
       await logFunnelStep('submitted', selectedPkg.name);
+
+      // 🔥 FIRE DISCORD NOTIFICATION FOR BOOKING
+      if (DISCORD_WEBHOOK_URL) {
+        const discordMessage = {
+          content: `🚨 **NEW BOOKING SUBMITTED!** ${isAdminOrDev ? '(TEST)' : ''}\n` +
+                   `👤 **Client:** ${formData.customer_name}\n` +
+                   `📞 **Phone:** ${formData.phone}\n` +
+                   `📍 **Address:** ${formData.address}\n` +
+                   `📅 **Date:** ${formData.event_date} (${formData.start_time} - ${endTime})\n` +
+                   `📦 **Package:** ${selectedPkg.name} (TT$${selectedPkg.price})\n` +
+                   `🌐 **Source:** ${trafficSource}`
+        };
+
+        await fetch(DISCORD_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(discordMessage)
+        }).catch(err => console.error('Discord webhook ping failed:', err));
+      }
 
       setConfirmedBooking({
         ...formData,
