@@ -7,7 +7,7 @@ export default function BookingForm() {
     phone: '',
     event_date: '',
     start_time: '',
-    package_type: '3_hours', // Default to Most Popular
+    package_type: '3_hours',
     address: '',
     notes: ''
   });
@@ -16,40 +16,43 @@ export default function BookingForm() {
   const [errorMessage, setErrorMessage] = useState('');
   const [bookedSlots, setBookedSlots] = useState([]);
   const [checkingAvailability, setCheckingAvailability] = useState(false);
-  
-  // Success state for displaying the receipt view
   const [confirmedBooking, setConfirmedBooking] = useState(null);
 
-  // Package definitions & pricing (Corrected 2-Hour Price: TT$650)
-  const packages = {
-    '2_hours': { 
-      name: '2 Hours', 
-      hours: 2, 
-      price: 650, 
-      deposit: 100 
-    },
-    '3_hours': { 
-      name: '3 Hours', 
-      hours: 3, 
-      price: 900, 
-      deposit: 100, 
-      oldPrice: 975, 
-      savings: 'SAVE TT$75', 
-      badge: '🔥 Most Popular' 
-    },
-    'full_day': { 
-      name: 'Full Day / 8 Hours', 
-      hours: 8, 
-      price: 1800, 
-      deposit: 100, 
-      oldPrice: 2600, 
-      savings: 'SAVE TT$800' 
+  // Log initial form view on mount
+  useEffect(() => {
+    logFunnelStep('viewed_form');
+  }, []);
+
+  const logFunnelStep = async (stepName, packageType = null) => {
+    try {
+      let sessionId = localStorage.getItem('trz_session_id');
+      if (!sessionId) {
+        sessionId = Math.random().toString(36).substring(2) + Date.now();
+        localStorage.setItem('trz_session_id', sessionId);
+      }
+
+      await supabase.from('booking_funnel_events').insert([
+        { session_id: sessionId, step_name: stepName, package_type: packageType }
+      ]);
+    } catch (err) {
+      console.error('Funnel tracking error:', err);
     }
+  };
+
+  const packages = {
+    '2_hours': { name: '2 Hours', hours: 2, price: 650, deposit: 100 },
+    '3_hours': { name: '3 Hours', hours: 3, price: 900, deposit: 100, oldPrice: 975, savings: 'SAVE TT$75', badge: '🔥 Most Popular' },
+    'full_day': { name: 'Full Day / 8 Hours', hours: 8, price: 1800, deposit: 100, oldPrice: 2600, savings: 'SAVE TT$800' }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handlePackageSelect = (pkgKey) => {
+    setFormData(prev => ({ ...prev, package_type: pkgKey }));
+    logFunnelStep('selected_package', packages[pkgKey].name);
   };
 
   useEffect(() => {
@@ -81,11 +84,7 @@ export default function BookingForm() {
     if (!startTime) return '';
     const [h, m] = startTime.split(':').map(Number);
     const totalMinutes = h * 60 + m + hours * 60;
-    
-    if (totalMinutes >= 1440) {
-      return null;
-    }
-
+    if (totalMinutes >= 1440) return null;
     const endH = Math.floor(totalMinutes / 60);
     const endM = totalMinutes % 60;
     return `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
@@ -124,12 +123,7 @@ export default function BookingForm() {
     }
 
     const balanceDue = selectedPkg.price - selectedPkg.deposit;
-
-    // Admin/Dev Mode Exemption & UTM Tracking Capture
-    const isAdminOrDev = 
-      localStorage.getItem('dev_mode') === 'true' || 
-      localStorage.getItem('is_admin') === 'true' ||
-      window.location.hostname === 'localhost';
+    const isAdminOrDev = localStorage.getItem('dev_mode') === 'true' || localStorage.getItem('is_admin') === 'true' || window.location.hostname === 'localhost';
 
     let storedTracking = {};
     try {
@@ -173,6 +167,9 @@ export default function BookingForm() {
 
       if (error) throw error;
 
+      // Log successful funnel completion
+      await logFunnelStep('submitted', selectedPkg.name);
+
       setConfirmedBooking({
         ...formData,
         end_time: endTime,
@@ -193,24 +190,15 @@ export default function BookingForm() {
   const openWhatsApp = () => {
     if (!confirmedBooking) return;
     const whatsappNumber = '18682810670';
-
-    const userEmoji = String.fromCodePoint(0x1F464);
-    const phoneEmoji = String.fromCodePoint(0x1F4DE);
-    const dateEmoji = String.fromCodePoint(0x1F4C5);
-    const timeEmoji = String.fromCodePoint(0x23F0);
-    const moneyEmoji = String.fromCodePoint(0x1F4B0);
-    const pinEmoji = String.fromCodePoint(0x1F4CD);
-    const notesEmoji = String.fromCodePoint(0x1F4DD);
-
     const textMessage = encodeURIComponent(
       `Hi Rental Zone! I just booked the Spider-Man Bouncy Castle.\n\n` +
-      `${userEmoji} Name: ${confirmedBooking.customer_name}\n` +
-      `${phoneEmoji} Phone: ${confirmedBooking.phone}\n` +
-      `${dateEmoji} Date: ${confirmedBooking.event_date}\n` +
-      `${timeEmoji} Time: ${confirmedBooking.start_time} - ${confirmedBooking.end_time} (${confirmedBooking.packageName})\n` +
-      `${moneyEmoji} Total: TT$${confirmedBooking.price} (Deposit: TT$${confirmedBooking.deposit} | Balance: TT$${confirmedBooking.balance})\n` +
-      `${pinEmoji} Address: ${confirmedBooking.address}\n` +
-      (confirmedBooking.notes ? `${notesEmoji} Notes: ${confirmedBooking.notes}\n\n` : '\n') +
+      `👤 Name: ${confirmedBooking.customer_name}\n` +
+      `📞 Phone: ${confirmedBooking.phone}\n` +
+      `📅 Date: ${confirmedBooking.event_date}\n` +
+      `⏰ Time: ${confirmedBooking.start_time} - ${confirmedBooking.end_time} (${confirmedBooking.packageName})\n` +
+      `💰 Total: TT$${confirmedBooking.price} (Deposit: TT$${confirmedBooking.deposit} | Balance: TT$${confirmedBooking.balance})\n` +
+      `📍 Address: ${confirmedBooking.address}\n` +
+      (confirmedBooking.notes ? `📝 Notes: ${confirmedBooking.notes}\n\n` : '\n') +
       `Please let me know how to lock in my deposit!`
     );
     window.location.href = `https://wa.me/${whatsappNumber}?text=${textMessage}`;
@@ -273,14 +261,13 @@ export default function BookingForm() {
             <input type="tel" name="phone" value={formData.phone} onChange={handleChange} required style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }} placeholder="868-000-0000" />
           </div>
 
-          {/* PACKAGE SELECTION CARDS */}
           <div>
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#334155', marginBottom: '8px' }}>Select Rental Package</label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               
               {/* Package 1: 2 Hours */}
               <div 
-                onClick={() => setFormData(prev => ({ ...prev, package_type: '2_hours' }))}
+                onClick={() => handlePackageSelect('2_hours')}
                 style={{ 
                   border: formData.package_type === '2_hours' ? '2px solid #2563eb' : '1px solid #cbd5e1',
                   background: formData.package_type === '2_hours' ? '#eff6ff' : '#ffffff',
@@ -295,9 +282,9 @@ export default function BookingForm() {
                 </div>
               </div>
 
-              {/* Package 2: 3 Hours (Most Popular with Badge & Savings) */}
+              {/* Package 2: 3 Hours */}
               <div 
-                onClick={() => setFormData(prev => ({ ...prev, package_type: '3_hours' }))}
+                onClick={() => handlePackageSelect('3_hours')}
                 style={{ 
                   border: formData.package_type === '3_hours' ? '2px solid #2563eb' : '1px solid #cbd5e1',
                   background: formData.package_type === '3_hours' ? '#eff6ff' : '#ffffff',
@@ -318,9 +305,9 @@ export default function BookingForm() {
                 </div>
               </div>
 
-              {/* Package 3: Full Day / 8 Hours (With Big Savings) */}
+              {/* Package 3: Full Day */}
               <div 
-                onClick={() => setFormData(prev => ({ ...prev, package_type: 'full_day' }))}
+                onClick={() => handlePackageSelect('full_day')}
                 style={{ 
                   border: formData.package_type === 'full_day' ? '2px solid #2563eb' : '1px solid #cbd5e1',
                   background: formData.package_type === 'full_day' ? '#eff6ff' : '#ffffff',
