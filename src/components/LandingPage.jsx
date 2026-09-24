@@ -4,6 +4,25 @@ import { supabase } from '../supabaseClient';
 export default function LandingPage() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [showBookingPopup, setShowBookingPopup] = useState(false);
+  const [showPriceModal, setShowPriceModal] = useState(false);
+  const [showSpaceModal, setShowSpaceModal] = useState(false);
+
+  // Helper function to record inline button clicks cleanly
+  const trackButtonClick = async (buttonName) => {
+    try {
+      const sessionId = sessionStorage.getItem('rental_session_id');
+      if (sessionId) {
+        await supabase.from('booking_funnel_events').insert([
+          {
+            session_id: sessionId,
+            step_name: buttonName
+          }
+        ]);
+      }
+    } catch (err) {
+      console.error(`Error logging ${buttonName}:`, err);
+    }
+  };
 
   // Visitor Tracking Hook with Unique Session Control & Admin Ignore
   useEffect(() => {
@@ -78,16 +97,45 @@ export default function LandingPage() {
 
     logVisitor();
 
-    // Optional: Auto-trigger popup once per session after 3 seconds, or let CTA buttons handle it
+    // Immediate Trigger for Intent Popup (Once per session)
     const hasSeenPopup = sessionStorage.getItem('seen_booking_popup');
     if (!hasSeenPopup) {
       const timer = setTimeout(() => {
         setShowBookingPopup(true);
         sessionStorage.setItem('seen_booking_popup', 'true');
-      }, 3500);
+      }, 0);
       return () => clearTimeout(timer);
     }
   }, []);
+
+  const handleIntentSelect = async (intentKey, targetDestination) => {
+    setShowBookingPopup(false);
+
+    // Log user selection event for analytics
+    trackButtonClick(`intent_${intentKey}`);
+
+    // Modal popups or route navigation
+    if (intentKey === 'prices') {
+      setShowSpaceModal(false);
+      setShowPriceModal(true);
+    } else if (intentKey === 'space') {
+      setShowPriceModal(false);
+      setShowSpaceModal(true);
+    } else if (targetDestination) {
+      if (targetDestination.startsWith('/#')) {
+        window.location.hash = targetDestination.replace('/#', '#');
+      } else if (targetDestination.startsWith('/')) {
+        window.location.href = targetDestination;
+      } else {
+        const el = document.querySelector(targetDestination);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          window.location.hash = targetDestination;
+        }
+      }
+    }
+  };
 
   const galleryImages = [
     '/image 1.png',
@@ -131,8 +179,9 @@ export default function LandingPage() {
           <p style={{ color: '#475569', fontSize: '14px', maxWidth: '100%', margin: '0 auto 20px auto', lineHeight: '1.5', padding: '0 10px' }}>
             Safe, clean, high-energy bouncy castles delivered straight to your yard. Secure your date with zero upfront risk.
           </p>
-          <button 
-            onClick={() => setShowBookingPopup(true)}
+          <a 
+            href="/#booking"
+            onClick={() => trackButtonClick('click_hero_cta')}
             style={{ 
               display: 'block',
               width: '100%',
@@ -152,11 +201,11 @@ export default function LandingPage() {
             }}
           >
             Check Availability & Book
-          </button>
+          </a>
         </div>
 
         {/* Featured Inventory Card */}
-        <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)', marginBottom: '30px' }}>
+        <div id="pricing" style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)', marginBottom: '30px' }}>
           <div style={{ height: '240px', background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: '12px', left: '12px', zIndex: '10' }}>
               <span style={{ background: '#2563eb', color: 'white', fontSize: '11px', padding: '5px 10px', borderRadius: '6px', fontWeight: 'bold' }}>
@@ -167,7 +216,10 @@ export default function LandingPage() {
               src={featuredImage} 
               alt="Spider-Man Bouncy Castle" 
               style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }} 
-              onClick={() => setSelectedImage(featuredImage)}
+              onClick={() => {
+                trackButtonClick('click_featured_image_zoom');
+                setSelectedImage(featuredImage);
+              }}
               title="Click to zoom image"
             />
           </div>
@@ -185,12 +237,13 @@ export default function LandingPage() {
                 <span style={{ display: 'block', fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: 'bold' }}>Starting at</span>
                 <span style={{ color: '#2563eb', fontWeight: 'bold', fontSize: '17px' }}>TT$650</span>
               </div>
-              <button 
-                onClick={() => setShowBookingPopup(true)}
-                style={{ background: '#0f172a', color: 'white', fontSize: '13px', fontWeight: 'bold', padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}
+              <a 
+                href="/#booking"
+                onClick={() => trackButtonClick('click_featured_select_and_book')}
+                style={{ background: '#0f172a', color: 'white', fontSize: '13px', fontWeight: 'bold', padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', textDecoration: 'none', display: 'inline-block' }}
               >
                 Select & Book
-              </button>
+              </a>
             </div>
           </div>
         </div>
@@ -202,7 +255,14 @@ export default function LandingPage() {
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
             {galleryImages.map((imgUrl, index) => (
-              <div key={index} style={{ height: '140px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer' }} onClick={() => setSelectedImage(imgUrl)}>
+              <div 
+                key={index} 
+                style={{ height: '140px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer' }} 
+                onClick={() => {
+                  trackButtonClick(`click_gallery_image_${index + 1}`);
+                  setSelectedImage(imgUrl);
+                }}
+              >
                 <img 
                   src={imgUrl} 
                   alt={`Rental Zone Gallery ${index + 1}`} 
@@ -215,7 +275,7 @@ export default function LandingPage() {
         </div>
 
         {/* Q&A / Guidelines Section */}
-        <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '20px', marginBottom: '30px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.03)' }}>
+        <div id="space-reqs" style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '20px', marginBottom: '30px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.03)' }}>
           <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#0f172a', marginBottom: '16px', textAlign: 'center' }}>
             📋 Setup Guidelines & FAQ
           </h3>
@@ -235,7 +295,7 @@ export default function LandingPage() {
 
       </div>
 
-      {/* Booking Teaser Popup Modal */}
+      {/* INTENT SELECTION POPUP MODAL */}
       {showBookingPopup && (
         <div 
           style={{
@@ -248,7 +308,10 @@ export default function LandingPage() {
             justifyContent: 'center',
             padding: '16px'
           }}
-          onClick={() => setShowBookingPopup(false)}
+          onClick={() => {
+            trackButtonClick('dismiss_intent_popup_backdrop');
+            setShowBookingPopup(false);
+          }}
         >
           <div 
             style={{
@@ -264,7 +327,10 @@ export default function LandingPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <button 
-              onClick={() => setShowBookingPopup(false)}
+              onClick={() => {
+                trackButtonClick('dismiss_intent_popup_close_btn');
+                setShowBookingPopup(false);
+              }}
               style={{
                 position: 'absolute',
                 top: '14px',
@@ -287,36 +353,384 @@ export default function LandingPage() {
             </button>
 
             <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '6px 14px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              ⚡ No Cost to Book Spot
+              Welcome to The Rental Zone
             </span>
 
-            <h3 style={{ fontSize: '22px', fontWeight: '800', color: '#0f172a', margin: '16px 0 10px 0' }}>
-              Check Availability & Lock In Your Date!
+            <h3 style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a', margin: '16px 0 8px 0' }}>
+              What would you like to find out?
             </h3>
 
-            <p style={{ fontSize: '14px', color: '#475569', lineHeight: '1.5', margin: '0 0 24px 0' }}>
-              Select your package, send your details instantly via WhatsApp, and we'll contact you. **No cost required to reserve your spot!**
+            <p style={{ fontSize: '13px', color: '#64748b', lineHeight: '1.4', margin: '0 0 20px 0' }}>
+              Select an option below so we can guide you to the right information:
             </p>
 
-            <a 
-              href="#booking"
-              onClick={() => setShowBookingPopup(false)}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button
+                onClick={() => handleIntentSelect('availability', '/#booking')}
+                style={{
+                  width: '100%',
+                  background: '#2563eb',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  padding: '12px 16px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}
+              >
+                <span>📅 Check Availability & Book</span>
+                <span style={{ fontSize: '16px' }}>→</span>
+              </button>
+
+              <button
+                onClick={() => handleIntentSelect('prices')}
+                style={{
+                  width: '100%',
+                  background: '#f8fafc',
+                  color: '#0f172a',
+                  fontWeight: '600',
+                  padding: '12px 16px',
+                  borderRadius: '10px',
+                  border: '1px solid #e2e8f0',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}
+              >
+                <span>🏷️ See Prices & Packages</span>
+                <span style={{ fontSize: '16px' }}>→</span>
+              </button>
+
+              <button
+                onClick={() => handleIntentSelect('space')}
+                style={{
+                  width: '100%',
+                  background: '#f8fafc',
+                  color: '#0f172a',
+                  fontWeight: '600',
+                  padding: '12px 16px',
+                  borderRadius: '10px',
+                  border: '1px solid #e2e8f0',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}
+              >
+                <span>📐 See Size & Space Requirements</span>
+                <span style={{ fontSize: '16px' }}>→</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PRICE & PACKAGES INFORMATION POPUP */}
+      {showPriceModal && (
+        <div 
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 10000,
+            background: 'rgba(0, 0, 0, 0.75)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px'
+          }}
+          onClick={() => setShowPriceModal(false)}
+        >
+          <div 
+            style={{
+              background: 'white',
+              borderRadius: '20px',
+              padding: '24px',
+              maxWidth: '420px',
+              width: '100%',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
+              position: 'relative'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              onClick={() => setShowPriceModal(false)}
               style={{
-                display: 'block',
-                width: '100%',
-                background: '#2563eb',
-                color: 'white',
+                position: 'absolute',
+                top: '14px',
+                right: '16px',
+                background: '#f1f5f9',
+                border: 'none',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                fontSize: '18px',
                 fontWeight: 'bold',
-                padding: '14px 0',
-                borderRadius: '12px',
-                textDecoration: 'none',
-                fontSize: '15px',
-                boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)',
-                boxSizing: 'border-box'
+                color: '#64748b',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
             >
-              Let's Go To Booking Form
-            </a>
+              &times;
+            </button>
+
+            <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase' }}>
+              Pricing & Packages
+            </span>
+
+            <h3 style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a', margin: '12px 0 6px 0' }}>
+              🕷️ Spider-Man Bouncy Castle
+            </h3>
+
+            <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0', margin: '14px 0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
+                <div>
+                  <span style={{ fontWeight: 'bold', color: '#0f172a', fontSize: '15px', display: 'block' }}>Starting Rate</span>
+                  <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '600' }}>(Includes 2 Hours)</span>
+                </div>
+                <span style={{ fontSize: '20px', fontWeight: '800', color: '#2563eb' }}>TT$650</span>
+              </div>
+              <ul style={{ paddingLeft: '18px', margin: '8px 0 0 0', fontSize: '13px', color: '#475569', lineHeight: '1.5' }}>
+                <li>Starting cost for 2 hours of bounce time</li>
+                <li>Fully sanitized & heavy-duty vinyl construction</li>
+                <li>TT$100 refundable/deductible deposit secures your date</li>
+              </ul>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '18px' }}>
+              <a
+                href="/#booking"
+                onClick={() => {
+                  trackButtonClick('click_price_modal_book_now');
+                  setShowPriceModal(false);
+                }}
+                style={{
+                  display: 'block',
+                  textAlign: 'center',
+                  background: '#2563eb',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  padding: '12px 0',
+                  borderRadius: '10px',
+                  textDecoration: 'none',
+                  fontSize: '14px'
+                }}
+              >
+                📅 Check Availability & Book Now
+              </a>
+
+              {/* CROSS-NAVIGATION BUTTON TO SIZE & SPACE */}
+              <button
+                onClick={() => {
+                  trackButtonClick('click_price_modal_switch_to_space');
+                  handleIntentSelect('space');
+                }}
+                style={{
+                  width: '100%',
+                  background: '#f8fafc',
+                  color: '#0f172a',
+                  fontWeight: '600',
+                  padding: '10px 0',
+                  borderRadius: '10px',
+                  border: '1px solid #cbd5e1',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  textAlign: 'center'
+                }}
+              >
+                📐 Check Size & Yard Requirements
+              </button>
+
+              <a
+                href="https://wa.me/18682810670?text=Hi%20Rental%20Zone,%20I%20have%20a%20question%20about%20prices."
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => trackButtonClick('click_price_modal_whatsapp')}
+                style={{
+                  display: 'block',
+                  textAlign: 'center',
+                  background: '#25d366',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  padding: '12px 0',
+                  borderRadius: '10px',
+                  textDecoration: 'none',
+                  fontSize: '14px'
+                }}
+              >
+                💬 Have Questions? Chat on WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SIZE & SPACE REQUIREMENTS INFORMATION POPUP */}
+      {showSpaceModal && (
+        <div 
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 10000,
+            background: 'rgba(0, 0, 0, 0.75)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px'
+          }}
+          onClick={() => setShowSpaceModal(false)}
+        >
+          <div 
+            style={{
+              background: 'white',
+              borderRadius: '20px',
+              padding: '24px',
+              maxWidth: '420px',
+              width: '100%',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
+              position: 'relative'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              onClick={() => setShowSpaceModal(false)}
+              style={{
+                position: 'absolute',
+                top: '14px',
+                right: '16px',
+                background: '#f1f5f9',
+                border: 'none',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                fontSize: '18px',
+                fontWeight: 'bold',
+                color: '#64748b',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              &times;
+            </button>
+
+            <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase' }}>
+              Size & Space Specs
+            </span>
+
+            <h3 style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a', margin: '12px 0 10px 0' }}>
+              📐 Clearance & Dimensions
+            </h3>
+
+            {/* Spider-Man Image Overlay Card */}
+            <div style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', border: '1px solid #cbd5e1', marginBottom: '14px' }}>
+              <img 
+                src={featuredImage} 
+                alt="Spider-Man Bouncy Castle Specs" 
+                style={{ width: '100%', height: '180px', objectFit: 'cover', display: 'block' }}
+              />
+              <div style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                background: 'rgba(15, 23, 42, 0.85)',
+                color: 'white',
+                padding: '8px 12px',
+                textAlign: 'center',
+                fontWeight: 'bold',
+                fontSize: '14px',
+                letterSpacing: '0.5px'
+              }}>
+                26ft Long × 13ft Wide × 13ft High
+              </div>
+            </div>
+
+            <div style={{ fontSize: '13px', color: '#475569', lineHeight: '1.5', background: '#f8fafc', padding: '12px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+              <p style={{ margin: '0 0 6px 0' }}><strong>Requirements:</strong></p>
+              <ul style={{ paddingLeft: '18px', margin: 0 }}>
+                <li>Flat, clean grass or smooth pavement.</li>
+                <li>Clear overhead clearance (no low branches or wires).</li>
+                <li>Standard household outlet within 100ft.</li>
+              </ul>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '18px' }}>
+              <a
+                href="/#booking"
+                onClick={() => {
+                  trackButtonClick('click_space_modal_proceed_to_book');
+                  setShowSpaceModal(false);
+                }}
+                style={{
+                  display: 'block',
+                  textAlign: 'center',
+                  background: '#2563eb',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  padding: '12px 0',
+                  borderRadius: '10px',
+                  textDecoration: 'none',
+                  fontSize: '14px'
+                }}
+              >
+                📅 Fits My Space – Proceed to Book
+              </a>
+
+              {/* CROSS-NAVIGATION BUTTON TO PRICE & PACKAGES */}
+              <button
+                onClick={() => {
+                  trackButtonClick('click_space_modal_switch_to_price');
+                  handleIntentSelect('prices');
+                }}
+                style={{
+                  width: '100%',
+                  background: '#f8fafc',
+                  color: '#0f172a',
+                  fontWeight: '600',
+                  padding: '10px 0',
+                  borderRadius: '10px',
+                  border: '1px solid #cbd5e1',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  textAlign: 'center'
+                }}
+              >
+                🏷️ Check Price & Packages
+              </button>
+
+              <a
+                href="https://wa.me/18682810670?text=Hi%20Rental%20Zone,%20I%20have%20a%20question%20about%20yard%20space%20requirements."
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => trackButtonClick('click_space_modal_whatsapp')}
+                style={{
+                  display: 'block',
+                  textAlign: 'center',
+                  background: '#25d366',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  padding: '12px 0',
+                  borderRadius: '10px',
+                  textDecoration: 'none',
+                  fontSize: '14px'
+                }}
+              >
+                💬 Unsure About Space? Ask on WhatsApp
+              </a>
+            </div>
           </div>
         </div>
       )}
@@ -334,7 +748,7 @@ export default function LandingPage() {
             justifyContent: 'center',
             padding: '16px'
           }}
-          onClick={() => setSelectedImage(null)}
+          onClick={() => setShowBookingPopup(false)}
         >
           <div 
             style={{
