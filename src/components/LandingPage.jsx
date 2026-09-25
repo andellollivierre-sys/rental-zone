@@ -1,5 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
+import {
+  trackTrzEvent,
+  shouldFireSessionStarted,
+  createPageTimer
+} from '../utils/trzTracker';
 
 export default function LandingPage() {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -7,25 +12,21 @@ export default function LandingPage() {
   const [showPriceModal, setShowPriceModal] = useState(false);
   const [showSpaceModal, setShowSpaceModal] = useState(false);
 
-  // Helper function to record inline button clicks cleanly
-  const trackButtonClick = async (buttonName) => {
-    try {
-      const sessionId = sessionStorage.getItem('rental_session_id');
-      if (sessionId) {
-        await supabase.from('booking_funnel_events').insert([
-          {
-            session_id: sessionId,
-            step_name: buttonName
-          }
-        ]);
-      }
-    } catch (err) {
-      console.error(`Error logging ${buttonName}:`, err);
-    }
+  const pageExitSent = useRef(false);
+
+  // Helper function for detailed visitor tracking.
+  // Tracking is intentionally fire-and-forget so it never blocks UI/navigation.
+  const trackButtonClick = (eventName, additionalData = {}) => {
+    trackTrzEvent(eventName, additionalData);
   };
 
-  // Visitor Tracking Hook with Unique Session Control & Admin Ignore
+  // Visitor Tracking Hook with Unique Page Visit Control
+  // Detailed funnel tracking now goes through trzTracker.js -> visitor_events.
   useEffect(() => {
+    let pageTimer = null;
+    let pageExitHandler = null;
+    let popupTimer = null;
+
     if ("Notification" in window && Notification.permission === "default") {
       Notification.requestPermission();
     }
@@ -38,18 +39,12 @@ export default function LandingPage() {
 
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          return; // Skip logging if admin is logged in
-        }
-
-        // Unique Session Management
-        let sessionId = sessionStorage.getItem('rental_session_id');
-        if (!sessionId) {
-          sessionId = 'sess_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
-          sessionStorage.setItem('rental_session_id', sessionId);
+          return; // Skip page visit logging if admin is logged in
         }
 
         // 1. Log Unique Page Visit
         const pageVisitLogged = sessionStorage.getItem('page_visit_logged');
+
         if (!pageVisitLogged) {
           const params = new URLSearchParams(window.location.search);
           const utmSource = params.get('utm_source') || params.get('traffic_source') || 'direct';
@@ -77,19 +72,6 @@ export default function LandingPage() {
             });
           }
         }
-
-        // 2. Log Funnel View Event (Once per session)
-        const funnelLogged = sessionStorage.getItem('funnel_viewed_logged');
-        if (!funnelLogged) {
-          await supabase.from('booking_funnel_events').insert([
-            {
-              session_id: sessionId,
-              step_name: 'viewed_form'
-            }
-          ]);
-          sessionStorage.setItem('funnel_viewed_logged', 'true');
-        }
-
       } catch (err) {
         console.error('Visitor tracking error:', err);
       }
@@ -97,22 +79,81 @@ export default function LandingPage() {
 
     logVisitor();
 
+    // Start the authoritative clean tracking session.
+    if (shouldFireSessionStarted()) {
+      trackTrzEvent('session_started');
+    }
+
+    // Confirm that the landing page actually mounted/rendered.
+    const viewedLandingLogged = sessionStorage.getItem('trz_viewed_landing_page');
+
+    if (!viewedLandingLogged) {
+      sessionStorage.setItem('trz_viewed_landing_page', 'true');
+      trackTrzEvent('viewed_landing_page');
+    }
+
+    // Active/visible page-duration tracking.
+    pageTimer = createPageTimer();
+
+    pageExitHandler = () => {
+      if (pageExitSent.current) {
+        return;
+      }
+
+      pageExitSent.current = true;
+
+      trackTrzEvent('page_exit', {
+        page_duration_seconds: pageTimer.getSeconds()
+      });
+    };
+
+    window.addEventListener('pagehide', pageExitHandler);
+
     // Immediate Trigger for Intent Popup (Once per session)
     const hasSeenPopup = sessionStorage.getItem('seen_booking_popup');
+
     if (!hasSeenPopup) {
-      const timer = setTimeout(() => {
+      popupTimer = setTimeout(() => {
         setShowBookingPopup(true);
         sessionStorage.setItem('seen_booking_popup', 'true');
+
+        trackTrzEvent('popup_opened', {
+          popup_type: 'initial_intent'
+        });
       }, 0);
-      return () => clearTimeout(timer);
     }
+
+    return () => {
+      if (popupTimer) {
+        clearTimeout(popupTimer);
+      }
+
+      if (pageExitHandler) {
+        window.removeEventListener('pagehide', pageExitHandler);
+      }
+
+      if (pageTimer) {
+        pageTimer.cleanup();
+      }
+    };
   }, []);
 
-  const handleIntentSelect = async (intentKey, targetDestination) => {
+  const handleIntentSelect = (intentKey, targetDestination) => {
     setShowBookingPopup(false);
 
-    // Log user selection event for analytics
-    trackButtonClick(`intent_${intentKey}`);
+    const intentEvents = {
+      availability: 'clicked_check_availability',
+      prices: 'clicked_view_price',
+      space: 'clicked_view_size'
+    };
+
+    const eventName = intentEvents[intentKey];
+
+    if (eventName) {
+      trackButtonClick(eventName, {
+        popup_type: 'initial_intent'
+      });
+    }
 
     // Modal popups or route navigation
     if (intentKey === 'prices') {
@@ -181,7 +222,7 @@ export default function LandingPage() {
           </p>
           <a 
             href="/#booking"
-            onClick={() => trackButtonClick('click_hero_cta')}
+            onClick={() => trackButtonClick('clicked_book_now')}
             style={{ 
               display: 'block',
               width: '100%',
@@ -239,7 +280,7 @@ export default function LandingPage() {
               </div>
               <a 
                 href="/#booking"
-                onClick={() => trackButtonClick('click_featured_select_and_book')}
+                onClick={() => trackButtonClick('clicked_book_now')}
                 style={{ background: '#0f172a', color: 'white', fontSize: '13px', fontWeight: 'bold', padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', textDecoration: 'none', display: 'inline-block' }}
               >
                 Select & Book
@@ -512,7 +553,7 @@ export default function LandingPage() {
               <a
                 href="/#booking"
                 onClick={() => {
-                  trackButtonClick('click_price_modal_book_now');
+                  trackButtonClick('clicked_book_now');
                   setShowPriceModal(false);
                 }}
                 style={{
@@ -556,7 +597,7 @@ export default function LandingPage() {
                 href="https://wa.me/18682810670?text=Hi%20Rental%20Zone,%20I%20have%20a%20question%20about%20prices."
                 target="_blank"
                 rel="noreferrer"
-                onClick={() => trackButtonClick('click_price_modal_whatsapp')}
+                onClick={() => trackButtonClick('whatsapp_clicked')}
                 style={{
                   display: 'block',
                   textAlign: 'center',
@@ -671,7 +712,7 @@ export default function LandingPage() {
               <a
                 href="/#booking"
                 onClick={() => {
-                  trackButtonClick('click_space_modal_proceed_to_book');
+                  trackButtonClick('clicked_book_now');
                   setShowSpaceModal(false);
                 }}
                 style={{
@@ -715,7 +756,7 @@ export default function LandingPage() {
                 href="https://wa.me/18682810670?text=Hi%20Rental%20Zone,%20I%20have%20a%20question%20about%20yard%20space%20requirements."
                 target="_blank"
                 rel="noreferrer"
-                onClick={() => trackButtonClick('click_space_modal_whatsapp')}
+                onClick={() => trackButtonClick('whatsapp_clicked')}
                 style={{
                   display: 'block',
                   textAlign: 'center',
