@@ -18,60 +18,79 @@ export default function FunnelAnalytics() {
   const fetchFunnelAnalytics = async () => {
     setLoading(true);
     try {
-      // 1. Fetch all funnel tracking events
+      // 1. Fetch current production funnel tracking events
       const { data: events, error: eventsError } = await supabase
-        .from('booking_funnel_events')
-        .select('*');
+        .from('visitor_events')
+        .select('session_id, event, source, is_test, created_at')
+        .eq('is_test', false)
+        .in('event', [
+          'viewed_booking_page',
+          'package_selected',
+          'booking_submitted'
+        ]);
 
       if (eventsError) throw eventsError;
 
       const safeEvents = events || [];
 
-      let viewedCount = 0;
-      let selectedPkgCount = 0;
-      let submittedCount = 0;
-
-      // Track unique session IDs per step to prevent double-counting refreshes
+      // Track unique production sessions per funnel step
       const viewedSessions = new Set();
       const selectedSessions = new Set();
       const submittedSessions = new Set();
 
       safeEvents.forEach((ev) => {
-        const step = ev.step_name ? ev.step_name.trim().toLowerCase() : '';
-        if (step === 'viewed_form') {
-          if (ev.session_id) viewedSessions.add(ev.session_id);
+        if (!ev.session_id) return;
+
+        if (ev.event === 'viewed_booking_page') {
+          viewedSessions.add(ev.session_id);
         }
-        if (step === 'selected_package') {
-          if (ev.session_id) selectedSessions.add(ev.session_id);
+
+        if (ev.event === 'package_selected') {
+          selectedSessions.add(ev.session_id);
         }
-        if (step === 'submitted' || step === 'completed') {
-          if (ev.session_id) submittedSessions.add(ev.session_id);
+
+        if (ev.event === 'booking_submitted') {
+          submittedSessions.add(ev.session_id);
         }
       });
 
-      // Safe fallbacks to row filters if sets come up empty during early testing
-      viewedCount = viewedSessions.size > 0 ? viewedSessions.size : safeEvents.filter(e => e.step_name === 'viewed_form').length;
-      selectedPkgCount = selectedSessions.size > 0 ? selectedSessions.size : safeEvents.filter(e => e.step_name === 'selected_package').length;
-      submittedCount = submittedSessions.size > 0 ? submittedSessions.size : safeEvents.filter(e => e.step_name === 'submitted' || e.step_name === 'completed').length;
+      const viewedCount = viewedSessions.size;
+      const selectedPkgCount = selectedSessions.size;
+      const submittedCount = submittedSessions.size;
 
-      // 2. Fetch bookings safely (won't crash if table is empty or errors out)
+      // 2. Fetch bookings safely
       const { data: bookings, error: bookingsError } = await supabase
         .from('bookings')
         .select('*');
 
       const safeBookings = bookingsError ? [] : (bookings || []);
-      const totalRev = safeBookings.reduce((sum, b) => sum + (b.total_price || 0), 0);
 
-      // Group bookings/traffic sources
+      // Keep production revenue separate from test bookings
+      const liveBookings = safeBookings.filter((booking) => !booking.is_test);
+
+      const totalRev = liveBookings.reduce(
+        (sum, b) => sum + (b.total_price || 0),
+        0
+      );
+
+      // Group production bookings by traffic source
       const sources = {};
-      safeBookings.forEach((b) => {
+
+      liveBookings.forEach((b) => {
         const src = b.traffic_source || 'direct';
-        if (!sources[src]) sources[src] = { count: 0, revenue: 0 };
+
+        if (!sources[src]) {
+          sources[src] = {
+            count: 0,
+            revenue: 0
+          };
+        }
+
         sources[src].count += 1;
         sources[src].revenue += b.total_price || 0;
       });
 
-      const sourceArray = Object.keys(sources).map(key => ({
+      const sourceArray = Object.keys(sources).map((key) => ({
         source: key,
         count: sources[key].count,
         revenue: sources[key].revenue
@@ -83,6 +102,7 @@ export default function FunnelAnalytics() {
         submittedBooking: submittedCount,
         totalRevenue: totalRev
       });
+
       setSourceBreakdown(sourceArray);
 
     } catch (err) {
@@ -93,16 +113,16 @@ export default function FunnelAnalytics() {
   };
 
   // Calculate drop-off percentages safely
-  const viewToSelectDropoff = funnelData.viewedForm > 0 
-    ? Math.round(((funnelData.viewedForm - funnelData.selectedPackage) / funnelData.viewedForm) * 100) 
+  const viewToSelectDropoff = funnelData.viewedForm > 0
+    ? Math.round(((funnelData.viewedForm - funnelData.selectedPackage) / funnelData.viewedForm) * 100)
     : 0;
 
-  const selectToSubmitDropoff = funnelData.selectedPackage > 0 
-    ? Math.round(((funnelData.selectedPackage - funnelData.submittedBooking) / funnelData.selectedPackage) * 100) 
+  const selectToSubmitDropoff = funnelData.selectedPackage > 0
+    ? Math.round(((funnelData.selectedPackage - funnelData.submittedBooking) / funnelData.selectedPackage) * 100)
     : 0;
 
-  const overallConversion = funnelData.viewedForm > 0 
-    ? ((funnelData.submittedBooking / funnelData.viewedForm) * 100).toFixed(1) 
+  const overallConversion = funnelData.viewedForm > 0
+    ? ((funnelData.submittedBooking / funnelData.viewedForm) * 100).toFixed(1)
     : 0;
 
   if (loading) {
@@ -141,9 +161,9 @@ export default function FunnelAnalytics() {
       {/* Funnel Step Drop-Off Visualizer */}
       <div style={{ background: '#ffffff', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '24px' }}>
         <h3 style={{ fontSize: '16px', color: '#1e293b', margin: '0 0 16px 0' }}>📉 Where Users Drop Off</h3>
-        
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          
+
           {/* Step 1 */}
           <div style={{ background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', borderLeft: '4px solid #3b82f6' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', fontWeight: 'bold', color: '#334155' }}>
