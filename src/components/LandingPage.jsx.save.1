@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+mport React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import {
   trackTrzEvent,
@@ -787,18 +787,12 @@ export default function LandingPage() {
       );
     };
 
-const galleryImages = [
-  '/image 1.png',
-  '/image 2.png',
-  '/image 3.jpg',
-  '/1000151156.jpg',
-  '/1000151155.jpg',
-  '/1000151154.jpg',
-  '/1000151153.jpg',
-  '/1000151152.jpg',
-  '/1000151151.jpg',
-  '/1000151150.jpg'
-];
+  const galleryImages = [
+    '/image 1.png',
+    '/image 2.png',
+    '/image 3.jpg'
+  ];
+
   const featuredImage =
     '/featured image.jpg';
 
