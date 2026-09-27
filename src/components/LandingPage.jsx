@@ -26,8 +26,12 @@ import {
  * - Displays promotional price, hours, regular value,
  *   and savings on the public page.
  * - Displays actual offer expiry countdown.
- * - Adds promotional exit-intent popup.
- * - Uses admin-controlled visitor countdown for popup.
+ * - Promotional popup opens immediately while a promotion
+ *   is active.
+ * - Normal welcome popup is temporarily disabled while
+ *   a promotion is active.
+ * - Normal welcome popup returns when no promotion is active.
+ * - Promotional popup uses admin-controlled visitor countdown.
  * - Sends promotional intent into the existing booking route.
  * - Displays promotional offer in pricing modal.
  * - Tracks promotional offer visibility and interactions.
@@ -35,22 +39,26 @@ import {
  *   when promotion is OFF or expired.
  * - Preserves existing booking route, analytics,
  *   gallery, FAQ, WhatsApp links, and existing UI structure.
+ * - Removed old browser "New Unique Visitor!" notification.
  *
  * PAYMENT:
  * - No deposit required.
  * - Payment is due on delivery.
  *
- * POPUP FIX:
- * - If the initial "What would you like to find out?"
- *   popup is open when desktop exit intent fires,
- *   the initial popup is closed and the promotional popup
- *   takes over immediately.
+ * POPUP BEHAVIOR:
+ * - PROMO ACTIVE:
+ *   Promotional popup opens immediately.
+ *   Initial intent popup is suppressed.
+ *
+ * - PROMO INACTIVE:
+ *   Existing "What would you like to find out?"
+ *   popup works normally.
  *
  * CURRENT STATUS:
  * - Admin promotion control: COMPLETE
  * - LandingPage promotion display: COMPLETE
- * - LandingPage promotional exit-intent popup: COMPLETE
- * - Initial popup → promotional popup takeover: COMPLETE
+ * - Immediate promotional popup: COMPLETE
+ * - Normal popup suppression during promotion: COMPLETE
  * - BookingForm promotion integration: COMPLETE
  * - Promotional booking database tagging: COMPLETE
  * - Payment on delivery: COMPLETE
@@ -71,7 +79,7 @@ export default function LandingPage() {
   const [promoLoading, setPromoLoading] = useState(true);
   const [promoExpirySeconds, setPromoExpirySeconds] = useState(null);
 
-  // Promotional exit-intent popup state
+  // Promotional popup state
   const [showPromotionalPopup, setShowPromotionalPopup] = useState(false);
   const [promoPopupSecondsLeft, setPromoPopupSecondsLeft] = useState(null);
 
@@ -96,7 +104,9 @@ export default function LandingPage() {
       return true;
     }
 
-    const expiryTime = new Date(offer.offer_ends_at).getTime();
+    const expiryTime = new Date(
+      offer.offer_ends_at
+    ).getTime();
 
     if (!Number.isFinite(expiryTime)) {
       return false;
@@ -105,18 +115,26 @@ export default function LandingPage() {
     return expiryTime > Date.now();
   };
 
-  const promoIsActive = isPromotionActive(promotionalOffer);
+  const promoIsActive =
+    isPromotionActive(promotionalOffer);
 
   const normalPrice = 650;
   const normalHours = 2;
-  const normalHourlyRate = normalPrice / normalHours;
+  const normalHourlyRate =
+    normalPrice / normalHours;
 
   const publicPrice = promoIsActive
-    ? Number(promotionalOffer.offer_price ?? normalPrice)
+    ? Number(
+        promotionalOffer.offer_price ??
+          normalPrice
+      )
     : normalPrice;
 
   const publicHours = promoIsActive
-    ? Number(promotionalOffer.offer_hours ?? normalHours)
+    ? Number(
+        promotionalOffer.offer_hours ??
+          normalHours
+      )
     : normalHours;
 
   /*
@@ -127,13 +145,19 @@ export default function LandingPage() {
    * TT$650 / 2 = TT$325 per hour
    * TT$325 x 4 hours = TT$1,300 regular value
    */
-  const promotionalRegularValue = promoIsActive
-    ? normalHourlyRate * publicHours
-    : normalPrice;
+  const promotionalRegularValue =
+    promoIsActive
+      ? normalHourlyRate * publicHours
+      : normalPrice;
 
-  const promotionalSavings = promoIsActive
-    ? Math.max(0, promotionalRegularValue - publicPrice)
-    : 0;
+  const promotionalSavings =
+    promoIsActive
+      ? Math.max(
+          0,
+          promotionalRegularValue -
+            publicPrice
+        )
+      : 0;
 
   const formatMoney = (amount) => {
     const numericAmount = Number(amount);
@@ -148,13 +172,23 @@ export default function LandingPage() {
   };
 
   const formatCountdown = (totalSeconds) => {
-    if (!Number.isFinite(totalSeconds) || totalSeconds < 0) {
+    if (
+      !Number.isFinite(totalSeconds) ||
+      totalSeconds < 0
+    ) {
       return '00:00:00';
     }
 
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
+    const hours = Math.floor(
+      totalSeconds / 3600
+    );
+
+    const minutes = Math.floor(
+      (totalSeconds % 3600) / 60
+    );
+
+    const seconds =
+      totalSeconds % 60;
 
     return [
       String(hours).padStart(2, '0'),
@@ -172,40 +206,56 @@ export default function LandingPage() {
   useEffect(() => {
     let mounted = true;
 
-    const fetchPromotionalOffer = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('promotional_offers')
-          .select('*')
-          .order('id', { ascending: true })
-          .limit(1)
-          .maybeSingle();
+    const fetchPromotionalOffer =
+      async () => {
+        try {
+          const { data, error } =
+            await supabase
+              .from('promotional_offers')
+              .select('*')
+              .order('id', {
+                ascending: true
+              })
+              .limit(1)
+              .maybeSingle();
 
-        if (error) {
-          console.error('Promotional offer loading error:', error);
+          if (error) {
+            console.error(
+              'Promotional offer loading error:',
+              error
+            );
 
-          if (mounted) {
-            setPromotionalOffer(null);
+            if (mounted) {
+              setPromotionalOffer(
+                null
+              );
+            }
+
+            return;
           }
 
-          return;
-        }
+          if (mounted) {
+            setPromotionalOffer(
+              data || null
+            );
+          }
+        } catch (err) {
+          console.error(
+            'Unexpected promotional offer error:',
+            err
+          );
 
-        if (mounted) {
-          setPromotionalOffer(data || null);
+          if (mounted) {
+            setPromotionalOffer(
+              null
+            );
+          }
+        } finally {
+          if (mounted) {
+            setPromoLoading(false);
+          }
         }
-      } catch (err) {
-        console.error('Unexpected promotional offer error:', err);
-
-        if (mounted) {
-          setPromotionalOffer(null);
-        }
-      } finally {
-        if (mounted) {
-          setPromoLoading(false);
-        }
-      }
-    };
+      };
 
     fetchPromotionalOffer();
 
@@ -215,44 +265,173 @@ export default function LandingPage() {
   }, []);
 
   /*
+   * ============================================================
+   * POPUP CONTROL
+   * ============================================================
+   *
+   * This replaces the old desktop exit-intent/mobile-delay
+   * promotional popup behavior.
+   *
+   * PROMO ACTIVE:
+   * - Suppress the normal welcome popup.
+   * - Open the promotional popup immediately.
+   *
+   * PROMO INACTIVE:
+   * - Show the normal welcome popup once per session.
+   *
+   * Waiting for promoLoading to finish is important.
+   * It prevents the normal popup from appearing for a moment
+   * before Supabase tells us that a promotion is active.
+   */
+  useEffect(() => {
+    if (promoLoading) {
+      return;
+    }
+
+    /*
+     * PROMOTION ACTIVE
+     *
+     * Temporarily replace the normal welcome popup
+     * with the promotional popup.
+     */
+    if (promoIsActive) {
+      setShowBookingPopup(false);
+
+      const promoPopupSeen =
+        sessionStorage.getItem(
+          'trz_promotional_popup_seen'
+        );
+
+      if (!promoPopupSeen) {
+        sessionStorage.setItem(
+          'trz_promotional_popup_seen',
+          'true'
+        );
+
+        setShowPromotionalPopup(
+          true
+        );
+
+        trackTrzEvent(
+          'promotional_popup_opened',
+          {
+            trigger:
+              'promo_immediate',
+            offer_price:
+              publicPrice,
+            offer_hours:
+              publicHours,
+            regular_value:
+              promotionalRegularValue,
+            savings:
+              promotionalSavings
+          }
+        );
+      }
+
+      return;
+    }
+
+    /*
+     * NO ACTIVE PROMOTION
+     *
+     * Restore the existing welcome popup behavior.
+     */
+    const hasSeenPopup =
+      sessionStorage.getItem(
+        'seen_booking_popup'
+      );
+
+    if (!hasSeenPopup) {
+      setShowBookingPopup(true);
+
+      sessionStorage.setItem(
+        'seen_booking_popup',
+        'true'
+      );
+
+      trackTrzEvent(
+        'popup_opened',
+        {
+          popup_type:
+            'initial_intent'
+        }
+      );
+    }
+  }, [
+    promoLoading,
+    promoIsActive,
+    publicPrice,
+    publicHours,
+    promotionalRegularValue,
+    promotionalSavings
+  ]);
+
+  /*
    * Maintain the actual promotion expiry countdown.
    *
    * This is NOT the visitor popup countdown.
    * The offer expiry is controlled by offer_ends_at.
    */
   useEffect(() => {
-    if (!promoIsActive || !promotionalOffer?.offer_ends_at) {
+    if (
+      !promoIsActive ||
+      !promotionalOffer?.offer_ends_at
+    ) {
       setPromoExpirySeconds(null);
       return;
     }
 
-    const updateExpiryCountdown = () => {
-      const expiryTime = new Date(
-        promotionalOffer.offer_ends_at
-      ).getTime();
+    const updateExpiryCountdown =
+      () => {
+        const expiryTime =
+          new Date(
+            promotionalOffer.offer_ends_at
+          ).getTime();
 
-      if (!Number.isFinite(expiryTime)) {
-        setPromoExpirySeconds(null);
-        return;
-      }
+        if (!Number.isFinite(expiryTime)) {
+          setPromoExpirySeconds(
+            null
+          );
+          return;
+        }
 
-      const remainingMilliseconds = expiryTime - Date.now();
-      const remainingSeconds = Math.max(
-        0,
-        Math.ceil(remainingMilliseconds / 1000)
-      );
+        const remainingMilliseconds =
+          expiryTime - Date.now();
 
-      setPromoExpirySeconds(remainingSeconds);
+        const remainingSeconds =
+          Math.max(
+            0,
+            Math.ceil(
+              remainingMilliseconds /
+                1000
+            )
+          );
 
-      if (remainingSeconds <= 0) {
-        setPromotionalOffer(null);
+        setPromoExpirySeconds(
+          remainingSeconds
+        );
 
-        trackTrzEvent('promotional_offer_expired', {
-          offer_price: publicPrice,
-          offer_hours: publicHours
-        });
-      }
-    };
+        if (remainingSeconds <= 0) {
+          setPromotionalOffer(
+            null
+          );
+
+          setShowPromotionalPopup(
+            false
+          );
+
+          trackTrzEvent(
+            'promotional_offer_expired',
+            {
+              offer_price:
+                publicPrice,
+              offer_hours:
+                publicHours
+            }
+          );
+        }
+      };
 
     updateExpiryCountdown();
 
@@ -261,7 +440,8 @@ export default function LandingPage() {
       1000
     );
 
-    return () => clearInterval(interval);
+    return () =>
+      clearInterval(interval);
   }, [
     promoIsActive,
     promotionalOffer?.offer_ends_at
@@ -273,27 +453,45 @@ export default function LandingPage() {
    * do not inflate the metric.
    */
   useEffect(() => {
-    if (promoLoading || !promoIsActive) {
+    if (
+      promoLoading ||
+      !promoIsActive
+    ) {
       return;
     }
 
     const promoViewedKey =
       'trz_promotional_offer_viewed';
 
-    if (sessionStorage.getItem(promoViewedKey)) {
+    if (
+      sessionStorage.getItem(
+        promoViewedKey
+      )
+    ) {
       return;
     }
 
-    sessionStorage.setItem(promoViewedKey, 'true');
+    sessionStorage.setItem(
+      promoViewedKey,
+      'true'
+    );
 
-    trackTrzEvent('promotional_offer_viewed', {
-      offer_price: publicPrice,
-      offer_hours: publicHours,
-      regular_value: promotionalRegularValue,
-      savings: promotionalSavings,
-      offer_ends_at:
-        promotionalOffer?.offer_ends_at || null
-    });
+    trackTrzEvent(
+      'promotional_offer_viewed',
+      {
+        offer_price:
+          publicPrice,
+        offer_hours:
+          publicHours,
+        regular_value:
+          promotionalRegularValue,
+        savings:
+          promotionalSavings,
+        offer_ends_at:
+          promotionalOffer?.offer_ends_at ||
+          null
+      }
+    );
   }, [
     promoLoading,
     promoIsActive,
@@ -302,129 +500,6 @@ export default function LandingPage() {
     promotionalRegularValue,
     promotionalSavings,
     promotionalOffer?.offer_ends_at
-  ]);
-
-  /*
-   * Promotional exit-intent popup.
-   *
-   * Desktop:
-   * - Fires when the visitor moves the mouse toward the
-   *   top of the browser window.
-   *
-   * Mobile:
-   * - Uses a delayed intent trigger because mobile devices
-   *   do not provide reliable mouseleave behavior.
-   *
-   * The popup only appears once per browser session.
-   *
-   * IMPORTANT:
-   * If the initial intent popup is currently open,
-   * promotional exit intent takes over immediately.
-   */
-  useEffect(() => {
-    if (promoLoading || !promoIsActive) {
-      return;
-    }
-
-    if (
-      sessionStorage.getItem(
-        'trz_promotional_popup_seen'
-      )
-    ) {
-      return;
-    }
-
-    let mobileTimer = null;
-
-    const openPromotionalPopup = (triggerType) => {
-      if (
-        sessionStorage.getItem(
-          'trz_promotional_popup_seen'
-        )
-      ) {
-        return;
-      }
-
-      /*
-       * If the initial "What would you like to find out?"
-       * popup is currently open, the promotional popup
-       * takes over instead of being blocked behind it.
-       *
-       * This prevents the initial popup from hiding an
-       * active promotional offer when exit intent occurs.
-       */
-      if (showBookingPopup) {
-        setShowBookingPopup(false);
-
-        trackTrzEvent(
-          'initial_intent_popup_replaced_by_promo',
-          {
-            trigger: triggerType
-          }
-        );
-      }
-
-      sessionStorage.setItem(
-        'trz_promotional_popup_seen',
-        'true'
-      );
-
-      setShowPromotionalPopup(true);
-
-      trackTrzEvent(
-        'promotional_popup_opened',
-        {
-          trigger: triggerType,
-          offer_price: publicPrice,
-          offer_hours: publicHours,
-          regular_value: promotionalRegularValue,
-          savings: promotionalSavings
-        }
-      );
-    };
-
-    const handleMouseLeave = (event) => {
-      if (event.clientY <= 0) {
-        openPromotionalPopup('exit_intent');
-      }
-    };
-
-    document.addEventListener(
-      'mouseleave',
-      handleMouseLeave
-    );
-
-    const isMobileDevice =
-      /Android|iPhone|iPad|iPod|Mobile/i.test(
-        navigator.userAgent
-      );
-
-    if (isMobileDevice) {
-      mobileTimer = setTimeout(() => {
-        openPromotionalPopup(
-          'mobile_delayed_intent'
-        );
-      }, 20000);
-    }
-
-    return () => {
-      document.removeEventListener(
-        'mouseleave',
-        handleMouseLeave
-      );
-
-      if (mobileTimer) {
-        clearTimeout(mobileTimer);
-      }
-    };
-  }, [
-    promoLoading,
-    promoIsActive,
-    showBookingPopup,
-    publicPrice,
-    publicHours,
-    promotionalRegularValue,
-    promotionalSavings
   ]);
 
   /*
@@ -441,42 +516,61 @@ export default function LandingPage() {
       return;
     }
 
-    const configuredSeconds = Number(
-      promotionalOffer?.countdown_seconds ?? 10
-    );
+    const configuredSeconds =
+      Number(
+        promotionalOffer?.countdown_seconds ??
+          10
+      );
 
     const startingSeconds =
-      Number.isFinite(configuredSeconds) &&
+      Number.isFinite(
+        configuredSeconds
+      ) &&
       configuredSeconds > 0
-        ? Math.floor(configuredSeconds)
+        ? Math.floor(
+            configuredSeconds
+          )
         : 10;
 
-    setPromoPopupSecondsLeft(startingSeconds);
+    setPromoPopupSecondsLeft(
+      startingSeconds
+    );
 
-    const interval = setInterval(() => {
-      setPromoPopupSecondsLeft((previous) => {
-        if (
-          previous === null ||
-          previous <= 1
-        ) {
-          clearInterval(interval);
+    const interval = setInterval(
+      () => {
+        setPromoPopupSecondsLeft(
+          (previous) => {
+            if (
+              previous === null ||
+              previous <= 1
+            ) {
+              clearInterval(
+                interval
+              );
 
-          setShowPromotionalPopup(false);
+              setShowPromotionalPopup(
+                false
+              );
 
-          trackTrzEvent(
-            'promotional_popup_expired',
-            {
-              offer_price: publicPrice,
-              offer_hours: publicHours
+              trackTrzEvent(
+                'promotional_popup_expired',
+                {
+                  offer_price:
+                    publicPrice,
+                  offer_hours:
+                    publicHours
+                }
+              );
+
+              return 0;
             }
-          );
 
-          return 0;
-        }
-
-        return previous - 1;
-      });
-    }, 1000);
+            return previous - 1;
+          }
+        );
+      },
+      1000
+    );
 
     return () => {
       clearInterval(interval);
@@ -493,14 +587,6 @@ export default function LandingPage() {
   useEffect(() => {
     let pageTimer = null;
     let pageExitHandler = null;
-    let popupTimer = null;
-
-    if (
-      "Notification" in window &&
-      Notification.permission === "default"
-    ) {
-      Notification.requestPermission();
-    }
 
     const logVisitor = async () => {
       try {
@@ -514,7 +600,8 @@ export default function LandingPage() {
 
         const {
           data: { session }
-        } = await supabase.auth.getSession();
+        } =
+          await supabase.auth.getSession();
 
         if (session) {
           return;
@@ -532,25 +619,32 @@ export default function LandingPage() {
             );
 
           const utmSource =
-            params.get('utm_source') ||
-            params.get('traffic_source') ||
+            params.get(
+              'utm_source'
+            ) ||
+            params.get(
+              'traffic_source'
+            ) ||
             'direct';
 
           const utmCampaign =
-            params.get('utm_campaign') ||
-            'none';
+            params.get(
+              'utm_campaign'
+            ) || 'none';
 
           const isMobile =
             /iPhone|iPad|iPod|Android/i.test(
               navigator.userAgent
             );
 
-          const deviceType = isMobile
-            ? 'Mobile'
-            : 'Desktop';
+          const deviceType =
+            isMobile
+              ? 'Mobile'
+              : 'Desktop';
 
           const isTest =
-            params.get('test') === 'true' ||
+            params.get('test') ===
+              'true' ||
             window.location.hostname ===
               'localhost';
 
@@ -564,9 +658,11 @@ export default function LandingPage() {
                   utmCampaign,
                 device_type:
                   deviceType,
-                is_test: isTest,
+                is_test:
+                  isTest,
                 landing_page:
-                  window.location.pathname
+                  window.location
+                    .pathname
               }
             ]);
 
@@ -575,20 +671,12 @@ export default function LandingPage() {
             'true'
           );
 
-          if (
-            "Notification" in window &&
-            Notification.permission ===
-              "granted" &&
-            !isTest
-          ) {
-            new Notification(
-              "🎉 New Unique Visitor!",
-              {
-                body: `Source: ${utmSource.toUpperCase()} (${deviceType})`,
-                icon: '/favicon.ico'
-              }
-            );
-          }
+          /*
+           * Browser notification intentionally removed.
+           *
+           * Visitor tracking still happens through Supabase
+           * and the existing TRZ analytics system.
+           */
         }
       } catch (err) {
         console.error(
@@ -600,8 +688,12 @@ export default function LandingPage() {
 
     logVisitor();
 
-    if (shouldFireSessionStarted()) {
-      trackTrzEvent('session_started');
+    if (
+      shouldFireSessionStarted()
+    ) {
+      trackTrzEvent(
+        'session_started'
+      );
     }
 
     const viewedLandingLogged =
@@ -620,7 +712,8 @@ export default function LandingPage() {
       );
     }
 
-    pageTimer = createPageTimer();
+    pageTimer =
+      createPageTimer();
 
     pageExitHandler = () => {
       if (pageExitSent.current) {
@@ -643,36 +736,7 @@ export default function LandingPage() {
       pageExitHandler
     );
 
-    // Existing intent popup remains unchanged.
-    const hasSeenPopup =
-      sessionStorage.getItem(
-        'seen_booking_popup'
-      );
-
-    if (!hasSeenPopup) {
-      popupTimer = setTimeout(() => {
-        setShowBookingPopup(true);
-
-        sessionStorage.setItem(
-          'seen_booking_popup',
-          'true'
-        );
-
-        trackTrzEvent(
-          'popup_opened',
-          {
-            popup_type:
-              'initial_intent'
-          }
-        );
-      }, 0);
-    }
-
     return () => {
-      if (popupTimer) {
-        clearTimeout(popupTimer);
-      }
-
       if (pageExitHandler) {
         window.removeEventListener(
           'pagehide',
@@ -714,7 +778,9 @@ export default function LandingPage() {
       );
     }
 
-    if (intentKey === 'prices') {
+    if (
+      intentKey === 'prices'
+    ) {
       setShowSpaceModal(false);
       setShowPriceModal(true);
     } else if (
@@ -722,7 +788,9 @@ export default function LandingPage() {
     ) {
       setShowPriceModal(false);
       setShowSpaceModal(true);
-    } else if (targetDestination) {
+    } else if (
+      targetDestination
+    ) {
       if (
         targetDestination.startsWith(
           '/#'
@@ -748,7 +816,8 @@ export default function LandingPage() {
 
         if (el) {
           el.scrollIntoView({
-            behavior: 'smooth'
+            behavior:
+              'smooth'
           });
         } else {
           window.location.hash =
@@ -796,7 +865,9 @@ export default function LandingPage() {
 
   const closePromotionalPopup =
     (reason = 'closed') => {
-      setShowPromotionalPopup(false);
+      setShowPromotionalPopup(
+        false
+      );
 
       trackTrzEvent(
         'promotional_popup_closed',
@@ -881,7 +952,8 @@ export default function LandingPage() {
               fontWeight: 'bold',
               textTransform:
                 'uppercase',
-              letterSpacing: '0.5px'
+              letterSpacing:
+                '0.5px'
             }}
           >
             Premier Party Rentals in Trinidad
@@ -1185,6 +1257,7 @@ export default function LandingPage() {
                 trackButtonClick(
                   'click_featured_image_zoom'
                 );
+
                 setSelectedImage(
                   featuredImage
                 );
@@ -1868,6 +1941,7 @@ export default function LandingPage() {
                   📅 Check Availability
                   & Book
                 </span>
+
                 <span
                   style={{
                     fontSize:
@@ -1917,6 +1991,7 @@ export default function LandingPage() {
                   🏷️ See Prices &
                   Packages
                 </span>
+
                 <span
                   style={{
                     fontSize:
@@ -1966,6 +2041,7 @@ export default function LandingPage() {
                   📐 See Size & Space
                   Requirements
                 </span>
+
                 <span
                   style={{
                     fontSize:
@@ -1980,7 +2056,7 @@ export default function LandingPage() {
         </div>
       )}
 
-      {/* PROMOTIONAL EXIT-INTENT POPUP */}
+      {/* PROMOTIONAL POPUP */}
       {showPromotionalPopup &&
         promoIsActive && (
           <div
@@ -2082,7 +2158,7 @@ export default function LandingPage() {
                     '7px'
                 }}
               >
-                🔥 Wait — Don't Miss This Offer
+                🔥 Limited-Time Offer
               </div>
 
               <h2
@@ -2390,7 +2466,6 @@ export default function LandingPage() {
               🕷️ Spider-Man Bouncy Castle
             </h3>
 
-            {/* DYNAMIC PROMOTIONAL PRICE */}
             <div
               style={{
                 background:
