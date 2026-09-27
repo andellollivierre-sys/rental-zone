@@ -11,7 +11,7 @@ import {
  * TRZ IMPLEMENTATION CHECKPOINT — PROMOTIONAL OFFERS
  * ============================================================
  *
- * Completed before this file:
+ * Completed:
  * - Added Supabase promotional_offers admin controls.
  * - Added configurable promotional price, hours, duration,
  *   and visitor countdown settings.
@@ -19,40 +19,44 @@ import {
  * - Database state is the source of truth for activation.
  * - Turning the offer ON creates a fresh offer expiry.
  * - Turning the offer OFF restores normal pricing.
- *
- * This file:
- * - Connects LandingPage to promotional_offers.
+ * - LandingPage connects to promotional_offers.
  * - Reads the currently active, non-expired promotion.
- * - Calculates the regular value of the promotional hours
- *   from the normal 2-hour TT$650 rate.
- * - Calculates the exact customer savings dynamically.
- * - Displays the promotional price, hours, regular value,
+ * - Calculates regular value dynamically.
+ * - Calculates exact customer savings dynamically.
+ * - Displays promotional price, hours, regular value,
  *   and savings on the public page.
- * - Displays the actual offer expiry countdown.
- * - Adds a promotional exit-intent popup.
- * - Uses the admin-controlled visitor countdown for the popup.
+ * - Displays actual offer expiry countdown.
+ * - Adds promotional exit-intent popup.
+ * - Uses admin-controlled visitor countdown for popup.
  * - Sends promotional intent into the existing booking route.
- * - Displays the promotional offer in the pricing modal.
+ * - Displays promotional offer in pricing modal.
  * - Tracks promotional offer visibility and interactions.
  * - Automatically falls back to normal TT$650 / 2-hour pricing
- *   when the promotion is OFF or expired.
- * - Preserves the existing booking route, analytics,
+ *   when promotion is OFF or expired.
+ * - Preserves existing booking route, analytics,
  *   gallery, FAQ, WhatsApp links, and existing UI structure.
  *
  * PAYMENT:
  * - No deposit required.
  * - Payment is due on delivery.
  *
- * NOT YET COMPLETED:
- * - BookingPage promotional package handling.
- * - Promotional booking database tagging.
- * - Full end-to-end ON → public offer → booking → admin test.
+ * POPUP FIX:
+ * - If the initial "What would you like to find out?"
+ *   popup is open when desktop exit intent fires,
+ *   the initial popup is closed and the promotional popup
+ *   takes over immediately.
  *
  * CURRENT STATUS:
  * - Admin promotion control: COMPLETE
  * - LandingPage promotion display: COMPLETE
  * - LandingPage promotional exit-intent popup: COMPLETE
- * - BookingPage promotion integration: NEXT
+ * - Initial popup → promotional popup takeover: COMPLETE
+ * - BookingForm promotion integration: COMPLETE
+ * - Promotional booking database tagging: COMPLETE
+ * - Payment on delivery: COMPLETE
+ *
+ * NEXT:
+ * - Full end-to-end ON → public offer → booking → admin test.
  * ============================================================
  */
 
@@ -312,6 +316,10 @@ export default function LandingPage() {
    *   do not provide reliable mouseleave behavior.
    *
    * The popup only appears once per browser session.
+   *
+   * IMPORTANT:
+   * If the initial intent popup is currently open,
+   * promotional exit intent takes over immediately.
    */
   useEffect(() => {
     if (promoLoading || !promoIsActive) {
@@ -337,8 +345,23 @@ export default function LandingPage() {
         return;
       }
 
+      /*
+       * If the initial "What would you like to find out?"
+       * popup is currently open, the promotional popup
+       * takes over instead of being blocked behind it.
+       *
+       * This prevents the initial popup from hiding an
+       * active promotional offer when exit intent occurs.
+       */
       if (showBookingPopup) {
-        return;
+        setShowBookingPopup(false);
+
+        trackTrzEvent(
+          'initial_intent_popup_replaced_by_promo',
+          {
+            trigger: triggerType
+          }
+        );
       }
 
       sessionStorage.setItem(
@@ -787,18 +810,19 @@ export default function LandingPage() {
       );
     };
 
-const galleryImages = [
-  '/image 1.png',
-  '/image 2.png',
-  '/image 3.jpg',
-  '/1000151156.jpg',
-  '/1000151155.jpg',
-  '/1000151154.jpg',
-  '/1000151153.jpg',
-  '/1000151152.jpg',
-  '/1000151151.jpg',
-  '/1000151150.jpg'
-];
+  const galleryImages = [
+    '/image 1.png',
+    '/image 2.png',
+    '/image 3.jpg',
+    '/1000151156.jpg',
+    '/1000151155.jpg',
+    '/1000151154.jpg',
+    '/1000151153.jpg',
+    '/1000151152.jpg',
+    '/1000151151.jpg',
+    '/1000151150.jpg'
+  ];
+
   const featuredImage =
     '/featured image.jpg';
 
@@ -909,7 +933,8 @@ const galleryImages = [
                   '16px',
                 margin:
                   '0 auto 18px auto',
-                maxWidth: '380px',
+                maxWidth:
+                  '380px',
                 boxShadow:
                   '0 4px 10px rgba(234, 88, 12, 0.08)'
               }}
