@@ -71,8 +71,7 @@ import {
 export default function LandingPage() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [showBookingPopup, setShowBookingPopup] = useState(false);
-  const [showPriceModal, setShowPriceModal] = useState(false);
-  const [showSpaceModal, setShowSpaceModal] = useState(false);
+  const [expandedPopupSection, setExpandedPopupSection] = useState(null);
 
   // Promotional offer state
   const [promotionalOffer, setPromotionalOffer] = useState(null);
@@ -80,8 +79,6 @@ export default function LandingPage() {
   const [promoExpirySeconds, setPromoExpirySeconds] = useState(null);
 
   // Promotional popup state
-  const [showPromotionalPopup, setShowPromotionalPopup] = useState(false);
-  const [promoPopupSecondsLeft, setPromoPopupSecondsLeft] = useState(null);
 
   const pageExitSent = useRef(false);
 
@@ -295,12 +292,11 @@ export default function LandingPage() {
      * with the promotional popup.
      */
     if (promoIsActive) {
-      setShowBookingPopup(false);
+      setShowBookingPopup(true);
+      setExpandedPopupSection(null);
 
       const promoPopupSeen =
-        sessionStorage.getItem(
-          'trz_promotional_popup_seen'
-        );
+        sessionStorage.getItem('trz_promotional_popup_seen');
 
       if (!promoPopupSeen) {
         sessionStorage.setItem(
@@ -308,25 +304,13 @@ export default function LandingPage() {
           'true'
         );
 
-        setShowPromotionalPopup(
-          true
-        );
-
-        trackTrzEvent(
-          'promotional_popup_opened',
-          {
-            trigger:
-              'promo_immediate',
-            offer_price:
-              publicPrice,
-            offer_hours:
-              publicHours,
-            regular_value:
-              promotionalRegularValue,
-            savings:
-              promotionalSavings
-          }
-        );
+        trackTrzEvent('promotional_popup_opened', {
+          trigger: 'promo_immediate',
+          offer_price: publicPrice,
+          offer_hours: publicHours,
+          regular_value: promotionalRegularValue,
+          savings: promotionalSavings
+        });
       }
 
       return;
@@ -508,80 +492,6 @@ export default function LandingPage() {
    * This countdown is intentionally separate from the
    * actual promotional offer expiry.
    */
-  useEffect(() => {
-    if (
-      !showPromotionalPopup ||
-      !promoIsActive
-    ) {
-      return;
-    }
-
-    const configuredSeconds =
-      Number(
-        promotionalOffer?.countdown_seconds ??
-          10
-      );
-
-    const startingSeconds =
-      Number.isFinite(
-        configuredSeconds
-      ) &&
-      configuredSeconds > 0
-        ? Math.floor(
-            configuredSeconds
-          )
-        : 10;
-
-    setPromoPopupSecondsLeft(
-      startingSeconds
-    );
-
-    const interval = setInterval(
-      () => {
-        setPromoPopupSecondsLeft(
-          (previous) => {
-            if (
-              previous === null ||
-              previous <= 1
-            ) {
-              clearInterval(
-                interval
-              );
-
-              setShowPromotionalPopup(
-                false
-              );
-
-              trackTrzEvent(
-                'promotional_popup_expired',
-                {
-                  offer_price:
-                    publicPrice,
-                  offer_hours:
-                    publicHours
-                }
-              );
-
-              return 0;
-            }
-
-            return previous - 1;
-          }
-        );
-      },
-      1000
-    );
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, [
-    showPromotionalPopup,
-    promoIsActive,
-    promotionalOffer?.countdown_seconds,
-    publicPrice,
-    publicHours
-  ]);
 
   // Visitor Tracking Hook with Unique Page Visit Control
   useEffect(() => {
@@ -754,8 +664,6 @@ export default function LandingPage() {
     intentKey,
     targetDestination
   ) => {
-    setShowBookingPopup(false);
-
     const intentEvents = {
       availability:
         'clicked_check_availability',
@@ -781,16 +689,24 @@ export default function LandingPage() {
     if (
       intentKey === 'prices'
     ) {
-      setShowSpaceModal(false);
-      setShowPriceModal(true);
-    } else if (
+      setExpandedPopupSection(
+        expandedPopupSection === 'prices' ? null : 'prices'
+      );
+      return;
+    }
+
+    if (
       intentKey === 'space'
     ) {
-      setShowPriceModal(false);
-      setShowSpaceModal(true);
-    } else if (
-      targetDestination
-    ) {
+      setExpandedPopupSection(
+        expandedPopupSection === 'space' ? null : 'space'
+      );
+      return;
+    }
+
+    if (targetDestination) {
+      setExpandedPopupSection(null);
+      setShowBookingPopup(false);
       if (
         targetDestination.startsWith(
           '/#'
@@ -859,24 +775,6 @@ export default function LandingPage() {
           offer_ends_at:
             promotionalOffer?.offer_ends_at ||
             null
-        }
-      );
-    };
-
-  const closePromotionalPopup =
-    (reason = 'closed') => {
-      setShowPromotionalPopup(
-        false
-      );
-
-      trackTrzEvent(
-        'promotional_popup_closed',
-        {
-          reason,
-          offer_price:
-            publicPrice,
-          offer_hours:
-            publicHours
         }
       );
     };
@@ -1739,1400 +1637,415 @@ export default function LandingPage() {
 
       {/* EXISTING INTENT SELECTION POPUP MODAL */}
       {showBookingPopup && (
-        <div
-          style={{
-            position:
-              'fixed',
-            inset: 0,
-            zIndex:
-              10000,
-            background:
-              'rgba(0, 0, 0, 0.75)',
-            display:
-              'flex',
-            alignItems:
-              'center',
-            justifyContent:
-              'center',
-            padding:
-              '16px'
-          }}
-          onClick={() => {
-            trackButtonClick(
-              'dismiss_intent_popup_backdrop'
-            );
+  <div
+    onClick={() => {
+      setExpandedPopupSection(null);
+      setShowBookingPopup(false);
+      trackTrzEvent('dismiss_intent_popup_backdrop', {
+        popup_type: 'initial_intent'
+      });
+    }}
+    style={{
+      position: 'fixed',
+      inset: 0,
+      zIndex: 10000,
+      background: 'rgba(0,0,0,.75)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 16
+    }}
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        background: '#fff',
+        borderRadius: 20,
+        padding: 24,
+        width: '100%',
+        maxWidth: 420,
+        maxHeight: '90vh',
+        overflowY: 'auto',
+        boxShadow: '0 20px 60px rgba(0,0,0,.3)',
+        position: 'relative'
+      }}
+    >
+      <button
+        onClick={() => {
+          setExpandedPopupSection(null);
+          setShowBookingPopup(false);
+          trackButtonClick('dismiss_intent_popup_close_btn');
+        }}
+        style={{
+          position: 'absolute',
+          top: 12,
+          right: 12,
+          width: 32,
+          height: 32,
+          border: 0,
+          borderRadius: '50%',
+          background: '#f1f5f9',
+          cursor: 'pointer',
+          fontSize: 18
+        }}
+      >
+        ×
+      </button>
 
-            setShowBookingPopup(
-              false
-            );
-          }}
-        >
-          <div
-            style={{
-              background:
-                'white',
-              borderRadius:
-                '20px',
-              padding:
-                '28px 24px',
-              maxWidth:
-                '420px',
-              width:
-                '100%',
-              boxShadow:
-                '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
-              textAlign:
-                'center',
-              position:
-                'relative'
-            }}
-            onClick={(e) =>
-              e.stopPropagation()
-            }
-          >
-            <button
-              onClick={() => {
-                trackButtonClick(
-                  'dismiss_intent_popup_close_btn'
-                );
-
-                setShowBookingPopup(
-                  false
-                );
-              }}
-              style={{
-                position:
-                  'absolute',
-                top:
-                  '14px',
-                right:
-                  '16px',
-                background:
-                  '#f1f5f9',
-                border:
-                  'none',
-                borderRadius:
-                  '50%',
-                width:
-                  '32px',
-                height:
-                  '32px',
-                fontSize:
-                  '18px',
-                fontWeight:
-                  'bold',
-                color:
-                  '#64748b',
-                cursor:
-                  'pointer',
-                display:
-                  'flex',
-                alignItems:
-                  'center',
-                justifyContent:
-                  'center'
-              }}
-            >
-              &times;
-            </button>
-
-            <span
-              style={{
-                background:
-                  '#e0f2fe',
-                color:
-                  '#0369a1',
-                padding:
-                  '6px 14px',
-                borderRadius:
-                  '20px',
-                fontSize:
-                  '11px',
-                fontWeight:
-                  'bold',
-                textTransform:
-                  'uppercase',
-                letterSpacing:
-                  '0.5px'
-              }}
-            >
-              Welcome to The Rental Zone
-            </span>
-
-            <h3
-              style={{
-                fontSize:
-                  '20px',
-                fontWeight:
-                  '800',
-                color:
-                  '#0f172a',
-                margin:
-                  '16px 0 8px 0'
-              }}
-            >
-              What would you like to find out?
-            </h3>
-
-            <p
-              style={{
-                fontSize:
-                  '13px',
-                color:
-                  '#64748b',
-                lineHeight:
-                  '1.4',
-                margin:
-                  '0 0 20px 0'
-              }}
-            >
-              Select an option below
-              so we can guide you to
-              the right information:
-            </p>
-
-            <div
-              style={{
-                display:
-                  'flex',
-                flexDirection:
-                  'column',
-                gap:
-                  '10px'
-              }}
-            >
-              <button
-                onClick={() =>
-                  handleIntentSelect(
-                    'availability',
-                    '/#booking'
-                  )
-                }
-                style={{
-                  width:
-                    '100%',
-                  background:
-                    '#2563eb',
-                  color:
-                    'white',
-                  fontWeight:
-                    'bold',
-                  padding:
-                    '12px 16px',
-                  borderRadius:
-                    '10px',
-                  border:
-                    'none',
-                  fontSize:
-                    '14px',
-                  cursor:
-                    'pointer',
-                  textAlign:
-                    'left',
-                  display:
-                    'flex',
-                  alignItems:
-                    'center',
-                  justifyContent:
-                    'space-between'
-                }}
-              >
-                <span>
-                  📅 Check Availability
-                  & Book
-                </span>
-
-                <span
-                  style={{
-                    fontSize:
-                      '16px'
-                  }}
-                >
-                  →
-                </span>
-              </button>
-
-              <button
-                onClick={() =>
-                  handleIntentSelect(
-                    'prices'
-                  )
-                }
-                style={{
-                  width:
-                    '100%',
-                  background:
-                    '#f8fafc',
-                  color:
-                    '#0f172a',
-                  fontWeight:
-                    '600',
-                  padding:
-                    '12px 16px',
-                  borderRadius:
-                    '10px',
-                  border:
-                    '1px solid #e2e8f0',
-                  fontSize:
-                    '14px',
-                  cursor:
-                    'pointer',
-                  textAlign:
-                    'left',
-                  display:
-                    'flex',
-                  alignItems:
-                    'center',
-                  justifyContent:
-                    'space-between'
-                }}
-              >
-                <span>
-                  🏷️ See Prices &
-                  Packages
-                </span>
-
-                <span
-                  style={{
-                    fontSize:
-                      '16px'
-                  }}
-                >
-                  →
-                </span>
-              </button>
-
-              <button
-                onClick={() =>
-                  handleIntentSelect(
-                    'space'
-                  )
-                }
-                style={{
-                  width:
-                    '100%',
-                  background:
-                    '#f8fafc',
-                  color:
-                    '#0f172a',
-                  fontWeight:
-                    '600',
-                  padding:
-                    '12px 16px',
-                  borderRadius:
-                    '10px',
-                  border:
-                    '1px solid #e2e8f0',
-                  fontSize:
-                    '14px',
-                  cursor:
-                    'pointer',
-                  textAlign:
-                    'left',
-                  display:
-                    'flex',
-                  alignItems:
-                    'center',
-                  justifyContent:
-                    'space-between'
-                }}
-              >
-                <span>
-                  📐 See Size & Space
-                  Requirements
-                </span>
-
-                <span
-                  style={{
-                    fontSize:
-                      '16px'
-                  }}
-                >
-                  →
-                </span>
-              </button>
+      {promoIsActive && (
+        <div style={{
+          background: '#fff7ed',
+          border: '2px solid #fb923c',
+          borderRadius: 14,
+          padding: 14,
+          marginBottom: 16,
+          textAlign: 'center'
+        }}>
+          <div style={{fontSize: 12, fontWeight: 800, color: '#c2410c'}}>
+            🔥 LIMITED-TIME OFFER
+          </div>
+          <div style={{fontSize: 25, fontWeight: 900, marginTop: 4}}>
+            {publicHours} Hours — TT${formatMoney(publicPrice)}
+          </div>
+          <div style={{fontSize: 13, color: '#64748b'}}>
+            Regular value: TT${formatMoney(promotionalRegularValue)}
+          </div>
+          <div style={{fontSize: 17, fontWeight: 900, color: '#dc2626'}}>
+            SAVE TT${formatMoney(promotionalSavings)}
+          </div>
+          {promoExpirySeconds !== null && (
+            <div style={{fontSize: 12, fontWeight: 700, color: '#92400e', marginTop: 6}}>
+              Offer ends in {formatCountdown(promoExpirySeconds)}
             </div>
+          )}
+          <div style={{fontSize: 12, color: '#64748b', marginTop: 6}}>
+            No deposit required — payment is due on delivery.
           </div>
         </div>
       )}
 
-      {/* PROMOTIONAL POPUP */}
-      {showPromotionalPopup &&
-        promoIsActive && (
-          <div
-            style={{
-              position:
-                'fixed',
-              inset: 0,
-              zIndex:
-                11000,
-              background:
-                'rgba(0, 0, 0, 0.78)',
-              display:
-                'flex',
-              alignItems:
-                'center',
-              justifyContent:
-                'center',
-              padding:
-                '16px'
+      <div style={{textAlign: 'center', marginBottom: 18}}>
+        <div style={{
+          display: 'inline-block',
+          background: '#eff6ff',
+          color: '#1d4ed8',
+          padding: '6px 12px',
+          borderRadius: 999,
+          fontSize: 12,
+          fontWeight: 800
+        }}>
+          WELCOME TO THE RENTAL ZONE
+        </div>
+        <h2 style={{margin: '12px 0 6px', fontSize: 24}}>
+          What would you like to find out?
+        </h2>
+        <p style={{margin: 0, color: '#64748b', fontSize: 14}}>
+          Choose an option below.
+        </p>
+      </div>
+
+      <button
+        onClick={() => {
+          if (promoIsActive) handlePromotionalBookClick();
+          handleIntentSelect('availability', '/#booking');
+        }}
+        style={{
+          width: '100%',
+          padding: 14,
+          border: 0,
+          borderRadius: 12,
+          background: '#2563eb',
+          color: '#fff',
+          fontWeight: 800,
+          fontSize: 15,
+          cursor: 'pointer',
+          marginBottom: 10
+        }}
+      >
+        {promoIsActive
+          ? '🔥 Get This Offer & Check Availability'
+          : '📅 Check Availability & Book'}
+      </button>
+
+      <button
+        onClick={() => handleIntentSelect('prices')}
+        style={{
+          width: '100%',
+          padding: 13,
+          border: '1px solid #e2e8f0',
+          borderRadius: 12,
+          background: '#f8fafc',
+          color: '#1e293b',
+          fontWeight: 700,
+          fontSize: 15,
+          cursor: 'pointer',
+          marginBottom: 10,
+          textAlign: 'left'
+        }}
+      >
+        🏷️ See Price & Packages
+        <span style={{float: 'right'}}>
+          {expandedPopupSection === 'prices' ? '▲' : '▼'}
+        </span>
+      </button>
+
+      {expandedPopupSection === 'prices' && (
+        <div style={{
+          border: '1px solid #e2e8f0',
+          borderRadius: 12,
+          padding: 15,
+          marginBottom: 10
+        }}>
+          <h3 style={{margin: '0 0 10px'}}>🕷️ Spider-Man Bouncy Castle</h3>
+
+          <div style={{
+            background: promoIsActive ? '#fff7ed' : '#f8fafc',
+            borderRadius: 10,
+            padding: 14,
+            textAlign: 'center',
+            marginBottom: 12
+          }}>
+            <div style={{fontSize: 12, color: '#64748b', fontWeight: 700}}>
+              {promoIsActive
+                ? `${publicHours} Hour Promotional Rate`
+                : 'Starting Rate'}
+            </div>
+            <div style={{fontSize: 30, fontWeight: 900}}>
+              TT$ {formatMoney(publicPrice)}
+            </div>
+            {promoIsActive ? (
+              <>
+                <div style={{fontSize: 13, color: '#64748b'}}>
+                  Regular value: TT$ {formatMoney(promotionalRegularValue)}
+                </div>
+                <div style={{fontWeight: 900, color: '#dc2626'}}>
+                  Save TT$ {formatMoney(promotionalSavings)}
+                </div>
+              </>
+            ) : (
+              <div style={{fontSize: 13, color: '#64748b'}}>
+                (Includes 2 Hours)
+              </div>
+            )}
+          </div>
+
+          <ul style={{paddingLeft: 20, color: '#475569', fontSize: 13}}>
+            <li>
+              {promoIsActive
+                ? `${publicHours} hours of bounce time`
+                : 'Starting cost for 2 hours of bounce time'}
+            </li>
+            <li>Fully sanitized & heavy-duty vinyl construction</li>
+            <li>No deposit required — payment is due on delivery</li>
+          </ul>
+
+          <a
+            href="/#booking"
+            onClick={() => {
+              trackButtonClick('clicked_book_now');
+              if (promoIsActive) handlePromotionalBookClick();
+              setExpandedPopupSection(null);
+              setShowBookingPopup(false);
             }}
-            onClick={() =>
-              closePromotionalPopup(
-                'backdrop'
-              )
-            }
+            style={{
+              display: 'block',
+              textAlign: 'center',
+              textDecoration: 'none',
+              padding: 13,
+              borderRadius: 10,
+              background: '#2563eb',
+              color: '#fff',
+              fontWeight: 800
+            }}
           >
-            <div
+            {promoIsActive
+              ? '🔥 Get This Offer & Check Availability'
+              : '📅 Check Availability & Book Now'}
+          </a>
+
+          <button
+            onClick={() => handleIntentSelect('space')}
+            style={{
+              width: '100%',
+              border: 0,
+              background: 'transparent',
+              color: '#2563eb',
+              fontWeight: 700,
+              padding: 10,
+              cursor: 'pointer'
+            }}
+          >
+            📐 Check Size & Yard Requirements
+          </button>
+
+          <a
+            href="https://wa.me/18682810670?text=Hi%20Rental%20Zone,%20I%20have%20a%20question%20about%20prices."
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => trackButtonClick('whatsapp_clicked')}
+            style={{
+              display: 'block',
+              textAlign: 'center',
+              color: '#15803d',
+              fontWeight: 700,
+              fontSize: 13,
+              textDecoration: 'none',
+              padding: 8
+            }}
+          >
+            💬 Have Questions? Chat on WhatsApp
+          </a>
+        </div>
+      )}
+
+      <button
+        onClick={() => handleIntentSelect('space')}
+        style={{
+          width: '100%',
+          padding: 13,
+          border: '1px solid #e2e8f0',
+          borderRadius: 12,
+          background: '#f8fafc',
+          color: '#1e293b',
+          fontWeight: 700,
+          fontSize: 15,
+          cursor: 'pointer',
+          marginBottom: 10,
+          textAlign: 'left'
+        }}
+      >
+        📐 See Size & Space Requirements
+        <span style={{float: 'right'}}>
+          {expandedPopupSection === 'space' ? '▲' : '▼'}
+        </span>
+      </button>
+
+      {expandedPopupSection === 'space' && (
+        <div style={{
+          border: '1px solid #e2e8f0',
+          borderRadius: 12,
+          padding: 15,
+          marginBottom: 10
+        }}>
+          <h3 style={{margin: '0 0 12px'}}>📐 Clearance & Dimensions</h3>
+
+          <div style={{
+            position: 'relative',
+            borderRadius: 10,
+            overflow: 'hidden',
+            marginBottom: 12
+          }}>
+            <img
+              src={featuredImage}
+              alt="Spider-Man Bouncy Castle Specs"
               style={{
-                background:
-                  'white',
-                borderRadius:
-                  '20px',
-                padding:
-                  '28px 22px',
-                maxWidth:
-                  '430px',
-                width:
-                  '100%',
-                boxShadow:
-                  '0 24px 40px rgba(0,0,0,0.35)',
-                textAlign:
-                  'center',
-                position:
-                  'relative'
+                width: '100%',
+                height: 180,
+                objectFit: 'cover'
               }}
-              onClick={(e) =>
-                e.stopPropagation()
-              }
-            >
-              <button
-                onClick={() =>
-                  closePromotionalPopup(
-                    'close_button'
-                  )
-                }
-                style={{
-                  position:
-                    'absolute',
-                  top:
-                    '12px',
-                  right:
-                    '14px',
-                  background:
-                    '#f1f5f9',
-                  border:
-                    'none',
-                  borderRadius:
-                    '50%',
-                  width:
-                    '32px',
-                  height:
-                    '32px',
-                  fontSize:
-                    '18px',
-                  fontWeight:
-                    'bold',
-                  color:
-                    '#64748b',
-                  cursor:
-                    'pointer'
-                }}
-              >
-                &times;
-              </button>
-
-              <div
-                style={{
-                  fontSize:
-                    '11px',
-                  fontWeight:
-                    '900',
-                  color:
-                    '#c2410c',
-                  textTransform:
-                    'uppercase',
-                  letterSpacing:
-                    '0.6px',
-                  marginBottom:
-                    '7px'
-                }}
-              >
-                🔥 Limited-Time Offer
-              </div>
-
-              <h2
-                style={{
-                  fontSize:
-                    '25px',
-                  lineHeight:
-                    '1.15',
-                  fontWeight:
-                    '900',
-                  color:
-                    '#0f172a',
-                  margin:
-                    '0 0 10px 0'
-                }}
-              >
-                {publicHours}{' '}
-                Hours for TT$
-                {formatMoney(
-                  publicPrice
-                )}
-              </h2>
-
-              <div
-                style={{
-                  color:
-                    '#64748b',
-                  fontSize:
-                    '13px',
-                  marginBottom:
-                    '3px'
-                }}
-              >
-                Regular value:{' '}
-                <strong>
-                  TT$
-                  {formatMoney(
-                    promotionalRegularValue
-                  )}
-                </strong>
-              </div>
-
-              <div
-                style={{
-                  color:
-                    '#c2410c',
-                  fontSize:
-                    '18px',
-                  fontWeight:
-                    '900',
-                  marginBottom:
-                    '12px'
-                }}
-              >
-                YOU SAVE TT$
-                {formatMoney(
-                  promotionalSavings
-                )}
-              </div>
-
-              <div
-                style={{
-                  background:
-                    '#fff7ed',
-                  border:
-                    '1px solid #fed7aa',
-                  borderRadius:
-                    '10px',
-                  padding:
-                    '10px',
-                  marginBottom:
-                    '12px'
-                }}
-              >
-                <div
-                  style={{
-                    color:
-                      '#9a3412',
-                    fontSize:
-                      '11px',
-                    fontWeight:
-                      '800',
-                    textTransform:
-                      'uppercase'
-                  }}
-                >
-                  Your offer window
-                </div>
-
-                <div
-                  style={{
-                    color:
-                      '#c2410c',
-                    fontSize:
-                      '25px',
-                    fontWeight:
-                      '900',
-                    marginTop:
-                      '2px'
-                  }}
-                >
-                  {formatCountdown(
-                    promoPopupSecondsLeft
-                  )}
-                </div>
-              </div>
-
-              <p
-                style={{
-                  fontSize:
-                    '13px',
-                  color:
-                    '#475569',
-                  lineHeight:
-                    '1.45',
-                  margin:
-                    '0 0 16px 0'
-                }}
-              >
-                No deposit required.
-                <br />
-                <strong>
-                  Pay on delivery.
-                </strong>
-              </p>
-
-              <a
-                href="/#booking"
-                onClick={() => {
-                  handlePromotionalBookClick();
-
-                  trackTrzEvent(
-                    'promotional_popup_cta_clicked',
-                    {
-                      offer_price:
-                        publicPrice,
-                      offer_hours:
-                        publicHours,
-                      regular_value:
-                        promotionalRegularValue,
-                      savings:
-                        promotionalSavings
-                    }
-                  );
-
-                  setShowPromotionalPopup(
-                    false
-                  );
-                }}
-                style={{
-                  display:
-                    'block',
-                  width:
-                    '100%',
-                  boxSizing:
-                    'border-box',
-                  background:
-                    '#ea580c',
-                  color:
-                    'white',
-                  fontWeight:
-                    '900',
-                  padding:
-                    '14px 10px',
-                  borderRadius:
-                    '11px',
-                  textDecoration:
-                    'none',
-                  fontSize:
-                    '15px',
-                  boxShadow:
-                    '0 4px 12px rgba(234, 88, 12, 0.3)'
-                }}
-              >
-                🔥 Claim My TT$
-                {formatMoney(
-                  publicPrice
-                )}{' '}
-                Offer
-              </a>
+            />
+            <div style={{
+              position: 'absolute',
+              left: 10,
+              right: 10,
+              bottom: 10,
+              background: 'rgba(0,0,0,.72)',
+              color: '#fff',
+              padding: 8,
+              borderRadius: 8,
+              textAlign: 'center',
+              fontWeight: 800,
+              fontSize: 13
+            }}>
+              26ft Long × 13ft Wide × 13ft High
             </div>
           </div>
-        )}
+
+          <div style={{color: '#475569', fontSize: 13, lineHeight: 1.7}}>
+            <strong>Space requirements:</strong>
+            <ul style={{paddingLeft: 20}}>
+              <li>Flat, clean grass or smooth pavement.</li>
+              <li>Clear overhead clearance (no low branches or wires).</li>
+              <li>Standard household outlet within 100ft.</li>
+            </ul>
+          </div>
+
+          <a
+            href="/#booking"
+            onClick={() => {
+              trackButtonClick('clicked_book_now');
+              if (promoIsActive) handlePromotionalBookClick();
+              setExpandedPopupSection(null);
+              setShowBookingPopup(false);
+            }}
+            style={{
+              display: 'block',
+              textAlign: 'center',
+              textDecoration: 'none',
+              padding: 13,
+              borderRadius: 10,
+              background: '#2563eb',
+              color: '#fff',
+              fontWeight: 800
+            }}
+          >
+            {promoIsActive
+              ? '🔥 Get This Offer & Check Availability'
+              : '📅 Check Availability & Book'}
+          </a>
+
+          <a
+            href="https://wa.me/18682810670?text=Hi%20Rental%20Zone,%20I%20have%20a%20question%20about%20the%20size%20and%20space%20requirements."
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => trackButtonClick('whatsapp_clicked')}
+            style={{
+              display: 'block',
+              textAlign: 'center',
+              color: '#15803d',
+              fontWeight: 700,
+              fontSize: 13,
+              textDecoration: 'none',
+              padding: 8
+            }}
+          >
+            💬 Questions About Space? Chat on WhatsApp
+          </a>
+        </div>
+      )}
+
+      <a
+        href="https://wa.me/18682810670?text=Hi%20Rental%20Zone,%20I%20have%20a%20question%20about%20the%20bouncy%20castle%20rental."
+        target="_blank"
+        rel="noreferrer"
+        onClick={() => trackButtonClick('whatsapp_clicked')}
+        style={{
+          display: 'block',
+          width: '100%',
+          boxSizing: 'border-box',
+          textAlign: 'center',
+          padding: 13,
+          borderRadius: 12,
+          background: '#dcfce7',
+          color: '#166534',
+          fontWeight: 800,
+          fontSize: 15,
+          textDecoration: 'none'
+        }}
+      >
+        💬 Ask a Question on WhatsApp
+      </a>
+    </div>
+  </div>
+)}
+
+      
 
       {/* PRICE & PACKAGES INFORMATION POPUP */}
-      {showPriceModal && (
-        <div
-          style={{
-            position:
-              'fixed',
-            inset: 0,
-            zIndex:
-              10000,
-            background:
-              'rgba(0, 0, 0, 0.75)',
-            display:
-              'flex',
-            alignItems:
-              'center',
-            justifyContent:
-              'center',
-            padding:
-              '16px'
-          }}
-          onClick={() =>
-            setShowPriceModal(false)
-          }
-        >
-          <div
-            style={{
-              background:
-                'white',
-              borderRadius:
-                '20px',
-              padding:
-                '24px',
-              maxWidth:
-                '420px',
-              width:
-                '100%',
-              boxShadow:
-                '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
-              position:
-                'relative'
-            }}
-            onClick={(e) =>
-              e.stopPropagation()
-            }
-          >
-            <button
-              onClick={() =>
-                setShowPriceModal(
-                  false
-                )
-              }
-              style={{
-                position:
-                  'absolute',
-                top:
-                  '14px',
-                right:
-                  '16px',
-                background:
-                  '#f1f5f9',
-                border:
-                  'none',
-                borderRadius:
-                  '50%',
-                width:
-                  '32px',
-                height:
-                  '32px',
-                fontSize:
-                  '18px',
-                fontWeight:
-                  'bold',
-                color:
-                  '#64748b',
-                cursor:
-                  'pointer',
-                display:
-                  'flex',
-                alignItems:
-                  'center',
-                justifyContent:
-                  'center'
-              }}
-            >
-              &times;
-            </button>
-
-            <span
-              style={{
-                background:
-                  '#e0f2fe',
-                color:
-                  '#0369a1',
-                padding:
-                  '4px 10px',
-                borderRadius:
-                  '20px',
-                fontSize:
-                  '11px',
-                fontWeight:
-                  'bold',
-                textTransform:
-                  'uppercase'
-              }}
-            >
-              Pricing & Packages
-            </span>
-
-            <h3
-              style={{
-                fontSize:
-                  '20px',
-                fontWeight:
-                  '800',
-                color:
-                  '#0f172a',
-                margin:
-                  '12px 0 6px 0'
-              }}
-            >
-              🕷️ Spider-Man Bouncy Castle
-            </h3>
-
-            <div
-              style={{
-                background:
-                  promoIsActive
-                    ? '#fff7ed'
-                    : '#f8fafc',
-                borderRadius:
-                  '12px',
-                padding:
-                  '16px',
-                border:
-                  promoIsActive
-                    ? '1px solid #fed7aa'
-                    : '1px solid #e2e8f0',
-                margin:
-                  '14px 0'
-              }}
-            >
-              {promoIsActive && (
-                <div
-                  style={{
-                    fontSize:
-                      '11px',
-                    color:
-                      '#c2410c',
-                    fontWeight:
-                      '800',
-                    textTransform:
-                      'uppercase',
-                    marginBottom:
-                      '6px'
-                  }}
-                >
-                  🔥 Limited-Time Promotion
-                </div>
-              )}
-
-              <div
-                style={{
-                  display:
-                    'flex',
-                  justifyContent:
-                    'space-between',
-                  alignItems:
-                    'baseline',
-                  marginBottom:
-                    '8px',
-                  gap:
-                    '10px'
-                }}
-              >
-                <div>
-                  <span
-                    style={{
-                      fontWeight:
-                        'bold',
-                      color:
-                        '#0f172a',
-                      fontSize:
-                        '15px',
-                      display:
-                        'block'
-                    }}
-                  >
-                    {promoIsActive
-                      ? `${publicHours} Hour Promotional Rate`
-                      : 'Starting Rate'}
-                  </span>
-
-                  <span
-                    style={{
-                      fontSize:
-                        '11px',
-                      color:
-                        '#64748b',
-                      fontWeight:
-                        '600'
-                    }}
-                  >
-                    {promoIsActive
-                      ? 'Limited-time promotional pricing'
-                      : '(Includes 2 Hours)'}
-                  </span>
-                </div>
-
-                <span
-                  style={{
-                    fontSize:
-                      '20px',
-                    fontWeight:
-                      '800',
-                    color:
-                      promoIsActive
-                        ? '#ea580c'
-                        : '#2563eb'
-                  }}
-                >
-                  TT$
-                  {formatMoney(
-                    publicPrice
-                  )}
-                </span>
-              </div>
-
-              {promoIsActive && (
-                <>
-                  <div
-                    style={{
-                      fontSize:
-                        '12px',
-                      color:
-                        '#7c2d12',
-                      marginBottom:
-                        '3px'
-                    }}
-                  >
-                    Regular value:{' '}
-                    <strong>
-                      TT$
-                      {formatMoney(
-                        promotionalRegularValue
-                      )}
-                    </strong>
-                  </div>
-
-                  <div
-                    style={{
-                      fontSize:
-                        '14px',
-                      color:
-                        '#c2410c',
-                      fontWeight:
-                        '900',
-                      marginBottom:
-                        '7px'
-                    }}
-                  >
-                    Save TT$
-                    {formatMoney(
-                      promotionalSavings
-                    )}
-                  </div>
-                </>
-              )}
-
-              <ul
-                style={{
-                  paddingLeft:
-                    '18px',
-                  margin:
-                    '8px 0 0 0',
-                  fontSize:
-                    '13px',
-                  color:
-                    '#475569',
-                  lineHeight:
-                    '1.5'
-                }}
-              >
-                <li>
-                  {promoIsActive
-                    ? `${publicHours} hours of bounce time`
-                    : 'Starting cost for 2 hours of bounce time'}
-                </li>
-
-                <li>
-                  Fully sanitized &
-                  heavy-duty vinyl
-                  construction
-                </li>
-
-                <li>
-                  No deposit required —
-                  payment is due on
-                  delivery
-                </li>
-              </ul>
-            </div>
-
-            <div
-              style={{
-                display:
-                  'flex',
-                flexDirection:
-                  'column',
-                gap:
-                  '10px',
-                marginTop:
-                  '18px'
-              }}
-            >
-              <a
-                href="/#booking"
-                onClick={() => {
-                  trackButtonClick(
-                    'clicked_book_now'
-                  );
-
-                  if (promoIsActive) {
-                    handlePromotionalBookClick();
-                  }
-
-                  setShowPriceModal(
-                    false
-                  );
-                }}
-                style={{
-                  display:
-                    'block',
-                  textAlign:
-                    'center',
-                  background:
-                    '#2563eb',
-                  color:
-                    'white',
-                  fontWeight:
-                    'bold',
-                  padding:
-                    '12px 0',
-                  borderRadius:
-                    '10px',
-                  textDecoration:
-                    'none',
-                  fontSize:
-                    '14px'
-                }}
-              >
-                {promoIsActive
-                  ? '🔥 Get This Offer & Check Availability'
-                  : '📅 Check Availability & Book Now'}
-              </a>
-
-              <button
-                onClick={() => {
-                  trackButtonClick(
-                    'click_price_modal_switch_to_space'
-                  );
-
-                  handleIntentSelect(
-                    'space'
-                  );
-                }}
-                style={{
-                  width:
-                    '100%',
-                  background:
-                    '#f8fafc',
-                  color:
-                    '#0f172a',
-                  fontWeight:
-                    '600',
-                  padding:
-                    '10px 0',
-                  borderRadius:
-                    '10px',
-                  border:
-                    '1px solid #cbd5e1',
-                  fontSize:
-                    '13px',
-                  cursor:
-                    'pointer',
-                  textAlign:
-                    'center'
-                }}
-              >
-                📐 Check Size & Yard
-                Requirements
-              </button>
-
-              <a
-                href="https://wa.me/18682810670?text=Hi%20Rental%20Zone,%20I%20have%20a%20question%20about%20prices."
-                target="_blank"
-                rel="noreferrer"
-                onClick={() =>
-                  trackButtonClick(
-                    'whatsapp_clicked'
-                  )
-                }
-                style={{
-                  display:
-                    'block',
-                  textAlign:
-                    'center',
-                  background:
-                    '#25d366',
-                  color:
-                    'white',
-                  fontWeight:
-                    'bold',
-                  padding:
-                    '12px 0',
-                  borderRadius:
-                    '10px',
-                  textDecoration:
-                    'none',
-                  fontSize:
-                    '14px'
-                }}
-              >
-                💬 Have Questions?
-                Chat on WhatsApp
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
+      
 
       {/* SIZE & SPACE REQUIREMENTS INFORMATION POPUP */}
-      {showSpaceModal && (
-        <div
-          style={{
-            position:
-              'fixed',
-            inset: 0,
-            zIndex:
-              10000,
-            background:
-              'rgba(0, 0, 0, 0.75)',
-            display:
-              'flex',
-            alignItems:
-              'center',
-            justifyContent:
-              'center',
-            padding:
-              '16px'
-          }}
-          onClick={() =>
-            setShowSpaceModal(false)
-          }
-        >
-          <div
-            style={{
-              background:
-                'white',
-              borderRadius:
-                '20px',
-              padding:
-                '24px',
-              maxWidth:
-                '420px',
-              width:
-                '100%',
-              boxShadow:
-                '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
-              position:
-                'relative'
-            }}
-            onClick={(e) =>
-              e.stopPropagation()
-            }
-          >
-            <button
-              onClick={() =>
-                setShowSpaceModal(
-                  false
-                )
-              }
-              style={{
-                position:
-                  'absolute',
-                top:
-                  '14px',
-                right:
-                  '16px',
-                background:
-                  '#f1f5f9',
-                border:
-                  'none',
-                borderRadius:
-                  '50%',
-                width:
-                  '32px',
-                height:
-                  '32px',
-                fontSize:
-                  '18px',
-                fontWeight:
-                  'bold',
-                color:
-                  '#64748b',
-                cursor:
-                  'pointer',
-                display:
-                  'flex',
-                alignItems:
-                  'center',
-                justifyContent:
-                  'center'
-              }}
-            >
-              &times;
-            </button>
-
-            <span
-              style={{
-                background:
-                  '#e0f2fe',
-                color:
-                  '#0369a1',
-                padding:
-                  '4px 10px',
-                borderRadius:
-                  '20px',
-                fontSize:
-                  '11px',
-                fontWeight:
-                  'bold',
-                textTransform:
-                  'uppercase'
-              }}
-            >
-              Size & Space Specs
-            </span>
-
-            <h3
-              style={{
-                fontSize:
-                  '20px',
-                fontWeight:
-                  '800',
-                color:
-                  '#0f172a',
-                margin:
-                  '12px 0 10px 0'
-              }}
-            >
-              📐 Clearance & Dimensions
-            </h3>
-
-            <div
-              style={{
-                position:
-                  'relative',
-                borderRadius:
-                  '12px',
-                overflow:
-                  'hidden',
-                border:
-                  '1px solid #cbd5e1',
-                marginBottom:
-                  '14px'
-              }}
-            >
-              <img
-                src={featuredImage}
-                alt="Spider-Man Bouncy Castle Specs"
-                style={{
-                  width:
-                    '100%',
-                  height:
-                    '180px',
-                  objectFit:
-                    'cover',
-                  display:
-                    'block'
-                }}
-              />
-
-              <div
-                style={{
-                  position:
-                    'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  background:
-                    'rgba(15, 23, 42, 0.85)',
-                  color:
-                    'white',
-                  padding:
-                    '8px 12px',
-                  textAlign:
-                    'center',
-                  fontWeight:
-                    'bold',
-                  fontSize:
-                    '14px',
-                  letterSpacing:
-                    '0.5px'
-                }}
-              >
-                26ft Long × 13ft Wide × 13ft High
-              </div>
-            </div>
-
-            <div
-              style={{
-                fontSize:
-                  '13px',
-                color:
-                  '#475569',
-                lineHeight:
-                  '1.5',
-                background:
-                  '#f8fafc',
-                padding:
-                  '12px',
-                borderRadius:
-                  '10px',
-                border:
-                  '1px solid #e2e8f0'
-              }}
-            >
-              <p
-                style={{
-                  margin:
-                    '0 0 6px 0'
-                }}
-              >
-                <strong>
-                  Requirements:
-                </strong>
-              </p>
-
-              <ul
-                style={{
-                  paddingLeft:
-                    '18px',
-                  margin: 0
-                }}
-              >
-                <li>
-                  Flat, clean grass
-                  or smooth pavement.
-                </li>
-
-                <li>
-                  Clear overhead
-                  clearance (no low
-                  branches or wires).
-                </li>
-
-                <li>
-                  Standard household
-                  outlet within 100ft.
-                </li>
-              </ul>
-            </div>
-
-            <div
-              style={{
-                display:
-                  'flex',
-                flexDirection:
-                  'column',
-                gap:
-                  '10px',
-                marginTop:
-                  '18px'
-              }}
-            >
-              <a
-                href="/#booking"
-                onClick={() => {
-                  trackButtonClick(
-                    'clicked_book_now'
-                  );
-
-                  if (promoIsActive) {
-                    handlePromotionalBookClick();
-                  }
-
-                  setShowSpaceModal(
-                    false
-                  );
-                }}
-                style={{
-                  display:
-                    'block',
-                  textAlign:
-                    'center',
-                  background:
-                    '#2563eb',
-                  color:
-                    'white',
-                  fontWeight:
-                    'bold',
-                  padding:
-                    '12px 0',
-                  borderRadius:
-                    '10px',
-                  textDecoration:
-                    'none',
-                  fontSize:
-                    '14px'
-                }}
-              >
-                {promoIsActive
-                  ? '🔥 Get This Offer – Proceed to Book'
-                  : '📅 Fits My Space – Proceed to Book'}
-              </a>
-
-              <button
-                onClick={() => {
-                  trackButtonClick(
-                    'click_space_modal_switch_to_price'
-                  );
-
-                  handleIntentSelect(
-                    'prices'
-                  );
-                }}
-                style={{
-                  width:
-                    '100%',
-                  background:
-                    '#f8fafc',
-                  color:
-                    '#0f172a',
-                  fontWeight:
-                    '600',
-                  padding:
-                    '10px 0',
-                  borderRadius:
-                    '10px',
-                  border:
-                    '1px solid #cbd5e1',
-                  fontSize:
-                    '13px',
-                  cursor:
-                    'pointer',
-                  textAlign:
-                    'center'
-                }}
-              >
-                🏷️ Check Price &
-                Packages
-              </button>
-
-              <a
-                href="https://wa.me/18682810670?text=Hi%20Rental%20Zone,%20I%20have%20a%20question%20about%20yard%20space%20requirements."
-                target="_blank"
-                rel="noreferrer"
-                onClick={() =>
-                  trackButtonClick(
-                    'whatsapp_clicked'
-                  )
-                }
-                style={{
-                  display:
-                    'block',
-                  textAlign:
-                    'center',
-                  background:
-                    '#25d366',
-                  color:
-                    'white',
-                  fontWeight:
-                    'bold',
-                  padding:
-                    '12px 0',
-                  borderRadius:
-                    '10px',
-                  textDecoration:
-                    'none',
-                  fontSize:
-                    '14px'
-                }}
-              >
-                💬 Unsure About Space?
-                Ask on WhatsApp
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
+      
 
       {/* Lightbox Modal Popup for Images */}
       {selectedImage && (
