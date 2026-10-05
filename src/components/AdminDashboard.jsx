@@ -529,13 +529,22 @@ export default function AdminDashboard() {
       (booking.phone || '')
         .replace(/[^0-9]/g, '');
 
+    const formatTime = (time) => {
+      if (!time) return '';
+      const [hours, minutes] = String(time).split(':');
+      const hour = Number(hours);
+      const suffix = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour % 12 || 12;
+      return `${displayHour}:${minutes} ${suffix}`;
+    };
+
     const message =
       encodeURIComponent(
         `Hi ${
           booking.customer_name ||
           booking.client_name ||
           'Valued Client'
-        }! 🎉 Your deposit has been verified, and your booking for The Rental Zone LTD on ${booking.event_date} (${booking.start_time} - ${booking.end_time}) is now fully CONFIRMED! We look forward to bringing the fun.`
+        }! 🎉 Your booking for The Rental Zone LTD on ${booking.event_date} (${formatTime(booking.start_time)} - ${formatTime(booking.end_time)}) is now fully CONFIRMED. Payment of TT$${booking.total_price} will be made on delivery. We look forward to bringing the fun.`
       );
 
     window.open(
