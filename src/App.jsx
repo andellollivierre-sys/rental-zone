@@ -11,16 +11,31 @@ export default function App() {
   const [currentRoute, setCurrentRoute] = useState(
     window.location.hash || '#home'
   );
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleHashChange = () => {
       setCurrentRoute(window.location.hash || '#home');
+      setMenuOpen(false);
     };
 
     window.addEventListener('hashchange', handleHashChange);
 
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
+
+  const navLinks = [
+    { href: '#home', label: 'Home' },
+    { href: '#booking', label: 'Booking' },
+    { href: '#our-bouncer', label: 'Our Bouncer' },
+    { href: '#how-it-works', label: 'How It Works' },
+    { href: '#faq', label: 'FAQ' },
+    { href: '#contact', label: 'Contact' },
+    { href: '#admin', label: 'Admin' },
+  ];
+
+  const isActive = (href) =>
+    currentRoute === href || (href === '#home' && currentRoute === '');
 
   return (
     <div
@@ -32,7 +47,37 @@ export default function App() {
         overflowX: 'hidden',
       }}
     >
-      {/* Mobile-optimized sticky navigation bar */}
+      <style>
+        {`
+          .trz-desktop-nav {
+            display: flex;
+          }
+
+          .trz-mobile-menu-button {
+            display: none;
+          }
+
+          .trz-mobile-menu {
+            display: none;
+          }
+
+          @media (max-width: 768px) {
+            .trz-desktop-nav {
+              display: none !important;
+            }
+
+            .trz-mobile-menu-button {
+              display: flex !important;
+            }
+
+            .trz-mobile-menu {
+              display: flex;
+            }
+          }
+        `}
+      </style>
+
+      {/* Responsive sticky navigation */}
       <nav
         style={{
           position: 'sticky',
@@ -41,148 +86,136 @@ export default function App() {
           background: '#0f172a',
           color: 'white',
           padding: '10px 20px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
           fontSize: '14px',
           fontFamily: 'system-ui, sans-serif',
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
         }}
       >
+        {/* Header row */}
         <div
           style={{
             display: 'flex',
+            justifyContent: 'space-between',
             alignItems: 'center',
-            gap: '10px',
+            minHeight: '36px',
           }}
         >
-          <img
-            src="https://lh3.googleusercontent.com/d/1zK7oIDhE4G-hDWsoq9C527Y-EcXWiQRV"
-            alt="The Rental Zone Logo"
+          {/* Logo + business name */}
+          <div
             style={{
-              width: '36px',
-              height: '36px',
-              minWidth: '36px',
-              borderRadius: '50%',
-              objectFit: 'cover',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              minWidth: 0,
             }}
-          />
+          >
+            <img
+              src="https://lh3.googleusercontent.com/d/1zK7oIDhE4G-hDWsoq9C527Y-EcXWiQRV"
+              alt="The Rental Zone Logo"
+              style={{
+                width: '36px',
+                height: '36px',
+                minWidth: '36px',
+                borderRadius: '50%',
+                objectFit: 'cover',
+              }}
+            />
 
-          <span
+            <span
+              style={{
+                fontWeight: 'bold',
+                fontSize: '15px',
+                color: '#f8fafc',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              The Rental Zone
+            </span>
+          </div>
+
+          {/* Desktop navigation */}
+          <div
+            className="trz-desktop-nav"
             style={{
-              fontWeight: 'bold',
-              fontSize: '15px',
+              gap: '20px',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+            }}
+          >
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                style={{
+                  color: isActive(link.href) ? '#38bdf8' : '#94a3b8',
+                  textDecoration: 'none',
+                  fontWeight: 'bold',
+                  padding: '4px 0',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+
+          {/* Mobile hamburger button */}
+          <button
+            className="trz-mobile-menu-button"
+            type="button"
+            onClick={() => setMenuOpen((open) => !open)}
+            aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={menuOpen}
+            style={{
+              display: 'none',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '42px',
+              height: '42px',
+              padding: 0,
+              border: '1px solid #334155',
+              borderRadius: '8px',
+              background: menuOpen ? '#1e293b' : 'transparent',
               color: '#f8fafc',
-              whiteSpace: 'nowrap',
+              fontSize: '25px',
+              lineHeight: 1,
+              cursor: 'pointer',
             }}
           >
-            The Rental Zone
-          </span>
+            {menuOpen ? '×' : '☰'}
+          </button>
         </div>
 
-        <div
-          style={{
-            display: 'flex',
-            gap: '20px',
-            flexWrap: 'wrap',
-            justifyContent: 'flex-end',
-          }}
-        >
-          <a
-            href="#home"
+        {/* Mobile menu drawer */}
+        {menuOpen && (
+          <div
+            className="trz-mobile-menu"
             style={{
-              color:
-                currentRoute === '#home' || currentRoute === ''
-                  ? '#38bdf8'
-                  : '#94a3b8',
-              textDecoration: 'none',
-              fontWeight: 'bold',
-              padding: '4px 0',
+              flexDirection: 'column',
+              marginTop: '10px',
+              paddingTop: '8px',
+              paddingBottom: '4px',
+              borderTop: '1px solid #1e293b',
             }}
           >
-            Home
-          </a>
-
-          <a
-            href="#booking"
-            style={{
-              color:
-                currentRoute === '#booking' ? '#38bdf8' : '#94a3b8',
-              textDecoration: 'none',
-              fontWeight: 'bold',
-              padding: '4px 0',
-            }}
-          >
-            Booking
-          </a>
-
-          <a
-            href="#our-bouncer"
-            style={{
-              color:
-                currentRoute === '#our-bouncer' ? '#38bdf8' : '#94a3b8',
-              textDecoration: 'none',
-              fontWeight: 'bold',
-              padding: '4px 0',
-            }}
-          >
-            Our Bouncer
-          </a>
-
-          <a
-            href="#how-it-works"
-            style={{
-              color:
-                currentRoute === '#how-it-works'
-                  ? '#38bdf8'
-                  : '#94a3b8',
-              textDecoration: 'none',
-              fontWeight: 'bold',
-              padding: '4px 0',
-            }}
-          >
-            How It Works
-          </a>
-
-          <a
-            href="#faq"
-            style={{
-              color:
-                currentRoute === '#faq' ? '#38bdf8' : '#94a3b8',
-              textDecoration: 'none',
-              fontWeight: 'bold',
-              padding: '4px 0',
-            }}
-          >
-            FAQ
-          </a>
-
-          <a
-            href="#contact"
-            style={{
-              color:
-                currentRoute === '#contact' ? '#38bdf8' : '#94a3b8',
-              textDecoration: 'none',
-              fontWeight: 'bold',
-              padding: '4px 0',
-            }}
-          >
-            Contact
-          </a>
-
-          <a
-            href="#admin"
-            style={{
-              color:
-                currentRoute === '#admin' ? '#38bdf8' : '#94a3b8',
-              textDecoration: 'none',
-              fontWeight: 'bold',
-              padding: '4px 0',
-            }}
-          >
-            Admin
-          </a>
-        </div>
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={() => setMenuOpen(false)}
+                style={{
+                  color: isActive(link.href) ? '#38bdf8' : '#e2e8f0',
+                  textDecoration: 'none',
+                  fontWeight: 'bold',
+                  padding: '12px 8px',
+                  borderBottom: '1px solid #1e293b',
+                }}
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+        )}
       </nav>
 
       {/* Main Content Router */}
