@@ -43,9 +43,35 @@ export default function AdminDashboard() {
   // ✅ Existing pricing/package logic
   // ✅ Existing dashboard layout
   //
+  // FINANCE SYSTEM — DATABASE LAYER BUILT + VERIFIED
+  // ------------------------------------------------------------
+  // ✅ public.business_transactions created in Supabase
+  // ✅ Row Level Security enabled
+  // ✅ Admin-only SELECT / INSERT / UPDATE / DELETE policies verified
+  // ✅ Existing bookings financial ledger preserved
+  // ✅ Existing booking / promo / traffic / funnel logic preserved
+  //
+  // FINANCE DASHBOARD — THIS CHANGE
+  // ------------------------------------------------------------
+  // [x] Add Business Finance tab
+  // [x] Read/write business_transactions
+  // [x] Record income, expenses, ad spend, owner draws, tax payments, other
+  // [x] Show recorded money in/out and net recorded movement
+  // [x] Show booking-ledger realized revenue/reserves separately
+  // [x] Add accountant-ready transaction list fields
+  // [x] Keep transaction deletion admin-only through RLS
+  // [x] Preserve all existing dashboard tabs and booking actions
+  //
+  // IMPORTANT ACCOUNTING RULE
+  // ------------------------------------------------------------
+  // Booking reserves (COGS / maintenance / tax provision) are allocations,
+  // not automatically treated as cash expenses in business_transactions.
+  // Completed booking revenue remains in bookings unless an actual cash
+  // transaction is separately recorded. This prevents double-counting.
+  //
   // NEXT TEST:
-  // ⏳ Verify OFF → ON → OFF against the live Supabase row
-  // ⏳ Verify public site responds correctly to offer_active
+  // ⏳ Build AdminDashboard and verify finance CRUD against live Supabase
+  // ⏳ Add/verify a test transaction, then remove it
   // ============================================================
 
   // Authentication states
@@ -81,6 +107,30 @@ export default function AdminDashboard() {
   const [promoHours, setPromoHours] = useState('4');
   const [promoDuration, setPromoDuration] = useState('24');
   const [promoCountdown, setPromoCountdown] = useState('10');
+
+  // ============================================================
+  // BUSINESS FINANCE STATES
+  // ============================================================
+
+  const [financeTransactions, setFinanceTransactions] = useState([]);
+  const [financeLoading, setFinanceLoading] = useState(false);
+  const [financeSaving, setFinanceSaving] = useState(false);
+  const [financeMessage, setFinanceMessage] = useState('');
+
+  const [financeForm, setFinanceForm] = useState({
+    transaction_date: new Date().toISOString().slice(0, 10),
+    transaction_type: 'expense',
+    category: 'General Expense',
+    amount: '',
+    description: '',
+    customer_vendor: '',
+    payment_method: '',
+    receipt_number: '',
+    receipt_url: '',
+    booking_id: '',
+    is_tax_deductible: false,
+    notes: ''
+  });
 
   // Package lookup reference with reserves mapped
   const packages = {
@@ -132,6 +182,7 @@ export default function AdminDashboard() {
     if (session) {
       fetchDashboardData();
       fetchPromotionalOffer();
+      fetchFinanceTransactions();
     }
   }, [session]);
 
@@ -381,6 +432,141 @@ export default function AdminDashboard() {
     } finally {
       setPromoSaving(false);
     }
+  };
+
+  // ============================================================
+  // BUSINESS FINANCE — FETCH / SAVE
+  // ============================================================
+
+  const fetchFinanceTransactions = async () => {
+    setFinanceLoading(true);
+
+    try {
+      const { data, error } = await supabase
+        .from('business_transactions')
+        .select('*')
+        .order('transaction_date', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setFinanceTransactions(data || []);
+    } catch (err) {
+      console.error('Error fetching business transactions:', err);
+      setFinanceMessage(
+        `❌ Failed to load finance records: ${err.message || 'Unknown error'}`
+      );
+    } finally {
+      setFinanceLoading(false);
+    }
+  };
+
+  const handleFinanceFormChange = (field, value) => {
+    setFinanceForm((current) => ({
+      ...current,
+      [field]: value
+    }));
+  };
+
+  const handleSaveFinanceTransaction = async (e) => {
+    e.preventDefault();
+    setFinanceSaving(true);
+    setFinanceMessage('');
+
+    try {
+      const amount = Number(financeForm.amount);
+
+      if (!financeForm.transaction_date) {
+        throw new Error('Select a transaction date.');
+      }
+
+      if (!Number.isFinite(amount) || amount <= 0) {
+        throw new Error('Enter a valid transaction amount.');
+      }
+
+      if (!financeForm.category.trim()) {
+        throw new Error('Enter a transaction category.');
+      }
+
+      const payload = {
+        transaction_date: financeForm.transaction_date,
+        transaction_type: financeForm.transaction_type,
+        category: financeForm.category.trim(),
+        amount,
+        description: financeForm.description.trim() || null,
+        customer_vendor: financeForm.customer_vendor.trim() || null,
+        payment_method: financeForm.payment_method.trim() || null,
+        receipt_number: financeForm.receipt_number.trim() || null,
+        receipt_url: financeForm.receipt_url.trim() || null,
+        booking_id: financeForm.booking_id || null,
+        is_tax_deductible: Boolean(financeForm.is_tax_deductible),
+        notes: financeForm.notes.trim() || null,
+        created_by: session?.user?.id || null
+      };
+
+      const { data, error } = await supabase
+        .from('business_transactions')
+        .insert(payload)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setFinanceTransactions((current) => [data, ...current]);
+
+      setFinanceForm({
+        transaction_date: new Date().toISOString().slice(0, 10),
+        transaction_type: 'expense',
+        category: 'General Expense',
+        amount: '',
+        description: '',
+        customer_vendor: '',
+        payment_method: '',
+        receipt_number: '',
+        receipt_url: '',
+        booking_id: '',
+        is_tax_deductible: false,
+        notes: ''
+      });
+
+      setFinanceMessage('✅ Finance transaction recorded.');
+    } catch (err) {
+      console.error('Error saving business transaction:', err);
+      setFinanceMessage(
+        `❌ Failed to record transaction: ${err.message || 'Unknown error'}`
+      );
+    } finally {
+      setFinanceSaving(false);
+    }
+  };
+
+  const handleDeleteFinanceTransaction = async (transactionId) => {
+    const confirmed = window.confirm(
+      'Delete this finance transaction? This cannot be undone.'
+    );
+
+    if (!confirmed) return;
+
+    setFinanceMessage('');
+
+    const { error } = await supabase
+      .from('business_transactions')
+      .delete()
+      .eq('id', transactionId);
+
+    if (error) {
+      console.error('Error deleting business transaction:', error);
+      setFinanceMessage(
+        `❌ Failed to delete transaction: ${error.message || 'Unknown error'}`
+      );
+      return;
+    }
+
+    setFinanceTransactions((current) =>
+      current.filter((transaction) => transaction.id !== transactionId)
+    );
+
+    setFinanceMessage('✅ Finance transaction deleted.');
   };
 
   // ============================================================
@@ -997,6 +1183,42 @@ export default function AdminDashboard() {
     );
 
   // ============================================================
+  // BUSINESS FINANCE CALCULATIONS
+  // ============================================================
+
+  const financeIncome = financeTransactions
+    .filter((transaction) =>
+      transaction.transaction_type === 'income'
+    )
+    .reduce((sum, transaction) => sum + Number(transaction.amount || 0), 0);
+
+  const financeOutflows = financeTransactions
+    .filter((transaction) =>
+      ['expense', 'ad_spend', 'owner_draw', 'tax_payment', 'other'].includes(
+        transaction.transaction_type
+      )
+    )
+    .reduce((sum, transaction) => sum + Number(transaction.amount || 0), 0);
+
+  const financeAdSpend = financeTransactions
+    .filter((transaction) => transaction.transaction_type === 'ad_spend')
+    .reduce((sum, transaction) => sum + Number(transaction.amount || 0), 0);
+
+  const financeOwnerDraws = financeTransactions
+    .filter((transaction) => transaction.transaction_type === 'owner_draw')
+    .reduce((sum, transaction) => sum + Number(transaction.amount || 0), 0);
+
+  const financeTaxPayments = financeTransactions
+    .filter((transaction) => transaction.transaction_type === 'tax_payment')
+    .reduce((sum, transaction) => sum + Number(transaction.amount || 0), 0);
+
+  const financeNetRecorded = financeIncome - financeOutflows;
+
+  const financeTaxDeductible = financeTransactions
+    .filter((transaction) => transaction.is_tax_deductible)
+    .reduce((sum, transaction) => sum + Number(transaction.amount || 0), 0);
+
+  // ============================================================
   // TRAFFIC AGGREGATIONS
   // ============================================================
 
@@ -1203,6 +1425,7 @@ export default function AdminDashboard() {
             onClick={() => {
               fetchDashboardData();
               fetchPromotionalOffer();
+              fetchFinanceTransactions();
             }}
             style={{
               background: '#2563eb',
@@ -2099,6 +2322,37 @@ export default function AdminDashboard() {
         <button
           onClick={() =>
             setActiveTab(
+              'finance'
+            )
+          }
+          style={{
+            background:
+              activeTab ===
+              'finance'
+                ? '#0f172a'
+                : '#f1f5f9',
+            color:
+              activeTab ===
+              'finance'
+                ? 'white'
+                : '#475569',
+            border: 'none',
+            padding:
+              '8px 16px',
+            borderRadius:
+              '8px',
+            fontWeight:
+              'bold',
+            cursor: 'pointer',
+            fontSize: '13px'
+          }}
+        >
+          💰 Business Finance
+        </button>
+
+        <button
+          onClick={() =>
+            setActiveTab(
               'funnel'
             )
           }
@@ -2538,6 +2792,477 @@ export default function AdminDashboard() {
           </div>
         </div>
       ) : activeTab ===
+        'finance' ? (
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '20px'
+          }}
+        >
+          <div
+            style={{
+              background: 'white',
+              borderRadius: '16px',
+              border: '1px solid #e2e8f0',
+              padding: '20px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
+            }}
+          >
+            <h3
+              style={{
+                fontSize: '16px',
+                fontWeight: 'bold',
+                margin: '0 0 6px',
+                color: '#0f172a'
+              }}
+            >
+              💰 Business Finance
+            </h3>
+            <p
+              style={{
+                margin: 0,
+                fontSize: '12px',
+                color: '#64748b'
+              }}
+            >
+              Actual cash transactions are recorded here. Booking reserves remain separate allocations and are not automatically duplicated as cash expenses.
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+              gap: '10px'
+            }}
+          >
+            {[
+              ['Money In', financeIncome, '#166534'],
+              ['Money Out', financeOutflows, '#b91c1c'],
+              ['Net Recorded', financeNetRecorded, financeNetRecorded >= 0 ? '#166534' : '#b91c1c'],
+              ['Ad Spend', financeAdSpend, '#7c3aed'],
+              ['Owner Draws', financeOwnerDraws, '#0369a1'],
+              ['Tax Payments', financeTaxPayments, '#d97706']
+            ].map(([label, value, color]) => (
+              <div
+                key={label}
+                style={{
+                  background: 'white',
+                  padding: '14px',
+                  borderRadius: '12px',
+                  border: '1px solid #e2e8f0'
+                }}
+              >
+                <span
+                  style={{
+                    display: 'block',
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    color: '#64748b',
+                    textTransform: 'uppercase',
+                    marginBottom: '4px'
+                  }}
+                >
+                  {label}
+                </span>
+                <strong
+                  style={{
+                    fontSize: '18px',
+                    color
+                  }}
+                >
+                  TT${value.toFixed(2)}
+                </strong>
+              </div>
+            ))}
+          </div>
+
+          <div
+            style={{
+              background: 'white',
+              borderRadius: '16px',
+              border: '1px solid #e2e8f0',
+              padding: '20px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
+            }}
+          >
+            <h3
+              style={{
+                fontSize: '15px',
+                fontWeight: 'bold',
+                margin: '0 0 14px',
+                color: '#0f172a'
+              }}
+            >
+              ➕ Record Business Transaction
+            </h3>
+
+            <form
+              onSubmit={handleSaveFinanceTransaction}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                gap: '10px'
+              }}
+            >
+              {[
+                ['Date', 'transaction_date', 'date'],
+                ['Amount (TT$)', 'amount', 'number'],
+                ['Category', 'category', 'text'],
+                ['Description', 'description', 'text'],
+                ['Customer / Vendor', 'customer_vendor', 'text'],
+                ['Payment Method', 'payment_method', 'text'],
+                ['Receipt Number', 'receipt_number', 'text'],
+                ['Receipt URL', 'receipt_url', 'url']
+              ].map(([label, field, type]) => (
+                <div key={field}>
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: '10px',
+                      fontWeight: 'bold',
+                      color: '#64748b',
+                      marginBottom: '4px',
+                      textTransform: 'uppercase'
+                    }}
+                  >
+                    {label}
+                  </label>
+                  <input
+                    type={type}
+                    min={field === 'amount' ? '0.01' : undefined}
+                    step={field === 'amount' ? '0.01' : undefined}
+                    value={financeForm[field]}
+                    onChange={(e) =>
+                      handleFinanceFormChange(field, e.target.value)
+                    }
+                    required={['transaction_date', 'amount', 'category'].includes(field)}
+                    style={{
+                      width: '100%',
+                      padding: '9px',
+                      borderRadius: '8px',
+                      border: '1px solid #cbd5e1',
+                      boxSizing: 'border-box',
+                      fontSize: '13px'
+                    }}
+                  />
+                </div>
+              ))}
+
+              <div>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    color: '#64748b',
+                    marginBottom: '4px',
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  Transaction Type
+                </label>
+                <select
+                  value={financeForm.transaction_type}
+                  onChange={(e) =>
+                    handleFinanceFormChange('transaction_type', e.target.value)
+                  }
+                  style={{
+                    width: '100%',
+                    padding: '9px',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    fontSize: '13px'
+                  }}
+                >
+                  <option value="income">Income</option>
+                  <option value="expense">Expense</option>
+                  <option value="ad_spend">Ad Spend</option>
+                  <option value="owner_draw">Owner Draw</option>
+                  <option value="tax_payment">Tax Payment</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    color: '#64748b',
+                    marginBottom: '4px',
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  Notes
+                </label>
+                <textarea
+                  value={financeForm.notes}
+                  onChange={(e) =>
+                    handleFinanceFormChange('notes', e.target.value)
+                  }
+                  rows="3"
+                  style={{
+                    width: '100%',
+                    padding: '9px',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    boxSizing: 'border-box',
+                    fontSize: '13px',
+                    resize: 'vertical'
+                  }}
+                />
+              </div>
+
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '12px',
+                  color: '#334155'
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={financeForm.is_tax_deductible}
+                  onChange={(e) =>
+                    handleFinanceFormChange('is_tax_deductible', e.target.checked)
+                  }
+                />
+                Tax-deductible
+              </label>
+
+              <div style={{ display: 'flex', alignItems: 'end' }}>
+                <button
+                  type="submit"
+                  disabled={financeSaving}
+                  style={{
+                    width: '100%',
+                    background: '#0f172a',
+                    color: 'white',
+                    border: 'none',
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    cursor: financeSaving ? 'not-allowed' : 'pointer',
+                    opacity: financeSaving ? 0.7 : 1
+                  }}
+                >
+                  {financeSaving ? 'Saving...' : 'Record Transaction'}
+                </button>
+              </div>
+            </form>
+
+            {financeMessage && (
+              <div
+                style={{
+                  marginTop: '12px',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  color: financeMessage.startsWith('✅') ? '#166534' : '#b91c1c'
+                }}
+              >
+                {financeMessage}
+              </div>
+            )}
+          </div>
+
+          <div
+            style={{
+              background: 'white',
+              borderRadius: '16px',
+              border: '1px solid #e2e8f0',
+              padding: '20px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '10px',
+                flexWrap: 'wrap',
+                marginBottom: '12px'
+              }}
+            >
+              <div>
+                <h3
+                  style={{
+                    fontSize: '15px',
+                    fontWeight: 'bold',
+                    margin: 0,
+                    color: '#0f172a'
+                  }}
+                >
+                  🧾 Transaction / Receipt Log
+                </h3>
+                <p
+                  style={{
+                    margin: '4px 0 0',
+                    fontSize: '11px',
+                    color: '#64748b'
+                  }}
+                >
+                  {financeTransactions.length} recorded transaction(s) • Tax-deductible total: TT${financeTaxDeductible.toFixed(2)}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={fetchFinanceTransactions}
+                disabled={financeLoading}
+                style={{
+                  background: '#2563eb',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  cursor: financeLoading ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {financeLoading ? 'Loading...' : 'Refresh Finance'}
+              </button>
+            </div>
+
+            {financeTransactions.length === 0 ? (
+              <p
+                style={{
+                  fontSize: '13px',
+                  color: '#64748b',
+                  margin: 0
+                }}
+              >
+                No business transactions recorded yet.
+              </p>
+            ) : (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px'
+                }}
+              >
+                {financeTransactions.map((transaction) => {
+                  const isIncome = transaction.transaction_type === 'income';
+
+                  return (
+                    <div
+                      key={transaction.id}
+                      style={{
+                        padding: '12px',
+                        background: '#f8fafc',
+                        borderRadius: '10px',
+                        border: '1px solid #e2e8f0'
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'flex-start',
+                          gap: '10px',
+                          flexWrap: 'wrap'
+                        }}
+                      >
+                        <div>
+                          <strong
+                            style={{
+                              fontSize: '13px',
+                              color: '#0f172a'
+                            }}
+                          >
+                            {transaction.category}
+                          </strong>
+                          <div
+                            style={{
+                              fontSize: '11px',
+                              color: '#64748b',
+                              marginTop: '3px'
+                            }}
+                          >
+                            {transaction.transaction_date} • {transaction.transaction_type.replace('_', ' ')}
+                            {transaction.customer_vendor ? ` • ${transaction.customer_vendor}` : ''}
+                          </div>
+                          {transaction.description && (
+                            <div
+                              style={{
+                                fontSize: '12px',
+                                color: '#475569',
+                                marginTop: '4px'
+                              }}
+                            >
+                              {transaction.description}
+                            </div>
+                          )}
+                          {(transaction.receipt_number || transaction.receipt_url) && (
+                            <div
+                              style={{
+                                fontSize: '11px',
+                                color: '#64748b',
+                                marginTop: '4px'
+                              }}
+                            >
+                              Receipt: {transaction.receipt_number || 'No number'}
+                              {transaction.receipt_url ? ` • ${transaction.receipt_url}` : ''}
+                            </div>
+                          )}
+                        </div>
+
+                        <div style={{ textAlign: 'right' }}>
+                          <strong
+                            style={{
+                              color: isIncome ? '#166534' : '#b91c1c',
+                              fontSize: '14px'
+                            }}
+                          >
+                            {isIncome ? '+' : '-'}TT${Number(transaction.amount || 0).toFixed(2)}
+                          </strong>
+                          <br />
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteFinanceTransaction(transaction.id)}
+                            style={{
+                              marginTop: '6px',
+                              background: 'transparent',
+                              color: '#b91c1c',
+                              border: 'none',
+                              padding: 0,
+                              fontSize: '11px',
+                              fontWeight: 'bold',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <div
+            style={{
+              background: '#eff6ff',
+              border: '1px solid #bfdbfe',
+              borderRadius: '12px',
+              padding: '14px',
+              fontSize: '12px',
+              color: '#1e3a8a'
+            }}
+          >
+            <strong>Booking ledger reference:</strong> Completed booking revenue is TT${realizedRevenue.toFixed(2)}. Current booking reserves are TT${(totalCogsReserve + totalMaintenanceReserve).toFixed(2)}. These values come from <code>bookings</code> and are intentionally not inserted into <code>business_transactions</code> automatically, preventing double-counting.
+          </div>
+        </div>
+      ) : activeTab ===
         'funnel' ? (
         <FunnelAnalytics />
       ) : (
@@ -2879,9 +3604,8 @@ export default function AdminDashboard() {
                       booking.total_price ||
                       pkgInfo.price;
 
-                    const balance =
-                      totalPrice -
-                      pkgInfo.deposit;
+                    const amountDue =
+                      totalPrice;
 
                     return (
                       <div
@@ -3006,9 +3730,9 @@ export default function AdminDashboard() {
                               {
                                 totalPrice
                               }{' '}
-                              (Bal: TT$
+                              (Due on Delivery: TT$
                               {
-                                balance
+                                amountDue
                               }){' '}
                               &nbsp;&nbsp;&nbsp;
                               📢{' '}
