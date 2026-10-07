@@ -598,10 +598,12 @@ export default function OurBouncer() {
 
     packageCard: {
       width: '100%',
+      minWidth: 0,
+      boxSizing: 'border-box',
       border: '1px solid #dbeafe',
       borderRadius: '17px',
       background: '#ffffff',
-      padding: '19px 12px',
+      padding: '19px 8px',
       textAlign: 'center',
       cursor: 'pointer',
       boxShadow: '0 4px 12px rgba(15, 23, 42, 0.06)',
@@ -617,9 +619,11 @@ export default function OurBouncer() {
     packagePrice: {
       display: 'block',
       marginTop: '7px',
-      fontSize: '25px',
+      fontSize: 'clamp(20px, 6vw, 28px)',
       fontWeight: '950',
       color: '#0f172a',
+      whiteSpace: 'nowrap',
+      letterSpacing: '-0.03em',
     },
 
     packageAction: {
@@ -774,7 +778,9 @@ export default function OurBouncer() {
 
     bottomCtaTitle: {
       margin: 0,
-      fontSize: '25px',
+      fontSize: 'clamp(20px, 6vw, 28px)',
+      whiteSpace: 'nowrap',
+      letterSpacing: '-0.03em',
       fontWeight: '950',
     },
 
