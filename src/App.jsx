@@ -263,7 +263,7 @@ export default function App() {
         }}
       >
         <div>
-          © {new Date().getFullYear()} The Rental Zone LTD. All rights
+          © {new Date().getFullYear()} The Rental Zone TT. All rights
           reserved.
         </div>
 
