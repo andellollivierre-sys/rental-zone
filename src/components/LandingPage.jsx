@@ -1635,6 +1635,245 @@ export default function LandingPage() {
         </div>
       </div>
 
+      {/* TRZ SHARE BUTTONS SECTION */}
+      <section
+        aria-labelledby="trz-share-heading"
+        style={{
+          margin: '0 16px 30px',
+          padding: '20px',
+          border: '1px solid #e2e8f0',
+          borderRadius: '16px',
+          background: '#f8fafc',
+          textAlign: 'center'
+        }}
+      >
+        <h3
+          id="trz-share-heading"
+          style={{
+            margin: '0 0 8px',
+            fontSize: '18px',
+            fontWeight: 800,
+            color: '#0f172a'
+          }}
+        >
+          🎉 Know Someone Planning a Party?
+        </h3>
+
+        <p style={{
+          margin: '0 0 16px',
+          color: '#64748b',
+          fontSize: '14px',
+          lineHeight: 1.5
+        }}>
+          Share The Rental Zone with friends and family.
+        </p>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+          gap: '10px'
+        }}>
+          <button
+            type="button"
+            onClick={() => {
+              const url = new URL(window.location.origin);
+              url.searchParams.set('utm_source', 'whatsapp');
+              url.searchParams.set('utm_medium', 'social');
+              url.searchParams.set('utm_campaign', 'website_share');
+              url.searchParams.set('utm_content', 'landing_share_buttons');
+
+              trackButtonClick('share_whatsapp_clicked', {
+                share_platform: 'whatsapp'
+              });
+
+              window.open(
+                `https://wa.me/?text=${encodeURIComponent(
+                  `Check out The Rental Zone for bouncy castle rentals in Trinidad! ${url.toString()}`
+                )}`,
+                '_blank',
+                'noopener,noreferrer'
+              );
+            }}
+            style={{
+              padding: '12px 8px',
+              border: 0,
+              borderRadius: '10px',
+              background: '#dcfce7',
+              color: '#166534',
+              fontWeight: 800,
+              cursor: 'pointer'
+            }}
+          >
+            💬 WhatsApp
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              const url = new URL(window.location.origin);
+              url.searchParams.set('utm_source', 'facebook');
+              url.searchParams.set('utm_medium', 'social');
+              url.searchParams.set('utm_campaign', 'website_share');
+              url.searchParams.set('utm_content', 'landing_share_buttons');
+
+              trackButtonClick('share_facebook_clicked', {
+                share_platform: 'facebook'
+              });
+
+              window.open(
+                `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url.toString())}`,
+                '_blank',
+                'noopener,noreferrer'
+              );
+            }}
+            style={{
+              padding: '12px 8px',
+              border: 0,
+              borderRadius: '10px',
+              background: '#dbeafe',
+              color: '#1d4ed8',
+              fontWeight: 800,
+              cursor: 'pointer'
+            }}
+          >
+            Facebook
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              const url = new URL(window.location.origin);
+              url.searchParams.set('utm_source', 'x');
+              url.searchParams.set('utm_medium', 'social');
+              url.searchParams.set('utm_campaign', 'website_share');
+              url.searchParams.set('utm_content', 'landing_share_buttons');
+
+              trackButtonClick('share_x_clicked', {
+                share_platform: 'x'
+              });
+
+              window.open(
+                `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                  'Check out The Rental Zone for bouncy castle rentals in Trinidad!'
+                )}&url=${encodeURIComponent(url.toString())}`,
+                '_blank',
+                'noopener,noreferrer'
+              );
+            }}
+            style={{
+              padding: '12px 8px',
+              border: 0,
+              borderRadius: '10px',
+              background: '#e2e8f0',
+              color: '#0f172a',
+              fontWeight: 800,
+              cursor: 'pointer'
+            }}
+          >
+            𝕏 Share
+          </button>
+
+          <button
+            type="button"
+            onClick={async () => {
+              const url = new URL(window.location.origin);
+              url.searchParams.set('utm_source', 'copy_link');
+              url.searchParams.set('utm_medium', 'social');
+              url.searchParams.set('utm_campaign', 'website_share');
+              url.searchParams.set('utm_content', 'landing_share_buttons');
+
+              trackButtonClick('share_copy_link_clicked', {
+                share_platform: 'copy_link'
+              });
+
+              try {
+                await navigator.clipboard.writeText(url.toString());
+                trackButtonClick('share_copy_link_completed');
+                window.alert('Trackable website link copied. Share it with a friend!');
+              } catch {
+                window.prompt('Copy this trackable link:', url.toString());
+              }
+            }}
+            style={{
+              padding: '12px 8px',
+              border: 0,
+              borderRadius: '10px',
+              background: '#f1f5f9',
+              color: '#334155',
+              fontWeight: 800,
+              cursor: 'pointer'
+            }}
+          >
+            🔗 Copy Link
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onClick={async () => {
+            const url = new URL(window.location.origin);
+            url.searchParams.set('utm_source', 'native_share');
+            url.searchParams.set('utm_medium', 'social');
+            url.searchParams.set('utm_campaign', 'website_share');
+            url.searchParams.set('utm_content', 'landing_share_buttons');
+
+            trackButtonClick('share_native_clicked');
+
+            if (navigator.share) {
+              try {
+                await navigator.share({
+                  title: 'The Rental Zone LTD',
+                  text: 'Check out The Rental Zone for bouncy castle rentals in Trinidad!',
+                  url: url.toString()
+                });
+                trackButtonClick('share_native_completed');
+              } catch (error) {
+                if (error?.name !== 'AbortError') {
+                  trackButtonClick('share_native_failed');
+                }
+              }
+            } else {
+              try {
+                await navigator.clipboard.writeText(url.toString());
+                window.alert('Your device does not support the share menu here. Link copied instead.');
+              } catch {
+                window.prompt('Copy this trackable link:', url.toString());
+              }
+            }
+          }}
+          style={{
+            width: '100%',
+            marginTop: '10px',
+            padding: '12px',
+            border: '1px solid #cbd5e1',
+            borderRadius: '10px',
+            background: '#ffffff',
+            color: '#0f172a',
+            fontWeight: 800,
+            cursor: 'pointer'
+          }}
+        >
+          📲 More Sharing Options
+        </button>
+
+        <a
+          href="https://whatsapp.com/channel/0029VbD6ZFR1noz9SInOsu2L"
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => trackButtonClick('whatsapp_channel_clicked')}
+          style={{
+            display: 'block',
+            marginTop: '14px',
+            color: '#15803d',
+            fontSize: '14px',
+            fontWeight: 800,
+            textDecoration: 'none'
+          }}
+        >
+          📣 Follow our WhatsApp Community
+        </a>
+      </section>
+
       {/* EXISTING INTENT SELECTION POPUP MODAL */}
       {showBookingPopup && (
   <div
