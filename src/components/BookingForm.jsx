@@ -983,6 +983,12 @@ export default function BookingForm() {
               </div>
             )}
 
+            {confirmedBooking.rental_items?.length > 0 && (
+              <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 8, marginTop: 8 }}>
+                <b>Additional rentals</b>
+                {confirmedBooking.rental_items.map(item => <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 5 }}><span>{item.name} × {item.quantity}</span><strong>TT${item.price * item.quantity}</strong></div>)}
+              </div>
+            )}
             <div
               style={{
                 borderTop:
