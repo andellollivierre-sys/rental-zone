@@ -3742,6 +3742,7 @@ export default function AdminDashboard() {
                               {booking.traffic_source ||
                                 'direct'}
                             </div>
+{Array.isArray(booking.rental_items) && booking.rental_items.length > 0 && <div style={{background:'#eff6ff',border:'1px solid #bfdbfe',borderRadius:8,padding:10,fontSize:13}}><strong>Additional rentals</strong>{booking.rental_items.map((item,index)=><div key={item.id||index} style={{display:'flex',justifyContent:'space-between',gap:8,marginTop:5}}><span>{item.name} × {item.quantity}</span><b>TT${Number(item.price)*Number(item.quantity)}</b></div>)}</div>}
                           </div>
 
                           <div>
