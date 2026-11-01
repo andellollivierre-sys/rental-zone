@@ -6,14 +6,19 @@ import { trackTrzEvent, createPageTimer } from '../utils/trzTracker';
 const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1551792830639382571/dxVXhU-U6CJxCGdUfBypOxjy3uOPK1mjismTZgLGNP3kyGPuh0Dn3YAlgmjcFLtHcXpU';
 
 export default function BookingForm() {
-  const [formData, setFormData] = useState({
+  const [selectedRentalItems, setSelectedRentalItems] = useState(() => { try { return JSON.parse(sessionStorage.getItem('trz_selected_rentals') || '[]'); } catch { return []; } });
+  const [formData, setFormData] = useState(() => {
+    let rentals = []; try { rentals = JSON.parse(sessionStorage.getItem('trz_selected_rentals') || '[]'); } catch {}
+    return {
     customer_name: '',
     phone: '',
     event_date: '',
     start_time: '',
     package_type: '3_hours',
     address: '',
-    notes: ''
+    notes: '',
+    ...(rentals.length ? { package_type: 'additional_only' } : {})
+    };
   });
 
   const [submitting, setSubmitting] = useState(false);
@@ -173,8 +178,10 @@ export default function BookingForm() {
   const promotionPackage =
     buildPromotionPackage(promotionalOffer);
 
+  const rentalOnlyPrice = selectedRentalItems.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 1), 0);
   const availablePackages = {
     ...packages,
+    ...(selectedRentalItems.length ? { additional_only: { name: 'Additional Rentals Only', hours: 3, price: rentalOnlyPrice, deposit: 0 } } : {}),
     ...(promotionPackage
       ? { promotion: promotionPackage }
       : {})
@@ -270,6 +277,8 @@ export default function BookingForm() {
           'true'
         );
 
+        const rentalLines = selectedRentalItems.map(item => `• ${item.name} × ${item.quantity} — TT${item.price * item.quantity}`).join('\n');
+        const bookingTotal = selectedPkg.price + (formData.package_type === 'additional_only' ? 0 : rentalOnlyPrice);
         const discordMessage = {
           content:
             `👀 **A prospect just opened the Booking Form page!**`
@@ -539,7 +548,7 @@ export default function BookingForm() {
     }
 
     // All packages are now payment-on-delivery.
-    const balanceDue = selectedPkg.price;
+    const balanceDue = selectedPkg.price + (formData.package_type === 'additional_only' ? 0 : rentalOnlyPrice);
 
     const isAdminOrDev =
       localStorage.getItem(
@@ -647,8 +656,9 @@ export default function BookingForm() {
               end_time: endTime,
               package_type:
                 selectedPkg.name,
+              rental_items: selectedRentalItems,
               total_price:
-                selectedPkg.price,
+                selectedPkg.price + (formData.package_type === 'additional_only' ? 0 : rentalOnlyPrice),
               deposit_amount: 0,
               balance_due:
                 balanceDue,
@@ -716,7 +726,9 @@ export default function BookingForm() {
             `📞 **Phone:** ${formData.phone}\n` +
             `📍 **Address:** ${formData.address}\n` +
             `📅 **Date:** ${formData.event_date} (${formData.start_time} - ${endTime})\n` +
-            `📦 **Package:** ${selectedPkg.name} (TT$${selectedPkg.price})\n` +
+            `📦 **Package:** ${selectedPkg.name} (TT${selectedPkg.price})\n` +
+            (rentalLines ? `🧸 **Additional rentals:**\n${rentalLines}\n` : '') +
+            `💰 **Total:** TT${bookingTotal}\n` +
             `${
               isPromotional
                 ? `🔥 **PROMOTION:** Normal value TT$${selectedPkg.regularValue} | Savings TT$${selectedPkg.savings}\n`
@@ -753,7 +765,8 @@ export default function BookingForm() {
         packageName:
           selectedPkg.name,
         price:
-          selectedPkg.price,
+          balanceDue,
+        rental_items: selectedRentalItems,
         deposit: 0,
         balance:
           balanceDue,
@@ -815,7 +828,8 @@ export default function BookingForm() {
           `📅 Date: ${confirmedBooking.event_date}\n` +
           `⏰ Time: ${confirmedBooking.start_time} - ${confirmedBooking.end_time} (${confirmedBooking.packageName})\n` +
           promotionLine +
-          `💰 Total: TT$${confirmedBooking.price}\n` +
+          (confirmedBooking.rental_items || []).map(item => `🧸 ${item.name} × ${item.quantity}: TT${item.price * item.quantity}\n`).join('') +
+          `💰 Total: TT${confirmedBooking.price}\n` +
           `💵 Payment: Due on Delivery\n` +
           `📍 Address: ${confirmedBooking.address}\n` +
           (confirmedBooking.notes
@@ -1342,6 +1356,9 @@ export default function BookingForm() {
                 </div>
               )}
 
+{selectedRentalItems.length > 0 && (
+                <div onClick={() => handlePackageSelect('additional_only')} style={{ border: formData.package_type === 'additional_only' ? '2px solid #0284c7' : '1px solid #cbd5e1', background: formData.package_type === 'additional_only' ? '#eff6ff' : '#fff', padding: '12px 16px', borderRadius: 10, cursor: 'pointer' }}><strong>Additional Rentals Only</strong><div style={{ fontSize: 12, color: '#64748b' }}>No bouncy castle included</div><strong>{`TT${rentalOnlyPrice}`}</strong></div>
+              )}
               <div
                 onClick={() =>
                   handlePackageSelect(
@@ -1926,6 +1943,7 @@ export default function BookingForm() {
             />
           </div>
 
+          {selectedRentalItems.length > 0 && <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 10, padding: 12 }}><strong>Selected additional rentals</strong>{selectedRentalItems.map(item => <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 13, marginTop: 6 }}><span>{item.name} × {item.quantity}</span><b>TT${item.price * item.quantity}</b></div>)}<div style={{ borderTop: '1px solid #bae6fd', marginTop: 8, paddingTop: 8, fontWeight: 800 }}>Booking total: TT${selectedPkg.price + (formData.package_type === 'additional_only' ? 0 : rentalOnlyPrice)}</div><button type="button" onClick={() => { setSelectedRentalItems([]); sessionStorage.removeItem('trz_selected_rentals'); if (formData.package_type === 'additional_only') setFormData(prev => ({ ...prev, package_type: '3_hours' })); }} style={{ marginTop: 8, border: 0, background: 'transparent', color: '#0369a1', textDecoration: 'underline', cursor: 'pointer' }}>Remove additional rentals</button></div>}
           <div>
             <label
               style={{
