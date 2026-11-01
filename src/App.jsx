@@ -6,6 +6,7 @@ import OurBouncer from './components/OurBouncer';
 import HowItWorks from './components/HowItWorks';
 import FAQ from './components/FAQ';
 import Contact from './components/Contact';
+import MoreRentals from './components/MoreRentals';
 
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState(
@@ -28,6 +29,7 @@ export default function App() {
     { href: '#home', label: 'Home' },
     { href: '#booking', label: 'Booking' },
     { href: '#our-bouncer', label: 'Our Bouncer' },
+    { href: '#more-rentals', label: 'More Rentals' },
     { href: '#how-it-works', label: 'How It Works' },
     { href: '#faq', label: 'FAQ' },
     { href: '#contact', label: 'Contact' },
@@ -234,6 +236,8 @@ export default function App() {
           <BookingForm />
         ) : currentRoute === '#our-bouncer' ? (
           <OurBouncer />
+        ) : currentRoute === '#more-rentals' ? (
+          <MoreRentals />
         ) : currentRoute === '#how-it-works' ? (
           <HowItWorks />
         ) : currentRoute === '#faq' ? (
