@@ -9,7 +9,26 @@ const rentalCategories = [
 
 // Add confirmed rental items here when names, prices, photos and availability are supplied.
 // No unconfirmed products or prices are displayed to customers.
-const rentalItems = [];
+const rentalItems = [
+  {
+    id: 'bubble-machine',
+    name: 'Bubble Machine',
+    category: 'event-extras',
+    description: 'Add a fun bubble effect to your celebration. Available as a standalone rental or as an add-on with the bouncy castle.',
+    price: 250,
+    addOnPrice: 200,
+    duration: '3 hours',
+    addOnLabel: 'With bouncy castle'
+  },
+  {
+    id: 'spider-man-mascot',
+    name: 'Spider-Man Mascot Appearance',
+    category: 'entertainment',
+    description: 'Bring a special Spider-Man appearance to your event. Book a one-hour appearance.',
+    price: 500,
+    duration: '1 hour'
+  }
+];
 
 const comingSoon = [
   {
@@ -52,17 +71,28 @@ export default function MoreRentals() {
     0
   );
 
-  const addToCart = (item) => {
+  const addToCart = (item, pricing = 'standard') => {
+    const selectedPrice = pricing === 'castle-addon' ? item.addOnPrice : item.price;
+    const selectedName = pricing === 'castle-addon'
+      ? `${item.name} (with bouncy castle)`
+      : item.name;
+    const cartKey = `${item.id}:${pricing}`;
     setCart((current) => {
-      const existing = current.find((entry) => entry.id === item.id);
+      const existing = current.find((entry) => entry.cartKey === cartKey);
       if (existing) {
         return current.map((entry) =>
-          entry.id === item.id
+          entry.cartKey === cartKey
             ? { ...entry, quantity: entry.quantity + 1 }
             : entry
         );
       }
-      return [...current, { ...item, quantity: 1 }];
+      return [...current, {
+        ...item,
+        cartKey,
+        name: selectedName,
+        price: selectedPrice,
+        quantity: 1
+      }];
     });
   };
 
@@ -362,11 +392,22 @@ export default function MoreRentals() {
                 <h3>{item.name}</h3>
                 <p>{item.description}</p>
                 <div className="mr-product-footer">
-                  <strong>{money(item.price)}{item.duration ? ` / ${item.duration}` : ''}</strong>
-                  <button className="mr-add-button" onClick={() => addToCart(item)}>
+                  <strong>{money(item.price)} / {item.duration}</strong>
+                </div>
+                {item.addOnPrice ? (
+                  <div style={{ display: 'grid', gap: 8, marginTop: 12 }}>
+                    <button className="mr-add-button" onClick={() => addToCart(item, 'standard')}>
+                      Add standalone · {money(item.price)}
+                    </button>
+                    <button className="mr-category" onClick={() => addToCart(item, 'castle-addon')}>
+                      Add with bouncy castle · {money(item.addOnPrice)}
+                    </button>
+                  </div>
+                ) : (
+                  <button className="mr-add-button" style={{ marginTop: 12 }} onClick={() => addToCart(item)}>
                     Add to Cart
                   </button>
-                </div>
+                )}
               </div>
             </article>
           ))}
@@ -414,7 +455,7 @@ export default function MoreRentals() {
             ) : (
               <>
                 {cart.map((item) => (
-                  <div className="mr-cart-line" key={item.id}>
+                  <div className="mr-cart-line" key={item.cartKey || item.id}>
                     <div>
                       <strong>{item.name}</strong>
                       <div className="mr-qty">
