@@ -705,7 +705,10 @@ export default function BookingForm() {
                 selectedPkg.name,
               total_price:
                 bookingTotal,
-              rental_items: [\n                { name: 'Spider-Man Combo Bouncer', hours: selectedPkg.hours, price: selectedPkg.price },\n                ...(bubbleMachineAdded ? [{ name: 'Bubble Machine', hours: 3, price: 200 }] : [])\n              ],
+              rental_items: [
+                { name: 'Spider-Man Combo Bouncer', hours: selectedPkg.hours, price: selectedPkg.price },
+                ...(bubbleMachineAdded ? [{ name: 'Bubble Machine', hours: 3, price: 200 }] : [])
+              ],
               deposit_amount: 0,
               balance_due:
                 balanceDue,
