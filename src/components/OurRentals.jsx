@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { supabase } from '../supabaseClient';
 
 const CART_KEY = 'trz_shared_booking_cart';
 
@@ -7,7 +8,7 @@ const readCart = () => {
     const value = JSON.parse(localStorage.getItem(CART_KEY) || '{}');
     return {
       bouncer: value.bouncer === true,
-      packageType: ['2_hours', '3_hours', 'full_day'].includes(value.packageType) ? value.packageType : '3_hours',
+      packageType: ['2_hours', '3_hours', 'full_day', 'promotion'].includes(value.packageType) ? value.packageType : '3_hours',
       bubbleMachine: value.bubbleMachine === true
     };
   } catch {
@@ -19,14 +20,40 @@ const money = (amount) => `TT$${Number(amount).toLocaleString('en-TT')}`;
 
 export default function OurRentals() {
   const [cart, setCart] = useState(readCart);
+  const [promotion, setPromotion] = useState(null);
 
   useEffect(() => {
     localStorage.setItem(CART_KEY, JSON.stringify(cart));
   }, [cart]);
 
+  useEffect(() => {
+    let mounted = true;
+    const loadPromotion = async () => {
+      const { data, error } = await supabase
+        .from('promotional_offers')
+        .select('id, offer_active, offer_price, offer_hours, offer_ends_at')
+        .order('id', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (!mounted) return;
+      if (error || !data || data.offer_active !== true) {
+        setPromotion(null);
+        return;
+      }
+      const expiry = data.offer_ends_at ? new Date(data.offer_ends_at).getTime() : Infinity;
+      const price = Number(data.offer_price);
+      const hours = Number(data.offer_hours);
+      setPromotion(Number.isFinite(expiry) && expiry > Date.now() && price > 0 && hours > 0 ? { ...data, price, hours } : null);
+    };
+    loadPromotion();
+    return () => { mounted = false; };
+  }, []);
+
   const bouncerPrices = { '2_hours': 650, '3_hours': 900, full_day: 1800 };
+  const selectedBouncerPrice = cart.packageType === 'promotion' && promotion ? promotion.price : bouncerPrices[cart.packageType];
+  const selectedDuration = cart.packageType === 'promotion' && promotion ? `${promotion.hours} hours (Special)` : cart.packageType === '2_hours' ? '2 hours' : cart.packageType === '3_hours' ? '3 hours' : '8 hours';
   const bubblePrice = cart.bouncer && cart.bubbleMachine ? 200 : 0;
-  const subtotal = (cart.bouncer ? bouncerPrices[cart.packageType] : 0) + bubblePrice;
+  const subtotal = (cart.bouncer ? (selectedBouncerPrice || 0) : 0) + bubblePrice;
   const itemCount = Number(cart.bouncer) + Number(cart.bubbleMachine);
 
   const updateCart = (changes) => {
@@ -53,8 +80,10 @@ export default function OurRentals() {
           <div style={{ padding: 18 }}>
             <h2 style={{ margin: '0 0 8px', fontSize: 21, fontWeight: 900 }}>Spider-Man Combo Bouncer</h2>
             <p style={{ margin: '0 0 12px', color: '#475569', fontSize: 14, lineHeight: 1.55 }}>Bounce area, climbing section and attached slide. 26 × 13 × 13 ft. Up to 8 children.</p>
+            {promotion && <div style={{ margin: '0 0 12px', padding: 13, borderRadius: 12, border: '1px solid #f59e0b', background: '#fffbeb' }}><div style={{ fontWeight: 900, color: '#92400e', fontSize: 15 }}>SPECIAL OFFER — {promotion.hours} HOURS</div><div style={{ color: '#92400e', fontSize: 14, marginTop: 3 }}>{money(promotion.price)} · Limited-time offer</div><div style={{ color: '#78350f', fontSize: 12, marginTop: 4 }}>Select the special below to add it to your booking.</div></div>}
             <label htmlFor="trz-duration" style={{ display: 'block', fontSize: 13, fontWeight: 800, marginBottom: 6 }}>Choose rental duration</label>
             <select id="trz-duration" value={cart.packageType} onChange={(e) => updateCart({ packageType: e.target.value })} style={{ width: '100%', padding: 11, borderRadius: 9, border: '1px solid #cbd5e1', background: '#fff', marginBottom: 12 }}>
+              {promotion && <option value="promotion">SPECIAL — {promotion.hours} hours · {money(promotion.price)}</option>}
               <option value="2_hours">2 hours — TT$650</option>
               <option value="3_hours">3 hours — TT$900</option>
               <option value="full_day">Full day / 8 hours — TT$1,800</option>
@@ -84,7 +113,7 @@ export default function OurRentals() {
           </div>
           <button type="button" disabled={!cart.bouncer} onClick={continueToBooking} style={{ padding: '12px 16px', border: 0, borderRadius: 10, background: cart.bouncer ? '#38bdf8' : '#475569', color: '#082f49', fontWeight: 900, cursor: cart.bouncer ? 'pointer' : 'not-allowed' }}>Continue to Booking</button>
         </div>
-        {cart.bouncer && <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #334155', fontSize: 13, color: '#e2e8f0' }}>Spider-Man Bouncer · {cart.packageType === '2_hours' ? '2 hours' : cart.packageType === '3_hours' ? '3 hours' : '8 hours'} — {money(bouncerPrices[cart.packageType])}{cart.bubbleMachine ? `\nBubble Machine add-on — ${money(200)}` : ''}</div>}
+        {cart.bouncer && <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #334155', fontSize: 13, color: '#e2e8f0' }}>Spider-Man Bouncer · {selectedDuration} — {money(selectedBouncerPrice || 0)}{cart.bubbleMachine ? `\nBubble Machine add-on — ${money(200)}` : ''}</div>}
         {!cart.bouncer && <p style={{ margin: '10px 0 0', fontSize: 12, color: '#cbd5e1' }}>Add the bouncer to continue with an online booking request.</p>}
       </aside>
     </div>
