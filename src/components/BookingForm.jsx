@@ -2025,7 +2025,7 @@ export default function BookingForm() {
             </select>
             {selectedTransport && (
               <div style={{ marginTop: 8, padding: 10, borderRadius: 8, background: requiresTransportQuote ? '#fff7ed' : '#f0fdf4', color: '#334155', fontSize: 13 }}>
-                <b>Transport:</b> {requiresTransportQuote ? 'Custom quote required — we will confirm the charge with you.' : 'TT$' + transportFee + ' (delivery, setup + collection)'}
+                <b>Delivery, Setup &amp; Collection:</b> {requiresTransportQuote ? 'Custom quote required — we will confirm the charge with you.' : 'TT$' + transportFee + ' (delivery, setup + collection)'}
               </div>
             )}
           </div>
