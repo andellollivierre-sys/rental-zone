@@ -809,7 +809,9 @@ export default function BookingForm() {
         );
       }
 
-      localStorage.removeItem('trz_shared_booking_cart');\n\n      setConfirmedBooking({
+      localStorage.removeItem('trz_shared_booking_cart');
+
+      setConfirmedBooking({
         ...formData,
         address: `${formData.address.trim()}, ${chosenTransport.area}`,
         transportArea: chosenTransport.area,
