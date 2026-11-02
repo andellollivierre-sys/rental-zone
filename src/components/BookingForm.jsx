@@ -28,6 +28,21 @@ export default function BookingForm() {
   const [showBubbleModal, setShowBubbleModal] = useState(false);
   const [bubbleMachineAdded, setBubbleMachineAdded] = useState(false);
 
+  // Restore the shared Our Rentals cart when the customer reaches checkout.
+  useEffect(() => {
+    try {
+      const cart = JSON.parse(localStorage.getItem('trz_shared_booking_cart') || '{}');
+      if (cart.bouncer === true) {
+        if (['2_hours', '3_hours', 'full_day'].includes(cart.packageType)) {
+          setFormData((prev) => ({ ...prev, package_type: cart.packageType }));
+        }
+        setBubbleMachineAdded(cart.bubbleMachine === true);
+      }
+    } catch (err) {
+      console.warn('Could not restore shared booking cart:', err);
+    }
+  }, []);
+
   // Draft transport schedule from Chaguanas; fees cover delivery and collection.
   const transportZones = {
     'Free delivery': { fee: 0, areas: ['Chaguanas', 'Cunupia', 'Charlieville', 'Endeavour', 'Freeport', 'Carapichaima', 'Couva'] },
@@ -690,9 +705,7 @@ export default function BookingForm() {
                 selectedPkg.name,
               total_price:
                 bookingTotal,
-              rental_items: bubbleMachineAdded
-                ? [{ name: 'Bubble Machine', hours: 3, price: 200 }]
-                : [],
+              rental_items: [\n                { name: 'Spider-Man Combo Bouncer', hours: selectedPkg.hours, price: selectedPkg.price },\n                ...(bubbleMachineAdded ? [{ name: 'Bubble Machine', hours: 3, price: 200 }] : [])\n              ],
               deposit_amount: 0,
               balance_due:
                 balanceDue,
@@ -793,7 +806,7 @@ export default function BookingForm() {
         );
       }
 
-      setConfirmedBooking({
+      localStorage.removeItem('trz_shared_booking_cart');\n\n      setConfirmedBooking({
         ...formData,
         address: `${formData.address.trim()}, ${chosenTransport.area}`,
         transportArea: chosenTransport.area,
