@@ -43,7 +43,7 @@ export default function BookingForm() {
     }
   }, []);
 
-  // Draft transport schedule from Chaguanas; fees cover delivery and collection.
+  // Draft transport schedule from Chaguanas; fees cover delivery, setup and collection.
   const transportZones = {
     'Free delivery': { fee: 0, areas: ['Chaguanas', 'Cunupia', 'Charlieville', 'Endeavour', 'Freeport', 'Carapichaima', 'Couva'] },
     'Zone 1': { fee: 100, areas: ['Tunapuna', 'St. Augustine', 'San Juan', 'Port of Spain', 'Arima'] },
@@ -660,7 +660,7 @@ export default function BookingForm() {
 
       const transportNote = chosenTransport.fee === null
         ? `[TRANSPORT: ${chosenTransport.area} | ${chosenTransport.zone} | PRICE TO BE QUOTED]`
-        : `[TRANSPORT: ${chosenTransport.area} | ${chosenTransport.zone} | TT${chosenTransport.fee} delivery + collection]`;
+        : `[TRANSPORT: ${chosenTransport.area} | ${chosenTransport.zone} | TT${chosenTransport.fee} delivery + setup + collection]`;
       let bookingNotes = formData.notes || '';
       bookingNotes = bookingNotes.trim() ? `${transportNote}\\n${bookingNotes.trim()}` : transportNote;
 
@@ -775,7 +775,7 @@ export default function BookingForm() {
             `👤 **Client:** ${formData.customer_name}\n` +
             `📞 **Phone:** ${formData.phone}\n` +
             `📍 **Address:** ${formData.address}, ${chosenTransport.area}\n` +
-            `🚚 **Transport:** ${chosenTransport.zone} - ${chosenTransport.fee === null ? 'QUOTE REQUIRED' : `TT${chosenTransport.fee}`}\n` +
+            `🚚 **Delivery, Setup & Collection:** ${chosenTransport.zone} - ${chosenTransport.fee === null ? 'QUOTE REQUIRED' : `TT${chosenTransport.fee}`}\n` +
             `📅 **Date:** ${formData.event_date} (${formData.start_time} - ${endTime})\n` +
             `📦 **Package:** ${selectedPkg.name} (TT${selectedPkg.price})\n` +
             `${bubbleMachineAdded ? '🫧 **Add-on:** Bubble Machine - TT$200\n' : ''}` +
@@ -889,7 +889,7 @@ export default function BookingForm() {
           `⏰ Time: ${confirmedBooking.start_time} - ${confirmedBooking.end_time} (${confirmedBooking.packageName})\n` +
           promotionLine +
           `${confirmedBooking.bubbleMachineAdded ? '🫧 Add-on: Bubble Machine - TT$200\n' : ''}` +
-          `🚚 Transport: ${confirmedBooking.transportZone} - ${confirmedBooking.transportQuoteRequired ? 'Quote required' : `TT${confirmedBooking.transportFee}`}\n` +
+          `🚚 Delivery, Setup & Collection: ${confirmedBooking.transportZone} - ${confirmedBooking.transportQuoteRequired ? 'Quote required' : `TT${confirmedBooking.transportFee}`}\n` +
           `💰 Total: TT${confirmedBooking.price}${confirmedBooking.transportQuoteRequired ? ' (transport quote pending)' : ''}\n` +
           `💵 Payment: Due on Delivery\n` +
           `📍 Address: ${confirmedBooking.address}\n` +
@@ -1052,7 +1052,7 @@ export default function BookingForm() {
                 marginTop: '4px'
               }}
             >
-              🚚 <b>Transport:</b>{' '}
+              🚚 <b>Delivery, Setup & Collection:</b>{' '}
               {confirmedBooking.transportZone} - {confirmedBooking.transportQuoteRequired ? 'Quote required' : `TT${confirmedBooking.transportFee}`}
               <br />
               💰 <b>Total Price:</b>{' '}
@@ -2025,7 +2025,7 @@ export default function BookingForm() {
             </select>
             {selectedTransport && (
               <div style={{ marginTop: 8, padding: 10, borderRadius: 8, background: requiresTransportQuote ? '#fff7ed' : '#f0fdf4', color: '#334155', fontSize: 13 }}>
-                <b>Transport:</b> {requiresTransportQuote ? 'Custom quote required — we will confirm the charge with you.' : 'TT$' + transportFee + ' (delivery + collection)'}
+                <b>Transport:</b> {requiresTransportQuote ? 'Custom quote required — we will confirm the charge with you.' : 'TT$' + transportFee + ' (delivery, setup + collection)'}
               </div>
             )}
           </div>
