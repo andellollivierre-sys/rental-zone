@@ -27,7 +27,7 @@ export default function App() {
   const navLinks = [
     { href: '#home', label: 'Home' },
     { href: '#booking', label: 'Booking' },
-    { href: '#our-bouncer', label: 'Our Bouncer' },
+    { href: '#our-bouncer', label: 'Our Rentals' },
     { href: '#how-it-works', label: 'How It Works' },
     { href: '#faq', label: 'FAQ' },
     { href: '#contact', label: 'Contact' },
