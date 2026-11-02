@@ -24,6 +24,8 @@ export default function BookingForm() {
 
   const [promotionalOffer, setPromotionalOffer] = useState(null);
   const [loadingPromotion, setLoadingPromotion] = useState(true);
+  const [showBubbleModal, setShowBubbleModal] = useState(false);
+  const [bubbleMachineAdded, setBubbleMachineAdded] = useState(false);
 
   const pageTimerRef = useRef(null);
   const pageExitTrackedRef = useRef(false);
@@ -538,8 +540,12 @@ export default function BookingForm() {
       }
     }
 
+    // Optional Bubble Machine add-on (3 hours) is discounted with the castle.
+    const bubbleAddonPrice = bubbleMachineAdded ? 200 : 0;
+    const bookingTotal = selectedPkg.price + bubbleAddonPrice;
+
     // All packages are now payment-on-delivery.
-    const balanceDue = selectedPkg.price;
+    const balanceDue = bookingTotal;
 
     const isAdminOrDev =
       localStorage.getItem(
@@ -615,6 +621,13 @@ export default function BookingForm() {
       let bookingNotes =
         formData.notes || '';
 
+      if (bubbleMachineAdded) {
+        const addonNote = '[ADD-ON: Bubble Machine - 3 Hours - TT$200]';
+        bookingNotes = bookingNotes.trim()
+          ? `${addonNote}\n${bookingNotes.trim()}`
+          : addonNote;
+      }
+
       if (isPromotional) {
         const regularValue =
           selectedPkg.regularValue;
@@ -648,7 +661,10 @@ export default function BookingForm() {
               package_type:
                 selectedPkg.name,
               total_price:
-                selectedPkg.price,
+                bookingTotal,
+              rental_items: bubbleMachineAdded
+                ? [{ name: 'Bubble Machine', hours: 3, price: 200 }]
+                : [],
               deposit_amount: 0,
               balance_due:
                 balanceDue,
@@ -716,7 +732,9 @@ export default function BookingForm() {
             `📞 **Phone:** ${formData.phone}\n` +
             `📍 **Address:** ${formData.address}\n` +
             `📅 **Date:** ${formData.event_date} (${formData.start_time} - ${endTime})\n` +
-            `📦 **Package:** ${selectedPkg.name} (TT$${selectedPkg.price})\n` +
+            `📦 **Package:** ${selectedPkg.name} (TT${selectedPkg.price})\n` +
+            `${bubbleMachineAdded ? '🫧 **Add-on:** Bubble Machine - TT$200\n' : ''}` +
+            `💰 **Total:** TT${bookingTotal}\n` +
             `${
               isPromotional
                 ? `🔥 **PROMOTION:** Normal value TT$${selectedPkg.regularValue} | Savings TT$${selectedPkg.savings}\n`
@@ -753,7 +771,10 @@ export default function BookingForm() {
         packageName:
           selectedPkg.name,
         price:
-          selectedPkg.price,
+          bookingTotal,
+        basePrice: selectedPkg.price,
+        bubbleMachineAdded,
+        bubbleMachinePrice: bubbleAddonPrice,
         deposit: 0,
         balance:
           balanceDue,
@@ -815,7 +836,8 @@ export default function BookingForm() {
           `📅 Date: ${confirmedBooking.event_date}\n` +
           `⏰ Time: ${confirmedBooking.start_time} - ${confirmedBooking.end_time} (${confirmedBooking.packageName})\n` +
           promotionLine +
-          `💰 Total: TT$${confirmedBooking.price}\n` +
+          `${confirmedBooking.bubbleMachineAdded ? '🫧 Add-on: Bubble Machine - TT$200\n' : ''}` +
+          `💰 Total: TT${confirmedBooking.price}\n` +
           `💵 Payment: Due on Delivery\n` +
           `📍 Address: ${confirmedBooking.address}\n` +
           (confirmedBooking.notes
@@ -982,6 +1004,12 @@ export default function BookingForm() {
               {
                 confirmedBooking.price
               }
+              {confirmedBooking.bubbleMachineAdded && (
+                <>
+                  <br />
+                  🫧 <b>Add-on:</b> Bubble Machine (TT$200)
+                </>
+              )}
               <br />
               💵 <b>Payment:</b>{' '}
               Due on Delivery
@@ -1644,6 +1672,29 @@ export default function BookingForm() {
             </div>
           </div>
 
+          <section style={{ marginTop: 2, padding: 12, border: '1px solid #e2e8f0', borderRadius: 12, background: '#f8fafc' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                <img src="https://bouncycastlenetwork-res.cloudinary.com/image/upload/f_auto%2Cq_auto%2Cc_limit%2Cw_900/aa6f1ad7b094ff9dfda6d260a87e54b1" alt="Bubble machine producing bubbles" style={{ width: 66, height: 66, objectFit: 'cover', borderRadius: 9, background: '#fff' }} />
+                <div><div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>🫧 Add a Bubble Machine</div><div style={{ fontSize: 12, color: '#64748b', marginTop: 3 }}>Make the party even more fun</div><div style={{ fontSize: 13, marginTop: 4 }}><s style={{ color: '#94a3b8' }}>TT$250</s> <strong style={{ color: '#15803d' }}>TT$200 add-on</strong></div></div>
+              </div>
+              <button type="button" onClick={() => setShowBubbleModal(true)} style={{ flexShrink: 0, border: '1px solid #2563eb', color: '#1d4ed8', background: '#fff', borderRadius: 8, padding: '8px 10px', fontSize: 12, fontWeight: 800, cursor: 'pointer' }}>View</button>
+            </div>
+            {bubbleMachineAdded && <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingTop: 9, borderTop: '1px solid #e2e8f0', fontSize: 13 }}><strong style={{ color: '#166534' }}>✓ Bubble Machine added (+TT$200)</strong><button type="button" onClick={() => setBubbleMachineAdded(false)} style={{ border: 0, background: 'transparent', color: '#b91c1c', fontWeight: 700, cursor: 'pointer' }}>Remove</button></div>}
+          </section>
+          {showBubbleModal && (
+            <div onClick={() => setShowBubbleModal(false)} role="presentation" style={{ position: 'fixed', inset: 0, zIndex: 11000, background: 'rgba(15,23,42,.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+              <div role="dialog" aria-modal="true" aria-labelledby="bubble-addon-title" onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 380, maxHeight: '90vh', overflowY: 'auto', background: '#fff', borderRadius: 16, padding: 16, boxShadow: '0 20px 60px rgba(0,0,0,.3)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}><h3 id="bubble-addon-title" style={{ margin: 0, color: '#0f172a', fontSize: 18 }}>Bubble Machine</h3><button type="button" aria-label="Close" onClick={() => setShowBubbleModal(false)} style={{ border: 0, borderRadius: 20, width: 32, height: 32, background: '#f1f5f9', fontSize: 20, cursor: 'pointer' }}>×</button></div>
+                <img src="https://bouncycastlenetwork-res.cloudinary.com/image/upload/f_auto%2Cq_auto%2Cc_limit%2Cw_900/aa6f1ad7b094ff9dfda6d260a87e54b1" alt="Professional bubble machine creating bubbles" style={{ display: 'block', width: '100%', height: 190, objectFit: 'contain', background: '#f8fafc', borderRadius: 12 }} />
+                <p style={{ color: '#475569', fontSize: 13, lineHeight: 1.55, margin: '12px 0' }}>Add a stream of floating bubbles to the celebration. Available for a 3-hour rental alongside your Spider-Man Bouncy Castle.</p>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 9, marginBottom: 14 }}><s style={{ color: '#94a3b8', fontSize: 14 }}>TT$250</s><strong style={{ color: '#15803d', fontSize: 22 }}>TT$200</strong><span style={{ color: '#64748b', fontSize: 12 }}>with castle booking</span></div>
+                <button type="button" onClick={() => { setBubbleMachineAdded(true); setShowBubbleModal(false); trackTrzEvent('bubble_machine_addon_selected', { price: 200, hours: 3 }); }} style={{ width: '100%', border: 0, borderRadius: 9, padding: 12, background: '#16a34a', color: '#fff', fontWeight: 800, fontSize: 14, cursor: 'pointer' }}>{bubbleMachineAdded ? 'Keep Bubble Machine' : 'Add to Booking'}</button>
+                <button type="button" onClick={() => setShowBubbleModal(false)} style={{ width: '100%', border: 0, background: 'transparent', color: '#64748b', padding: 10, fontWeight: 700, cursor: 'pointer' }}>Close</button>
+              </div>
+            </div>
+          )}
+
           <div
             style={{
               display:
@@ -1874,9 +1925,7 @@ export default function BookingForm() {
                 Total:{' '}
                 <strong>
                   TT$
-                  {
-                    currentPkg.price
-                  }
+                  {currentPkg.price + (bubbleMachineAdded ? 200 : 0)}
                 </strong>
               </span>
             </div>
