@@ -33,7 +33,7 @@ export default function BookingForm() {
     try {
       const cart = JSON.parse(localStorage.getItem('trz_shared_booking_cart') || '{}');
       if (cart.bouncer === true) {
-        if (['2_hours', '3_hours', 'full_day'].includes(cart.packageType)) {
+        if (['2_hours', '3_hours', 'full_day', 'promotion'].includes(cart.packageType)) {
           setFormData((prev) => ({ ...prev, package_type: cart.packageType }));
         }
         setBubbleMachineAdded(cart.bubbleMachine === true);
