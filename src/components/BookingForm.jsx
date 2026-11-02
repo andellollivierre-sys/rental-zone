@@ -1710,14 +1710,33 @@ export default function BookingForm() {
           </div>
 
           <section style={{ marginTop: 2, padding: 12, border: '1px solid #e2e8f0', borderRadius: 12, background: '#f8fafc' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-                <img src="https://bouncycastlenetwork-res.cloudinary.com/image/upload/f_auto%2Cq_auto%2Cc_limit%2Cw_900/aa6f1ad7b094ff9dfda6d260a87e54b1" alt="Bubble machine producing bubbles" style={{ width: 66, height: 66, objectFit: 'cover', borderRadius: 9, background: '#fff' }} />
-                <div><div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>🫧 Add a Bubble Machine</div><div style={{ fontSize: 12, color: '#64748b', marginTop: 3 }}>Make the party even more fun</div><div style={{ fontSize: 13, marginTop: 4 }}><s style={{ color: '#94a3b8' }}>TT$250</s> <strong style={{ color: '#15803d' }}>TT$200 add-on</strong></div></div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 9 }}>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: '#0f172a' }}>Make the party extra fun</div>
+                <div style={{ fontSize: 11, color: '#64748b' }}>Swipe to explore extras</div>
               </div>
-              <button type="button" onClick={() => setShowBubbleModal(true)} style={{ flexShrink: 0, border: '1px solid #2563eb', color: '#1d4ed8', background: '#fff', borderRadius: 8, padding: '8px 10px', fontSize: 12, fontWeight: 800, cursor: 'pointer' }}>View</button>
+              <div style={{ fontSize: 11, color: '#64748b' }}>← Swipe →</div>
             </div>
-            {bubbleMachineAdded && <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingTop: 9, borderTop: '1px solid #e2e8f0', fontSize: 13 }}><strong style={{ color: '#166534' }}>✓ Bubble Machine added (+TT$200)</strong><button type="button" onClick={() => setBubbleMachineAdded(false)} style={{ border: 0, background: 'transparent', color: '#b91c1c', fontWeight: 700, cursor: 'pointer' }}>Remove</button></div>}
+            <div style={{ display: 'flex', gap: 10, overflowX: 'auto', scrollSnapType: 'x mandatory', paddingBottom: 8, WebkitOverflowScrolling: 'touch' }}>
+              <article style={{ flex: '0 0 260px', scrollSnapAlign: 'start', border: '1px solid #e2e8f0', borderRadius: 11, padding: 10, background: '#fff' }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                  <img src="https://bouncycastlenetwork-res.cloudinary.com/image/upload/f_auto%2Cq_auto%2Cc_limit%2Cw_900/aa6f1ad7b094ff9dfda6d260a87e54b1" alt="Bubble machine producing bubbles" style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 9, background: '#f8fafc' }} />
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>🫧 Bubble Machine</div>
+                    <div style={{ fontSize: 12, color: '#64748b', marginTop: 3 }}>Add floating bubbles to the party</div>
+                    <div style={{ fontSize: 13, marginTop: 5 }}><s style={{ color: '#94a3b8' }}>TT$250</s> <strong style={{ color: '#15803d' }}>TT$200 add-on</strong></div>
+                  </div>
+                </div>
+                <button type="button" onClick={() => setShowBubbleModal(true)} style={{ width: '100%', marginTop: 9, border: '1px solid #2563eb', color: '#1d4ed8', background: '#fff', borderRadius: 8, padding: '8px 10px', fontSize: 12, fontWeight: 800, cursor: 'pointer' }}>View details</button>
+                {bubbleMachineAdded && <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, fontSize: 12 }}><strong style={{ color: '#166534' }}>✓ Added (+TT$200)</strong><button type="button" onClick={() => setBubbleMachineAdded(false)} style={{ border: 0, background: 'transparent', color: '#b91c1c', fontWeight: 700, cursor: 'pointer' }}>Remove</button></div>}
+              </article>
+              <article style={{ flex: '0 0 260px', scrollSnapAlign: 'start', border: '1px solid #e2e8f0', borderRadius: 11, padding: 10, background: '#fff' }}>
+                <img src="https://openclipart.org/download/334227" alt="Cute spider illustration placeholder" style={{ display: 'block', width: '100%', height: 104, objectFit: 'contain', borderRadius: 8, background: '#f8fafc' }} />
+                <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a', marginTop: 7 }}>🕷️ Spider Mascot</div>
+                <div style={{ fontSize: 12, color: '#64748b', marginTop: 3 }}>Preview image only — availability and pricing to be confirmed</div>
+                <div style={{ marginTop: 9, padding: '8px 10px', borderRadius: 8, background: '#f1f5f9', color: '#475569', fontSize: 11, textAlign: 'center' }}>Coming soon</div>
+              </article>
+            </div>
           </section>
           {showBubbleModal && (
             <div onClick={() => setShowBubbleModal(false)} role="presentation" style={{ position: 'fixed', inset: 0, zIndex: 11000, background: 'rgba(15,23,42,.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
