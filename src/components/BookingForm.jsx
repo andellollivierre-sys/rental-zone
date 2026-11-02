@@ -1716,10 +1716,10 @@ export default function BookingForm() {
                 <div style={{ fontSize: 12, color: '#475569' }}>Explore the optional add-ons below.</div>
               </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 11, padding: '11px 10px', borderRadius: 10, background: '#1e3a8a', color: '#fff', textAlign: 'center' }}>
-              <span aria-hidden="true" style={{ fontSize: 25, lineHeight: 1, fontWeight: 900 }}>←</span>
-              <div style={{ fontSize: 14, lineHeight: 1.25, fontWeight: 900, letterSpacing: '.4px' }}>SWIPE LEFT OR RIGHT<br /><span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0 }}>to see more extras</span></div>
-              <span aria-hidden="true" style={{ fontSize: 25, lineHeight: 1, fontWeight: 900 }}>→</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 8, color: '#475569', fontSize: 11, fontWeight: 700 }}>
+              <span aria-hidden="true" style={{ fontSize: 17, lineHeight: 1, color: '#2563eb' }}>←</span>
+              <span>SWIPE TO EXPLORE EXTRAS</span>
+              <span aria-hidden="true" style={{ fontSize: 17, lineHeight: 1, color: '#2563eb' }}>→</span>
             </div>
             <div style={{ display: 'flex', gap: 10, overflowX: 'auto', scrollSnapType: 'x mandatory', paddingBottom: 8, WebkitOverflowScrolling: 'touch' }}>
               <article style={{ flex: '0 0 260px', scrollSnapAlign: 'start', border: '1px solid #e2e8f0', borderRadius: 11, padding: 10, background: '#fff' }}>
