@@ -758,11 +758,12 @@ export default function BookingForm() {
             }\n` +
             `👤 **Client:** ${formData.customer_name}\n` +
             `📞 **Phone:** ${formData.phone}\n` +
-            `📍 **Address:** ${formData.address}\n` +
+            `📍 **Address:** ${formData.address}, ${chosenTransport.area}\n` +
+            `🚚 **Transport:** ${chosenTransport.zone} - ${chosenTransport.fee === null ? 'QUOTE REQUIRED' : `TT${chosenTransport.fee}`}\n` +
             `📅 **Date:** ${formData.event_date} (${formData.start_time} - ${endTime})\n` +
             `📦 **Package:** ${selectedPkg.name} (TT${selectedPkg.price})\n` +
             `${bubbleMachineAdded ? '🫧 **Add-on:** Bubble Machine - TT$200\n' : ''}` +
-            `💰 **Total:** TT${bookingTotal}\n` +
+            `💰 **Total:** TT${bookingTotal}${requiresTransportQuote ? ' (transport quote pending)' : ''}\n` +
             `${
               isPromotional
                 ? `🔥 **PROMOTION:** Normal value TT$${selectedPkg.regularValue} | Savings TT$${selectedPkg.savings}\n`
@@ -870,7 +871,8 @@ export default function BookingForm() {
           `⏰ Time: ${confirmedBooking.start_time} - ${confirmedBooking.end_time} (${confirmedBooking.packageName})\n` +
           promotionLine +
           `${confirmedBooking.bubbleMachineAdded ? '🫧 Add-on: Bubble Machine - TT$200\n' : ''}` +
-          `💰 Total: TT${confirmedBooking.price}\n` +
+          `🚚 Transport: ${confirmedBooking.transportZone} - ${confirmedBooking.transportQuoteRequired ? 'Quote required' : `TT${confirmedBooking.transportFee}`}\n` +
+          `💰 Total: TT${confirmedBooking.price}${confirmedBooking.transportQuoteRequired ? ' (transport quote pending)' : ''}\n` +
           `💵 Payment: Due on Delivery\n` +
           `📍 Address: ${confirmedBooking.address}\n` +
           (confirmedBooking.notes
@@ -1032,11 +1034,13 @@ export default function BookingForm() {
                 marginTop: '4px'
               }}
             >
+              🚚 <b>Transport:</b>{' '}
+              {confirmedBooking.transportZone} - {confirmedBooking.transportQuoteRequired ? 'Quote required' : `TT${confirmedBooking.transportFee}`}
+              <br />
               💰 <b>Total Price:</b>{' '}
               TT$
-              {
-                confirmedBooking.price
-              }
+              {confirmedBooking.price}
+              {confirmedBooking.transportQuoteRequired && <><br /><b>Transport charge will be confirmed before booking approval.</b></>}
               {confirmedBooking.bubbleMachineAdded && (
                 <>
                   <br />
