@@ -13,6 +13,7 @@ export default function BookingForm() {
     start_time: '',
     package_type: '3_hours',
     address: '',
+    delivery_area: '',
     notes: ''
   });
 
@@ -26,6 +27,18 @@ export default function BookingForm() {
   const [loadingPromotion, setLoadingPromotion] = useState(true);
   const [showBubbleModal, setShowBubbleModal] = useState(false);
   const [bubbleMachineAdded, setBubbleMachineAdded] = useState(false);
+
+  // Draft transport schedule from Chaguanas; fees cover delivery and collection.
+  const transportZones = {
+    'Free delivery': { fee: 0, areas: ['Chaguanas', 'Cunupia', 'Charlieville', 'Endeavour', 'Freeport', 'Carapichaima', 'Couva'] },
+    'Zone 1': { fee: 100, areas: ['Tunapuna', 'St. Augustine', 'San Juan', 'Port of Spain', 'Arima'] },
+    'Zone 2': { fee: 150, areas: ['Diego Martin', 'Marabella', 'San Fernando', 'Gasparillo', 'Princes Town', 'Sangre Grande'] },
+    'Zone 3': { fee: 200, areas: ['Penal', 'Debe', 'Siparia', 'Point Fortin', 'Rio Claro'] },
+    'Custom quote': { fee: null, areas: ['Mayaro', 'Toco', 'Other / Not listed'] }
+  };
+  const selectedTransport = Object.entries(transportZones).flatMap(([zone, config]) => config.areas.map((area) => ({ area, zone, fee: config.fee }))).find((item) => item.area === formData.delivery_area);
+  const transportFee = selectedTransport?.fee ?? 0;
+  const requiresTransportQuote = selectedTransport?.fee === null;
 
   const pageTimerRef = useRef(null);
   const pageExitTrackedRef = useRef(false);
@@ -540,9 +553,21 @@ export default function BookingForm() {
       }
     }
 
+    if (!formData.delivery_area || !formData.address.trim()) {
+      setErrorMessage('Please select your delivery area and enter the full delivery address.');
+      setSubmitting(false);
+      return;
+    }
+    const chosenTransport = Object.entries(transportZones).flatMap(([zone, config]) => config.areas.map((area) => ({ area, zone, fee: config.fee }))).find((item) => item.area === formData.delivery_area);
+    if (!chosenTransport) {
+      setErrorMessage('Please select a valid delivery area.');
+      setSubmitting(false);
+      return;
+    }
     // Optional Bubble Machine add-on (3 hours) is discounted with the castle.
     const bubbleAddonPrice = bubbleMachineAdded ? 200 : 0;
-    const bookingTotal = selectedPkg.price + bubbleAddonPrice;
+    const appliedTransportFee = chosenTransport.fee ?? 0;
+    const bookingTotal = selectedPkg.price + bubbleAddonPrice + appliedTransportFee;
 
     // All packages are now payment-on-delivery.
     const balanceDue = bookingTotal;
@@ -618,8 +643,11 @@ export default function BookingForm() {
       const isPromotional =
         selectedPkg.isPromotional === true;
 
-      let bookingNotes =
-        formData.notes || '';
+      const transportNote = chosenTransport.fee === null
+        ? `[TRANSPORT: ${chosenTransport.area} | ${chosenTransport.zone} | PRICE TO BE QUOTED]`
+        : `[TRANSPORT: ${chosenTransport.area} | ${chosenTransport.zone} | TT${chosenTransport.fee} delivery + collection]`;
+      let bookingNotes = formData.notes || '';
+      bookingNotes = bookingNotes.trim() ? `${transportNote}\\n${bookingNotes.trim()}` : transportNote;
 
       if (bubbleMachineAdded) {
         const addonNote = '[ADD-ON: Bubble Machine - 3 Hours - TT$200]';
@@ -669,7 +697,7 @@ export default function BookingForm() {
               balance_due:
                 balanceDue,
               address:
-                formData.address,
+                `${formData.address.trim()}, ${chosenTransport.area}`, 
               notes: bookingNotes,
               status: 'Pending',
               traffic_source:
@@ -766,6 +794,11 @@ export default function BookingForm() {
 
       setConfirmedBooking({
         ...formData,
+        address: `${formData.address.trim()}, ${chosenTransport.area}`,
+        transportArea: chosenTransport.area,
+        transportZone: chosenTransport.zone,
+        transportFee: chosenTransport.fee,
+        transportQuoteRequired: chosenTransport.fee === null,
         booking_id: bookingId,
         end_time: endTime,
         packageName:
@@ -1925,11 +1958,44 @@ export default function BookingForm() {
                 Total:{' '}
                 <strong>
                   TT$
-                  {currentPkg.price + (bubbleMachineAdded ? 200 : 0)}
+                  {currentPkg.price + (bubbleMachineAdded ? 200 : 0) + transportFee}
                 </strong>
               </span>
             </div>
           )}
+
+          <div>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#334155', marginBottom: '4px' }}>
+              Delivery Area / Community
+            </label>
+            <select name="delivery_area" value={formData.delivery_area} onChange={handleChange} required style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', background: '#fff' }}>
+              <option value="">Select your area</option>
+              {Object.entries(transportZones).map(([zone, config]) => (
+                <optgroup key={zone} label={zone + (config.fee === null ? '' : ' — TT
+              type="text"
+              name="address"
+              value={
+                formData.address
+              }
+              onChange={
+                handleChange
+              }
+              required
+              style={{
+                width:
+                  '100%',
+                padding:
+                  '10px',
+                borderRadius:
+                  '8px',
+                border:
+                  '1px solid #cbd5e1',
+                fontSize:
+                  '14px'
+              }}
+              placeholder="Street, house number, landmark"
+            />
+          </div>
 
           <div>
             <label
@@ -1946,7 +2012,248 @@ export default function BookingForm() {
                   '4px'
               }}
             >
-              Delivery Address / Location
+              Notes (Optional)
+            </label>
+
+            <input
+              type="text"
+              name="notes"
+              value={
+                formData.notes
+              }
+              onChange={
+                handleChange
+              }
+              style={{
+                width:
+                  '100%',
+                padding:
+                  '10px',
+                borderRadius:
+                  '8px',
+                border:
+                  '1px solid #cbd5e1',
+                fontSize:
+                  '14px'
+              }}
+              placeholder="Gate code, surface type, etc."
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={
+              submitting ||
+              loadingPromotion
+            }
+            style={{
+              background:
+                '#22c55e',
+              color:
+                'white',
+              border:
+                'none',
+              padding:
+                '12px',
+              borderRadius:
+                '8px',
+              fontWeight:
+                'bold',
+              fontSize:
+                '15px',
+              cursor:
+                submitting ||
+                loadingPromotion
+                  ? 'not-allowed'
+                  : 'pointer',
+              marginTop:
+                '8px',
+              display:
+                'flex',
+              alignItems:
+                'center',
+              justifyContent:
+                'center',
+              gap: '8px',
+              opacity:
+                submitting ||
+                loadingPromotion
+                  ? 0.7
+                  : 1
+            }}
+          >
+            {submitting
+              ? 'Processing...'
+              : '💬 Generate Booking & Receipt'}
+          </button>
+
+          <div
+            style={{
+              textAlign:
+                'center',
+              fontSize:
+                '12px',
+              color:
+                '#64748b',
+              marginTop:
+                '-4px'
+            }}
+          >
+            💵 Payment due on delivery.
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+ + config.fee)}>
+                  {config.areas.map((area) => <option key={area} value={area}>{area}</option>)}
+                </optgroup>
+              ))}
+            </select>
+            {selectedTransport && <div style={{ marginTop: 8, padding: 10, borderRadius: 8, background: requiresTransportQuote ? '#fff7ed' : '#f0fdf4', color: '#334155', fontSize: 13 }}>
+              <b>Transport:</b> {requiresTransportQuote ? 'Custom quote required — we will confirm the charge with you.' : 'TT
+              type="text"
+              name="address"
+              value={
+                formData.address
+              }
+              onChange={
+                handleChange
+              }
+              required
+              style={{
+                width:
+                  '100%',
+                padding:
+                  '10px',
+                borderRadius:
+                  '8px',
+                border:
+                  '1px solid #cbd5e1',
+                fontSize:
+                  '14px'
+              }}
+              placeholder="Street, house number, landmark"
+            />
+          </div>
+
+          <div>
+            <label
+              style={{
+                display:
+                  'block',
+                fontSize:
+                  '12px',
+                fontWeight:
+                  'bold',
+                color:
+                  '#334155',
+                marginBottom:
+                  '4px'
+              }}
+            >
+              Notes (Optional)
+            </label>
+
+            <input
+              type="text"
+              name="notes"
+              value={
+                formData.notes
+              }
+              onChange={
+                handleChange
+              }
+              style={{
+                width:
+                  '100%',
+                padding:
+                  '10px',
+                borderRadius:
+                  '8px',
+                border:
+                  '1px solid #cbd5e1',
+                fontSize:
+                  '14px'
+              }}
+              placeholder="Gate code, surface type, etc."
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={
+              submitting ||
+              loadingPromotion
+            }
+            style={{
+              background:
+                '#22c55e',
+              color:
+                'white',
+              border:
+                'none',
+              padding:
+                '12px',
+              borderRadius:
+                '8px',
+              fontWeight:
+                'bold',
+              fontSize:
+                '15px',
+              cursor:
+                submitting ||
+                loadingPromotion
+                  ? 'not-allowed'
+                  : 'pointer',
+              marginTop:
+                '8px',
+              display:
+                'flex',
+              alignItems:
+                'center',
+              justifyContent:
+                'center',
+              gap: '8px',
+              opacity:
+                submitting ||
+                loadingPromotion
+                  ? 0.7
+                  : 1
+            }}
+          >
+            {submitting
+              ? 'Processing...'
+              : '💬 Generate Booking & Receipt'}
+          </button>
+
+          <div
+            style={{
+              textAlign:
+                'center',
+              fontSize:
+                '12px',
+              color:
+                '#64748b',
+              marginTop:
+                '-4px'
+            }}
+          >
+            💵 Payment due on delivery.
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+ + transportFee + ' (delivery + collection)'}
+            </div>}
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#334155', marginBottom: '4px' }}>
+              Full Delivery Address
             </label>
 
             <input
@@ -1971,7 +2278,7 @@ export default function BookingForm() {
                 fontSize:
                   '14px'
               }}
-              placeholder="Street address, area"
+              placeholder="Street, house number, landmark"
             />
           </div>
 
