@@ -1972,10 +1972,32 @@ export default function BookingForm() {
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#334155', marginBottom: '4px' }}>
               Delivery Area / Community
             </label>
-            <select name="delivery_area" value={formData.delivery_area} onChange={handleChange} required style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', background: '#fff' }}>
+            <select
+              name="delivery_area"
+              value={formData.delivery_area}
+              onChange={handleChange}
+              required
+              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', background: '#fff' }}
+            >
               <option value="">Select your area</option>
               {Object.entries(transportZones).map(([zone, config]) => (
-                <optgroup key={zone} label={zone + (config.fee === null ? '' : ' — TT
+                <optgroup key={zone} label={zone + (config.fee === null ? '' : ' — TT$' + config.fee)}>
+                  {config.areas.map((area) => <option key={area} value={area}>{area}</option>)}
+                </optgroup>
+              ))}
+            </select>
+            {selectedTransport && (
+              <div style={{ marginTop: 8, padding: 10, borderRadius: 8, background: requiresTransportQuote ? '#fff7ed' : '#f0fdf4', color: '#334155', fontSize: 13 }}>
+                <b>Transport:</b> {requiresTransportQuote ? 'Custom quote required — we will confirm the charge with you.' : 'TT$' + transportFee + ' (delivery + collection)'}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#334155', marginBottom: '4px' }}>
+              Full Delivery Address
+            </label>
+            <input
               type="text"
               name="address"
               value={
