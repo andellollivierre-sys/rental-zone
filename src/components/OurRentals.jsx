@@ -3,17 +3,19 @@ import React from 'react';
 const rentals = [
   {
     title: 'Spider-Man Combo Bouncer',
-    description: 'Our combo bouncer features a bounce area, climbing section and attached dry slide.',
-    detail: 'View dimensions, rental packages and availability.',
-    icon: '🏰',
+    description: 'A complete party setup with a bounce area, climbing section and attached dry slide.',
+    detail: '2 hours: TT$650 • 3 hours: TT$900 • Full day: TT$1,800',
+    image: '/featured image.jpg',
+    imageAlt: 'Spider-Man Combo Bouncer',
     href: '#our-bouncer',
     action: 'View Bouncer Details'
   },
   {
     title: 'Bubble Machine',
-    description: 'Add bubbles to your event or rent the Bubble Machine on its own.',
-    detail: 'Standalone rental: TT$250 for 3 hours. Castle add-on: TT$200 for 3 hours.',
-    icon: '🫧',
+    description: 'Add a stream of bubbles to your event or rent the machine on its own.',
+    detail: 'Standalone: TT$250 for 3 hours • Bouncer add-on: TT$200 for 3 hours. Bubble liquid included.',
+    image: 'https://bouncycastlenetwork-res.cloudinary.com/image/upload/f_auto%2Cq_auto%2Cc_limit%2Cw_900/aa6f1ad7b094ff9dfda6d260a87e54b1',
+    imageAlt: 'Bubble machine producing bubbles',
     href: '#booking',
     action: 'Enquire / Book'
   }
@@ -31,7 +33,14 @@ export default function OurRentals() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: 16 }}>
         {rentals.map((item) => (
           <article key={item.title} style={{ border: '1px solid #e2e8f0', borderRadius: 18, overflow: 'hidden', background: '#ffffff', boxShadow: '0 5px 18px rgba(15,23,42,0.06)' }}>
-            <div style={{ minHeight: 132, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(145deg, #e0f2fe, #f8fafc)', fontSize: 58 }}>{item.icon}</div>
+            <div style={{ width: '100%', height: 210, background: '#f1f5f9', overflow: 'hidden' }}>
+              <img
+                src={item.image}
+                alt={item.imageAlt}
+                loading="lazy"
+                style={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            </div>
             <div style={{ padding: 18 }}>
               <h2 style={{ margin: '0 0 8px', fontSize: 21, fontWeight: 900 }}>{item.title}</h2>
               <p style={{ margin: '0 0 10px', color: '#475569', fontSize: 14, lineHeight: 1.55 }}>{item.description}</p>
