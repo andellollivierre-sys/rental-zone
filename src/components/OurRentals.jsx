@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const CART_KEY = 'trz_shared_booking_cart';
 
@@ -19,7 +19,6 @@ const money = (amount) => `TT$${Number(amount).toLocaleString('en-TT')}`;
 
 export default function OurRentals() {
   const [cart, setCart] = useState(readCart);
-  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(CART_KEY, JSON.stringify(cart));
@@ -32,7 +31,6 @@ export default function OurRentals() {
 
   const updateCart = (changes) => {
     setCart((current) => ({ ...current, ...changes }));
-    setSaved(false);
   };
 
   const continueToBooking = () => {
