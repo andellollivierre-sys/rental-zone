@@ -836,7 +836,7 @@ export default function OurBouncer() {
             <div style={styles.heroCopy}>
 
               <div style={styles.eyebrow}>
-                Our Bouncer
+                Our Rentals
               </div>
 
               <h1 style={styles.heroTitle}>
