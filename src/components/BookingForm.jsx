@@ -1713,9 +1713,13 @@ export default function BookingForm() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 9 }}>
               <div>
                 <div style={{ fontSize: 15, fontWeight: 800, color: '#0f172a' }}>Make the party extra fun</div>
-                <div style={{ fontSize: 11, color: '#64748b' }}>Swipe to explore extras</div>
+                <div style={{ fontSize: 12, color: '#475569' }}>Explore the optional add-ons below.</div>
               </div>
-              <div style={{ fontSize: 11, color: '#64748b' }}>← Swipe →</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 11, padding: '11px 10px', borderRadius: 10, background: '#1e3a8a', color: '#fff', textAlign: 'center' }}>
+              <span aria-hidden="true" style={{ fontSize: 25, lineHeight: 1, fontWeight: 900 }}>←</span>
+              <div style={{ fontSize: 14, lineHeight: 1.25, fontWeight: 900, letterSpacing: '.4px' }}>SWIPE LEFT OR RIGHT<br /><span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0 }}>to see more extras</span></div>
+              <span aria-hidden="true" style={{ fontSize: 25, lineHeight: 1, fontWeight: 900 }}>→</span>
             </div>
             <div style={{ display: 'flex', gap: 10, overflowX: 'auto', scrollSnapType: 'x mandatory', paddingBottom: 8, WebkitOverflowScrolling: 'touch' }}>
               <article style={{ flex: '0 0 260px', scrollSnapAlign: 'start', border: '1px solid #e2e8f0', borderRadius: 11, padding: 10, background: '#fff' }}>
@@ -1725,6 +1729,7 @@ export default function BookingForm() {
                     <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>🫧 Bubble Machine</div>
                     <div style={{ fontSize: 12, color: '#64748b', marginTop: 3 }}>Add floating bubbles to the party</div>
                     <div style={{ fontSize: 13, marginTop: 5 }}><s style={{ color: '#94a3b8' }}>TT$250</s> <strong style={{ color: '#15803d' }}>TT$200 add-on</strong></div>
+                    <div style={{ fontSize: 11, color: '#166534', marginTop: 5, fontWeight: 700 }}>✓ Bubble liquid included — no extra charge</div>
                   </div>
                 </div>
                 <button type="button" onClick={() => setShowBubbleModal(true)} style={{ width: '100%', marginTop: 9, border: '1px solid #2563eb', color: '#1d4ed8', background: '#fff', borderRadius: 8, padding: '8px 10px', fontSize: 12, fontWeight: 800, cursor: 'pointer' }}>View details</button>
@@ -1743,7 +1748,7 @@ export default function BookingForm() {
               <div role="dialog" aria-modal="true" aria-labelledby="bubble-addon-title" onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 380, maxHeight: '90vh', overflowY: 'auto', background: '#fff', borderRadius: 16, padding: 16, boxShadow: '0 20px 60px rgba(0,0,0,.3)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}><h3 id="bubble-addon-title" style={{ margin: 0, color: '#0f172a', fontSize: 18 }}>Bubble Machine</h3><button type="button" aria-label="Close" onClick={() => setShowBubbleModal(false)} style={{ border: 0, borderRadius: 20, width: 32, height: 32, background: '#f1f5f9', fontSize: 20, cursor: 'pointer' }}>×</button></div>
                 <img src="https://bouncycastlenetwork-res.cloudinary.com/image/upload/f_auto%2Cq_auto%2Cc_limit%2Cw_900/aa6f1ad7b094ff9dfda6d260a87e54b1" alt="Professional bubble machine creating bubbles" style={{ display: 'block', width: '100%', height: 190, objectFit: 'contain', background: '#f8fafc', borderRadius: 12 }} />
-                <p style={{ color: '#475569', fontSize: 13, lineHeight: 1.55, margin: '12px 0' }}>Add a stream of floating bubbles to the celebration. Available for a 3-hour rental alongside your Spider-Man Bouncy Castle.</p>
+                <p style={{ color: '#475569', fontSize: 13, lineHeight: 1.55, margin: '12px 0' }}>Add a stream of floating bubbles to the celebration. Available for a 3-hour rental alongside your Spider-Man Bouncy Castle. Bubble liquid is included for the rental at no extra charge.</p>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 9, marginBottom: 14 }}><s style={{ color: '#94a3b8', fontSize: 14 }}>TT$250</s><strong style={{ color: '#15803d', fontSize: 22 }}>TT$200</strong><span style={{ color: '#64748b', fontSize: 12 }}>with castle booking</span></div>
                 <button type="button" onClick={() => { setBubbleMachineAdded(true); setShowBubbleModal(false); trackTrzEvent('bubble_machine_addon_selected', { price: 200, hours: 3 }); }} style={{ width: '100%', border: 0, borderRadius: 9, padding: 12, background: '#16a34a', color: '#fff', fontWeight: 800, fontSize: 14, cursor: 'pointer' }}>{bubbleMachineAdded ? 'Keep Bubble Machine' : 'Add to Booking'}</button>
                 <button type="button" onClick={() => setShowBubbleModal(false)} style={{ width: '100%', border: 0, background: 'transparent', color: '#64748b', padding: 10, fontWeight: 700, cursor: 'pointer' }}>Close</button>
