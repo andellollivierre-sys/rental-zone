@@ -1735,12 +1735,7 @@ export default function BookingForm() {
                 <button type="button" onClick={() => setShowBubbleModal(true)} style={{ width: '100%', marginTop: 9, border: '1px solid #2563eb', color: '#1d4ed8', background: '#fff', borderRadius: 8, padding: '8px 10px', fontSize: 12, fontWeight: 800, cursor: 'pointer' }}>View details</button>
                 {bubbleMachineAdded && <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, fontSize: 12 }}><strong style={{ color: '#166534' }}>✓ Added (+TT$200)</strong><button type="button" onClick={() => setBubbleMachineAdded(false)} style={{ border: 0, background: 'transparent', color: '#b91c1c', fontWeight: 700, cursor: 'pointer' }}>Remove</button></div>}
               </article>
-              <article style={{ flex: '0 0 260px', scrollSnapAlign: 'start', border: '1px solid #e2e8f0', borderRadius: 11, padding: 10, background: '#fff' }}>
-                <img src="https://openclipart.org/download/334227" alt="Cute spider illustration placeholder" style={{ display: 'block', width: '100%', height: 104, objectFit: 'contain', borderRadius: 8, background: '#f8fafc' }} />
-                <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a', marginTop: 7 }}>🕷️ Spider Mascot</div>
-                <div style={{ fontSize: 12, color: '#64748b', marginTop: 3 }}>Preview image only — availability and pricing to be confirmed</div>
-                <div style={{ marginTop: 9, padding: '8px 10px', borderRadius: 8, background: '#f1f5f9', color: '#475569', fontSize: 11, textAlign: 'center' }}>Coming soon</div>
-              </article>
+              
             </div>
           </section>
           {showBubbleModal && (
