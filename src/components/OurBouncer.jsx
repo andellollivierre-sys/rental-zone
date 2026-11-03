@@ -243,6 +243,8 @@ export default function OurBouncer() {
   };
 
   const formatTime = (value) => String(value).padStart(2, '0');
+  const offerRegularValue = Number(offer?.offer_hours || 0) * 325;
+  const offerSavings = Math.max(0, offerRegularValue - Number(offer?.offer_price || 0));
 
   const styles = {
     page: {
@@ -1251,7 +1253,7 @@ export default function OurBouncer() {
                 <div style={styles.specialPricingRow}>
 
                   <span style={styles.oldPrice}>
-                    TT$975
+                    TT${offerRegularValue.toLocaleString('en-TT')}
                   </span>
 
                   <span style={styles.arrow}>
@@ -1264,12 +1266,11 @@ export default function OurBouncer() {
 
                 </div>
 
-                {offer.offer_hours === 3 &&
-                  Number(offer.offer_price) === 600 && (
-                    <div style={styles.savings}>
-                      SAVE TT$375
-                    </div>
-                  )}
+                {offerSavings > 0 && (
+                  <div style={styles.savings}>
+                    SAVE TT${offerSavings.toLocaleString('en-TT')}
+                  </div>
+                )}
 
                 <p style={styles.specialNote}>
                   Get the special rental price with{' '}
