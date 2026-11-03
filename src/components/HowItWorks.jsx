@@ -65,6 +65,8 @@ const steps = [
 export default function HowItWorks() {
   const [offer, setOffer] = useState(null);
   const [secondsLeft, setSecondsLeft] = useState(null);
+  const regularValue = offer ? Number(offer.offer_hours) * 325 : 0;
+  const savings = offer ? Math.max(0, regularValue - Number(offer.offer_price)) : 0;
 
   useEffect(() => {
     trackTrzEvent('how_it_works_view');
@@ -536,7 +538,10 @@ export default function HowItWorks() {
                   color: '#64748b',
                 }}
               >
-                Limited-time offer
+                Regular value: TT${regularValue.toLocaleString('en-TT')}
+                <strong style={{ display: 'block', marginTop: '5px', color: '#c2410c' }}>
+                  YOU SAVE TT${savings.toLocaleString('en-TT')}
+                </strong>
               </div>
 
               <div
