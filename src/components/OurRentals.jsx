@@ -51,6 +51,8 @@ export default function OurRentals() {
 
   const bouncerPrices = { '2_hours': 650, '3_hours': 900, full_day: 1800 };
   const selectedBouncerPrice = cart.packageType === 'promotion' && promotion ? promotion.price : bouncerPrices[cart.packageType];
+  const promotionRegularValue = promotion ? promotion.hours * 325 : 0;
+  const promotionSavings = promotion ? Math.max(0, promotionRegularValue - promotion.price) : 0;
   const selectedDuration = cart.packageType === 'promotion' && promotion ? `${promotion.hours} hours (Special)` : cart.packageType === '2_hours' ? '2 hours' : cart.packageType === '3_hours' ? '3 hours' : '8 hours';
   const bubblePrice = cart.bouncer && cart.bubbleMachine ? 200 : 0;
   const subtotal = (cart.bouncer ? (selectedBouncerPrice || 0) : 0) + bubblePrice;
@@ -80,7 +82,7 @@ export default function OurRentals() {
           <div style={{ padding: 18 }}>
             <h2 style={{ margin: '0 0 8px', fontSize: 21, fontWeight: 900 }}>Spider-Man Combo Bouncer</h2>
             <p style={{ margin: '0 0 12px', color: '#475569', fontSize: 14, lineHeight: 1.55 }}>Bounce area, climbing section and attached slide. 26 × 13 × 13 ft. Up to 8 children.</p>
-            {promotion && <div style={{ margin: '0 0 12px', padding: 13, borderRadius: 12, border: '1px solid #f59e0b', background: '#fffbeb' }}><div style={{ fontWeight: 900, color: '#92400e', fontSize: 15 }}>SPECIAL OFFER — {promotion.hours} HOURS</div><div style={{ color: '#92400e', fontSize: 14, marginTop: 3 }}>{money(promotion.price)} · Limited-time offer</div><div style={{ color: '#78350f', fontSize: 12, marginTop: 4 }}>Select the special below to add it to your booking.</div></div>}
+            {promotion && <div style={{ margin: '0 0 12px', padding: 13, borderRadius: 12, border: '1px solid #f59e0b', background: '#fffbeb' }}><div style={{ fontWeight: 900, color: '#92400e', fontSize: 15 }}>SPECIAL OFFER — {promotion.hours} HOURS</div><div style={{ color: '#92400e', fontSize: 14, marginTop: 3 }}>{money(promotion.price)} · Limited-time offer</div><div style={{ color: '#78350f', fontSize: 12, marginTop: 4 }}>Regular value: {money(promotionRegularValue)} · You save {money(promotionSavings)}</div><div style={{ color: '#78350f', fontSize: 12, marginTop: 4 }}>Select the special below to add it to your booking.</div></div>}
             <label htmlFor="trz-duration" style={{ display: 'block', fontSize: 13, fontWeight: 800, marginBottom: 6 }}>Choose rental duration</label>
             <select id="trz-duration" value={cart.packageType} onChange={(e) => updateCart({ packageType: e.target.value })} style={{ width: '100%', padding: 11, borderRadius: 9, border: '1px solid #cbd5e1', background: '#fff', marginBottom: 12 }}>
               {promotion && <option value="promotion">SPECIAL — {promotion.hours} hours · {money(promotion.price)}</option>}
