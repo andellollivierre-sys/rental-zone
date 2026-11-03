@@ -39,6 +39,8 @@ const faqs = [
 export default function FAQ() {
   const [offer, setOffer] = useState(null);
   const [countdown, setCountdown] = useState('');
+  const regularValue = offer ? Number(offer.offer_hours) * 325 : 0;
+  const savings = offer ? Math.max(0, regularValue - Number(offer.offer_price)) : 0;
 
   useEffect(() => {
     trackTrzEvent('faq_view');
@@ -236,7 +238,7 @@ export default function FAQ() {
               color: '#475569',
               fontSize: '15px'
             }}>
-              Regular price TT$975 — <strong>SAVE TT$375</strong>
+              Regular price TT${regularValue.toLocaleString('en-TT')} — <strong>SAVE TT${savings.toLocaleString('en-TT')}</strong>
             </p>
 
             {countdown && (
