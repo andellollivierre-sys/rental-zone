@@ -1012,7 +1012,18 @@ export default function BookingForm() {
               }}
             >
               <b style={{ color: '#0f172a' }}>COST BREAKDOWN</b>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}><span>Bouncer rental</span><b>{'TT
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+                <span>Bouncer rental</span>
+                <b>{`TT$${confirmedBooking.rentalPrice}`}</b>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+                <span>Transport / delivery</span>
+                <b>{confirmedBooking.transportQuoteRequired ? 'Quote pending' : `TT$${confirmedBooking.transportFee}`}</b>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', borderTop: '1px dashed #cbd5e1', paddingTop: '8px', marginTop: '4px' }}>
+                <b>{confirmedBooking.transportQuoteRequired ? 'PACKAGE SUBTOTAL' : 'TOTAL DUE ON DELIVERY'}</b>
+                <b>{`TT$${confirmedBooking.price}`}</b>
+              </div>
             </div>
           </div>
 
@@ -5439,7 +5450,18 @@ export default function BookingForm() {
               }}
             >
               <b style={{ color: '#0f172a' }}>COST BREAKDOWN</b>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}><span>Bouncer rental</span><b>{'TT
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+                <span>Bouncer rental</span>
+                <b>{`TT$${confirmedBooking.rentalPrice}`}</b>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+                <span>Transport / delivery</span>
+                <b>{confirmedBooking.transportQuoteRequired ? 'Quote pending' : `TT$${confirmedBooking.transportFee}`}</b>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', borderTop: '1px dashed #cbd5e1', paddingTop: '8px', marginTop: '4px' }}>
+                <b>{confirmedBooking.transportQuoteRequired ? 'PACKAGE SUBTOTAL' : 'TOTAL DUE ON DELIVERY'}</b>
+                <b>{`TT$${confirmedBooking.price}`}</b>
+              </div>
             </div>
           </div>
 
@@ -9866,7 +9888,18 @@ export default function BookingForm() {
               }}
             >
               <b style={{ color: '#0f172a' }}>COST BREAKDOWN</b>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}><span>Bouncer rental</span><b>{'TT
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+                <span>Bouncer rental</span>
+                <b>{`TT$${confirmedBooking.rentalPrice}`}</b>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+                <span>Transport / delivery</span>
+                <b>{confirmedBooking.transportQuoteRequired ? 'Quote pending' : `TT$${confirmedBooking.transportFee}`}</b>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', borderTop: '1px dashed #cbd5e1', paddingTop: '8px', marginTop: '4px' }}>
+                <b>{confirmedBooking.transportQuoteRequired ? 'PACKAGE SUBTOTAL' : 'TOTAL DUE ON DELIVERY'}</b>
+                <b>{`TT$${confirmedBooking.price}`}</b>
+              </div>
             </div>
           </div>
 
@@ -14293,7 +14326,18 @@ export default function BookingForm() {
               }}
             >
               <b style={{ color: '#0f172a' }}>COST BREAKDOWN</b>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}><span>Bouncer rental</span><b>{'TT
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+                <span>Bouncer rental</span>
+                <b>{`TT$${confirmedBooking.rentalPrice}`}</b>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+                <span>Transport / delivery</span>
+                <b>{confirmedBooking.transportQuoteRequired ? 'Quote pending' : `TT$${confirmedBooking.transportFee}`}</b>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', borderTop: '1px dashed #cbd5e1', paddingTop: '8px', marginTop: '4px' }}>
+                <b>{confirmedBooking.transportQuoteRequired ? 'PACKAGE SUBTOTAL' : 'TOTAL DUE ON DELIVERY'}</b>
+                <b>{`TT$${confirmedBooking.price}`}</b>
+              </div>
             </div>
           </div>
 
