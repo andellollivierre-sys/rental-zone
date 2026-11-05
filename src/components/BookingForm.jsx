@@ -1919,7 +1919,30 @@ export default function BookingForm() {
             <select name="delivery_area" value={formData.delivery_area} onChange={handleChange} required style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', background: '#fff' }}>
               <option value="">Select your area</option>
               {Object.entries(transportZones).map(([zone, config]) => (
-                <optgroup key={zone} label={zone + (config.fee === null ? '' : ' — TT
+                <optgroup
+                  key={zone}
+                  label={zone + (config.fee === null ? '' : ` — TT$${config.fee}`)}
+                >
+                  {config.areas.map((area) => (
+                    <option key={area} value={area}>{area}</option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label
+              style={{
+                display: 'block',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                color: '#334155',
+                marginBottom: '4px'
+              }}
+            >
+              Delivery Address / Location
+            </label>
               type="text"
               name="address"
               value={
