@@ -554,16 +554,9 @@ export default function BookingForm() {
     }
 
     if (!formData.delivery_area || !formData.address.trim()) {
-      setErrorMessage('Please select your delivery area and enter the full delivery address.');
-      setSubmitting(false);
-      return;
+      setErrorMessage('Please select your delivery area and enter the full delivery address.'); setSubmitting(false); return;
     }
-    if (!selectedTransport) {
-      setErrorMessage('Please select a valid delivery area.');
-      setSubmitting(false);
-      return;
-    }
-
+    if (!selectedTransport) { setErrorMessage('Please select a valid delivery area.'); setSubmitting(false); return; }
     // All packages are now payment-on-delivery.
     const bookingTotal = selectedPkg.price + (selectedTransport.fee ?? 0);
     const balanceDue = bookingTotal;
@@ -1927,9 +1920,6 @@ export default function BookingForm() {
               <option value="">Select your area</option>
               {Object.entries(transportZones).map(([zone, config]) => (
                 <optgroup key={zone} label={zone + (config.fee === null ? '' : ' — TT
-            </label>
-
-            <input
               type="text"
               name="address"
               value={
@@ -2072,9 +2062,6 @@ export default function BookingForm() {
             {selectedTransport && (
               <div style={{ marginTop: 8, padding: 10, borderRadius: 8, background: requiresTransportQuote ? '#fff7ed' : '#f0fdf4', color: '#334155', fontSize: 13 }}>
                 <b>Delivery, Setup &amp; Collection:</b> {requiresTransportQuote ? 'Custom quote required — we will confirm the charge with you.' : 'TT
-            </label>
-
-            <input
               type="text"
               name="address"
               value={
