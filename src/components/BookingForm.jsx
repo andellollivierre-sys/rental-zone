@@ -13,6 +13,7 @@ export default function BookingForm() {
     start_time: '',
     package_type: '3_hours',
     address: '',
+    delivery_area: '',
     notes: ''
   });
 
@@ -24,6 +25,20 @@ export default function BookingForm() {
 
   const [promotionalOffer, setPromotionalOffer] = useState(null);
   const [loadingPromotion, setLoadingPromotion] = useState(true);
+
+  // Fixed delivery zones from Chaguanas; locations outside the listed range require a custom quote.
+  const transportZones = {
+    'Free delivery': { fee: 0, areas: ['Chaguanas', 'Cunupia', 'Charlieville', 'Endeavour', 'Freeport', 'Carapichaima', 'Couva'] },
+    'Zone 1': { fee: 100, areas: ['Tunapuna', 'St. Augustine', 'San Juan', 'Port of Spain', 'Arima'] },
+    'Zone 2': { fee: 150, areas: ['Diego Martin', 'Marabella', 'San Fernando', 'Gasparillo', 'Princes Town', 'Sangre Grande'] },
+    'Zone 3': { fee: 200, areas: ['Penal', 'Debe', 'Siparia', 'Point Fortin', 'Rio Claro'] },
+    'Custom quote': { fee: null, areas: ['Mayaro', 'Toco', 'Other / Not listed'] }
+  };
+  const selectedTransport = Object.entries(transportZones)
+    .flatMap(([zone, config]) => config.areas.map((area) => ({ area, zone, fee: config.fee })))
+    .find((item) => item.area === formData.delivery_area);
+  const transportFee = selectedTransport?.fee ?? 0;
+  const requiresTransportQuote = selectedTransport?.fee === null;
 
   const pageTimerRef = useRef(null);
   const pageExitTrackedRef = useRef(false);
@@ -538,8 +553,13 @@ export default function BookingForm() {
       }
     }
 
+    if (!formData.delivery_area || !formData.address.trim()) {
+      setErrorMessage('Please select your delivery area and enter the full delivery address.'); setSubmitting(false); return;
+    }
+    if (!selectedTransport) { setErrorMessage('Please select a valid delivery area.'); setSubmitting(false); return; }
     // All packages are now payment-on-delivery.
-    const balanceDue = selectedPkg.price;
+    const bookingTotal = selectedPkg.price + (selectedTransport.fee ?? 0);
+    const balanceDue = bookingTotal;
 
     const isAdminOrDev =
       localStorage.getItem(
@@ -612,8 +632,11 @@ export default function BookingForm() {
       const isPromotional =
         selectedPkg.isPromotional === true;
 
-      let bookingNotes =
-        formData.notes || '';
+      const transportNote = selectedTransport.fee === null
+        ? `[TRANSPORT: ${selectedTransport.area} | ${selectedTransport.zone} | PRICE TO BE QUOTED]`
+        : `[TRANSPORT: ${selectedTransport.area} | ${selectedTransport.zone} | TT${selectedTransport.fee} delivery + setup + collection]`;
+      let bookingNotes = formData.notes || '';
+      bookingNotes = bookingNotes.trim() ? `${transportNote}\n${bookingNotes.trim()}` : transportNote;
 
       if (isPromotional) {
         const regularValue =
@@ -648,12 +671,12 @@ export default function BookingForm() {
               package_type:
                 selectedPkg.name,
               total_price:
-                selectedPkg.price,
+                bookingTotal,
               deposit_amount: 0,
               balance_due:
                 balanceDue,
               address:
-                formData.address,
+                `${formData.address.trim()}, ${selectedTransport.area}`,
               notes: bookingNotes,
               status: 'Pending',
               traffic_source:
@@ -714,9 +737,11 @@ export default function BookingForm() {
             }\n` +
             `👤 **Client:** ${formData.customer_name}\n` +
             `📞 **Phone:** ${formData.phone}\n` +
-            `📍 **Address:** ${formData.address}\n` +
+            `📍 **Address:** ${formData.address}, ${selectedTransport.area}\n` +
+            `🚚 **Delivery, Setup & Collection:** ${selectedTransport.zone} - ${selectedTransport.fee === null ? 'QUOTE REQUIRED' : `TT${selectedTransport.fee}`}\n` +
             `📅 **Date:** ${formData.event_date} (${formData.start_time} - ${endTime})\n` +
-            `📦 **Package:** ${selectedPkg.name} (TT$${selectedPkg.price})\n` +
+            `📦 **Package:** ${selectedPkg.name} (TT${selectedPkg.price})\n` +
+            `💰 **Total:** TT${bookingTotal}${requiresTransportQuote ? ' (transport quote pending)' : ''}\n` +
             `${
               isPromotional
                 ? `🔥 **PROMOTION:** Normal value TT$${selectedPkg.regularValue} | Savings TT$${selectedPkg.savings}\n`
@@ -748,12 +773,18 @@ export default function BookingForm() {
 
       setConfirmedBooking({
         ...formData,
+        address: `${formData.address.trim()}, ${selectedTransport.area}`,
+        transportArea: selectedTransport.area,
+        transportZone: selectedTransport.zone,
+        transportFee: selectedTransport.fee,
+        transportQuoteRequired: selectedTransport.fee === null,
         booking_id: bookingId,
         end_time: endTime,
         packageName:
           selectedPkg.name,
         price:
-          selectedPkg.price,
+          bookingTotal,
+        rentalPrice: selectedPkg.price,
         deposit: 0,
         balance:
           balanceDue,
@@ -802,7 +833,7 @@ export default function BookingForm() {
     const promotionLine =
       confirmedBooking.isPromotional
         ? `🔥 Promotional Offer: ${confirmedBooking.packageName}\n` +
-          `💰 Promo Price: TT$${confirmedBooking.price}\n` +
+          `💰 Promo Price: TT${confirmedBooking.rentalPrice}\n` +
           `📊 Normal Value: TT$${confirmedBooking.promotionRegularValue}\n` +
           `💸 Savings: TT$${confirmedBooking.promotionSavings}\n`
         : '';
@@ -815,7 +846,11 @@ export default function BookingForm() {
           `📅 Date: ${confirmedBooking.event_date}\n` +
           `⏰ Time: ${confirmedBooking.start_time} - ${confirmedBooking.end_time} (${confirmedBooking.packageName})\n` +
           promotionLine +
-          `💰 Total: TT$${confirmedBooking.price}\n` +
+          `🧾 COST BREAKDOWN\n` +
+          `Bouncer rental: TT${confirmedBooking.rentalPrice}\n` +
+          `Transport / delivery: ${confirmedBooking.transportQuoteRequired ? 'QUOTE PENDING' : `TT${confirmedBooking.transportFee}`}\n` +
+          `Setup: FREE\nBreakdown: FREE\nAttendant: FREE\n` +
+          `${confirmedBooking.transportQuoteRequired ? 'PACKAGE SUBTOTAL' : 'TOTAL DUE ON DELIVERY'}: TT${confirmedBooking.price}\n` +
           `💵 Payment: Due on Delivery\n` +
           `📍 Address: ${confirmedBooking.address}\n` +
           (confirmedBooking.notes
@@ -977,11 +1012,19 @@ export default function BookingForm() {
                 marginTop: '4px'
               }}
             >
-              💰 <b>Total Price:</b>{' '}
-              TT$
-              {
-                confirmedBooking.price
-              }
+              🧾 <b>COST BREAKDOWN</b>
+              <br />
+              Bouncer rental: TT${confirmedBooking.rentalPrice}
+              <br />
+              Transport / delivery:{' '}
+              {confirmedBooking.transportQuoteRequired
+                ? 'QUOTE PENDING'
+                : `TT${confirmedBooking.transportFee}`}
+              <br />
+              Setup: FREE · Breakdown: FREE · Attendant: FREE
+              <br />
+              💰 <b>{confirmedBooking.transportQuoteRequired ? 'PACKAGE SUBTOTAL' : 'TOTAL DUE ON DELIVERY'}:</b>{' '}
+              TT${confirmedBooking.price}
               <br />
               💵 <b>Payment:</b>{' '}
               Due on Delivery
@@ -1875,7 +1918,7 @@ export default function BookingForm() {
                 <strong>
                   TT$
                   {
-                    currentPkg.price
+                    currentPkg.price + transportFee
                   }
                 </strong>
               </span>
@@ -1883,23 +1926,36 @@ export default function BookingForm() {
           )}
 
           <div>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#334155', marginBottom: '4px' }}>
+              Delivery Area / Community
+            </label>
+            <select name="delivery_area" value={formData.delivery_area} onChange={handleChange} required style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', background: '#fff' }}>
+              <option value="">Select your area</option>
+              {Object.entries(transportZones).map(([zone, config]) => (
+                <optgroup
+                  key={zone}
+                  label={zone + (config.fee === null ? '' : ` — TT$${config.fee}`)}
+                >
+                  {config.areas.map((area) => (
+                    <option key={area} value={area}>{area}</option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+
+          <div>
             <label
               style={{
-                display:
-                  'block',
-                fontSize:
-                  '12px',
-                fontWeight:
-                  'bold',
-                color:
-                  '#334155',
-                marginBottom:
-                  '4px'
+                display: 'block',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                color: '#334155',
+                marginBottom: '4px'
               }}
             >
               Delivery Address / Location
             </label>
-
             <input
               type="text"
               name="address"
