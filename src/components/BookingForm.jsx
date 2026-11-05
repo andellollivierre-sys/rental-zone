@@ -848,7 +848,7 @@ export default function BookingForm() {
           promotionLine +
           `🧾 COST BREAKDOWN\n` +
           `Bouncer rental: TT${confirmedBooking.rentalPrice}\n` +
-          'Transport / delivery: ' + (confirmedBooking.transportQuoteRequired ? 'QUOTE PENDING' : 'TT
+          `Transport / delivery: ${confirmedBooking.transportQuoteRequired ? 'QUOTE PENDING' : 'TT' + String.fromCharCode(36) + confirmedBooking.transportFee}\n` +
           `💵 Payment: Due on Delivery\n` +
           `📍 Address: ${confirmedBooking.address}\n` +
           (confirmedBooking.notes
