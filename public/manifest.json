@@ -1,0 +1,20 @@
+{
+  "id": "/",
+  "name": "The Rental Zone TT",
+  "short_name": "Rental Zone",
+  "description": "Book bouncy castle rentals for parties and events in Trinidad and Tobago.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/pwa-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
