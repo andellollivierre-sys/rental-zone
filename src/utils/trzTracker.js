@@ -9,6 +9,16 @@ function generateShortCode() {
 }
 
 // Initialize or retrieve authoritative session ID and short code from sessionStorage
+export function getVisitorId() {
+  if (typeof window === 'undefined') return null;
+  let visitorId = localStorage.getItem('trz_visitor_id');
+  if (!visitorId) {
+    visitorId = crypto.randomUUID ? crypto.randomUUID() : 'visitor_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem('trz_visitor_id', visitorId);
+  }
+  return visitorId;
+}
+
 export function getSessionData() {
   if (typeof window === 'undefined') return { sessionId: 'ssr', shortCode: 'TRZ-0000' };
 
@@ -190,6 +200,7 @@ export async function trackTrzEvent(eventName, additionalData = {}) {
     const payload = {
       session_id: sessionId,
       tracking_code: shortCode,
+      visitor_id: getVisitorId(),
       event: eventName,
       page: window.location.pathname || '/',
       page_duration_seconds: additionalData.page_duration_seconds || 0,
