@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
-import { trackTrzEvent, createPageTimer, getAttributionData, getSessionData } from '../utils/trzTracker';
+import { trackTrzEvent, createPageTimer, getAttributionData, getSessionData, getVisitorId } from '../utils/trzTracker';
 
 // Keep your existing Discord webhook URL in this constant.
 const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1551792830639382571/dxVXhU-U6CJxCGdUfBypOxjy3uOPK1mjismTZgLGNP3kyGPuh0Dn3YAlgmjcFLtHcXpU';
@@ -664,6 +664,7 @@ export default function BookingForm() {
               last_touch_landing_page: lastTouch.landingPage || null,
               attribution_session_id: sessionId,
               attribution_tracking_code: shortCode,
+              visitor_id: getVisitorId(),
               is_test:
                 isAdminOrDev
             }
