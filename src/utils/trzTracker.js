@@ -177,18 +177,20 @@ export async function trackTrzEvent(eventName, additionalData = {}) {
     // Restore required debug log format
     console.log(`[TRZ TRACK]\n${shortCode}\n${eventName}\n${payload.page}\n${payload.source}\n${payload.device}`);
 
-    // Non-blocking database insertion into visitor_events
-    supabase
-      .from('visitor_events')
-      .insert([payload])
-      .then(({ error }) => {
-        if (error) {
-          console.warn('[TRZ TRACK] Supabase write warning:', error.message);
-        }
-      })
-      .catch((err) => {
-        console.warn('[TRZ TRACK] Network warning:', err);
-      });
+    // Send events through the server endpoint so the server can derive
+    // a privacy-preserving IP fingerprint. Never collect/store raw IPs.
+    fetch('/api/trz-track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      keepalive: true,
+      body: JSON.stringify(payload)
+    }).then((response) => {
+      if (!response.ok) {
+        console.warn('[TRZ TRACK] Server write warning:', response.status);
+      }
+    }).catch((err) => {
+      console.warn('[TRZ TRACK] Network warning:', err);
+    });
 
   } catch (err) {
     // Ensure tracking failures NEVER block execution or UI navigation
