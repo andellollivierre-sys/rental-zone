@@ -66,6 +66,7 @@ export default async function handler(req, res) {
   const payload = {
     session_id: typeof body.session_id === 'string' ? body.session_id.slice(0, 100) : null,
     tracking_code: typeof body.tracking_code === 'string' ? body.tracking_code.slice(0, 30) : null,
+    visitor_id: typeof body.visitor_id === 'string' ? body.visitor_id.slice(0, 80) : null,
     event: body.event,
     page: typeof body.page === 'string' ? body.page.slice(0, 500) : '/',
     page_duration_seconds: Number.isFinite(Number(body.page_duration_seconds))
