@@ -38,77 +38,107 @@ export function shouldFireSessionStarted() {
   return false;
 }
 
-// Parse and cache attribution parameters once per session in sessionStorage
-export function getAttributionData() {
-  if (typeof window === 'undefined') {
-    return { source: 'direct', utmSource: null, utmMedium: null, utmCampaign: null, utmContent: null, utmTerm: null, referrer: null, device: 'desktop', isTest: false };
+// Preserve first identifiable source and the latest visit source separately.
+function classifyTraffic(params, referrer) {
+  const utmSource = params.get('utm_source');
+  const utmMedium = params.get('utm_medium');
+  const utmCampaign = params.get('utm_campaign');
+  const clickId = params.get('gclid') || params.get('gbraid') || params.get('wbraid') || params.get('fbclid') || params.get('msclkid') || null;
+
+  if (utmSource) {
+    return {
+      source: utmSource.toLowerCase(),
+      medium: (utmMedium || (clickId ? 'paid' : 'referral')).toLowerCase(),
+      campaign: utmCampaign,
+      clickId
+    };
+  }
+  if (params.has('gclid') || params.has('gbraid') || params.has('wbraid')) {
+    return { source: 'google', medium: 'cpc', campaign: null, clickId };
+  }
+  if (params.has('fbclid')) {
+    return { source: 'facebook', medium: 'paid_social', campaign: null, clickId };
+  }
+  if (params.has('msclkid')) {
+    return { source: 'bing', medium: 'cpc', campaign: null, clickId };
   }
 
-  const cached = sessionStorage.getItem('trz_attribution');
-  if (cached) {
-    try {
-      return JSON.parse(cached);
-    } catch {
-      // fall through to recalculate if cache is invalid
-    }
+  let hostname = '';
+  try { hostname = referrer ? new URL(referrer).hostname.toLowerCase() : ''; } catch {}
+  if (hostname === 'google.com' || hostname.endsWith('.google.com') || hostname === 'google.tt') {
+    return { source: 'google', medium: 'organic', campaign: null, clickId: null };
+  }
+  if (hostname.includes('bing.com')) return { source: 'bing', medium: 'organic', campaign: null, clickId: null };
+  if (hostname.includes('facebook.com') || hostname === 'fb.com' || hostname === 'l.facebook.com') {
+    return { source: 'facebook', medium: 'organic_social', campaign: null, clickId: null };
+  }
+  if (hostname.includes('instagram.com')) return { source: 'instagram', medium: 'organic_social', campaign: null, clickId: null };
+  if (hostname.includes('tiktok.com')) return { source: 'tiktok', medium: 'organic_social', campaign: null, clickId: null };
+  if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) return { source: 'youtube', medium: 'organic_video', campaign: null, clickId: null };
+  if (hostname) return { source: hostname.replace(/^www\\./, ''), medium: 'referral', campaign: null, clickId: null };
+  return { source: 'direct', medium: 'none', campaign: null, clickId: null };
+}
+
+export function getAttributionData() {
+  if (typeof window === 'undefined') {
+    return { source: 'direct', medium: 'none', campaign: null, clickId: null, firstTouch: { source: 'direct', medium: 'none', campaign: null, clickId: null, referrer: null, landingPage: '/' }, referrer: null, device: 'desktop', isTest: false };
   }
 
   const urlParams = new URLSearchParams(window.location.search);
-  
-  // Check existing test/admin mechanisms
-  const isTest = 
-    urlParams.get('test') === 'true' || 
-    urlParams.get('is_test') === '1' || 
-    localStorage.getItem('dev_mode') === 'true' || 
-    localStorage.getItem('is_admin') === 'true' || 
+  const referrer = document.referrer || null;
+  const current = classifyTraffic(urlParams, referrer);
+  const landingPage = window.location.pathname + window.location.search;
+  const isTest =
+    urlParams.get('test') === 'true' ||
+    urlParams.get('is_test') === '1' ||
+    localStorage.getItem('dev_mode') === 'true' ||
+    localStorage.getItem('is_admin') === 'true' ||
     window.location.hostname === 'localhost' ||
     window.location.hostname === '127.0.0.1';
 
-  const utmSource = urlParams.get('utm_source');
-  const utmMedium = urlParams.get('utm_medium');
-  const utmCampaign = urlParams.get('utm_campaign');
-  const utmContent = urlParams.get('utm_content');
-  const utmTerm = urlParams.get('utm_term');
-  const referrer = document.referrer || null;
-
-  // Determine source priority: utm_source -> referrer domain -> 'direct'
-  let source = 'direct';
-  if (utmSource) {
-    source = utmSource.toLowerCase();
-  } else if (referrer) {
-    try {
-      const refUrl = new URL(referrer);
-      if (!refUrl.hostname.includes(window.location.hostname)) {
-        source = refUrl.hostname;
-      }
-    } catch {
-      // invalid URL format in referrer, keep default
+  let firstTouch = null;
+  try { firstTouch = JSON.parse(localStorage.getItem('trz_first_touch') || 'null'); } catch {}
+  if (!firstTouch || (firstTouch.source === 'direct' && current.source !== 'direct')) {
+    if (current.source !== 'direct' || !firstTouch) {
+      firstTouch = {
+        source: current.source,
+        medium: current.medium,
+        campaign: current.campaign,
+        clickId: current.clickId,
+        referrer,
+        landingPage,
+        capturedAt: new Date().toISOString()
+      };
+      localStorage.setItem('trz_first_touch', JSON.stringify(firstTouch));
     }
   }
 
-  // Correct device detection ordering: tablets (iPad/tablet) checked before mobile
+  const lastTouch = {
+    source: current.source,
+    medium: current.medium,
+    campaign: current.campaign,
+    clickId: current.clickId,
+    referrer,
+    landingPage,
+    capturedAt: new Date().toISOString()
+  };
+  sessionStorage.setItem('trz_last_touch', JSON.stringify(lastTouch));
+
   const ua = navigator.userAgent || '';
   let device = 'desktop';
-  if (/tablet|ipad/i.test(ua)) {
-    device = 'tablet';
-  } else if (/android|iphone|ipod|mobile/i.test(ua)) {
-    device = 'mobile';
-  }
+  if (/tablet|ipad/i.test(ua)) device = 'tablet';
+  else if (/android|iphone|ipod|mobile/i.test(ua)) device = 'mobile';
 
-  const attr = {
-    source,
-    utmSource,
-    utmMedium,
-    utmCampaign,
-    utmContent,
-    utmTerm,
+  return {
+    source: current.source,
+    medium: current.medium,
+    campaign: current.campaign,
+    clickId: current.clickId,
+    firstTouch: firstTouch || lastTouch,
     referrer,
     device,
     isTest
   };
-
-  sessionStorage.setItem('trz_attribution', JSON.stringify(attr));
-  return attr;
 }
 
 // Reusable page duration timer supporting active time tracking and visibility handling
