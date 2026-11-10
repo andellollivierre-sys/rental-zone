@@ -1,5 +1,3 @@
-import { supabase } from '../supabaseClient';
-
 // Helper to generate a short human-readable tracking code (e.g. TRZ-8492)
 function generateShortCode() {
   const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
