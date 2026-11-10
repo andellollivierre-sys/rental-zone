@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
-import { trackTrzEvent, createPageTimer } from '../utils/trzTracker';
+import { trackTrzEvent, createPageTimer, getAttributionData, getSessionData } from '../utils/trzTracker';
 
 // Keep your existing Discord webhook URL in this constant.
 const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1551792830639382571/dxVXhU-U6CJxCGdUfBypOxjy3uOPK1mjismTZgLGNP3kyGPuh0Dn3YAlgmjcFLtHcXpU';
@@ -571,53 +571,19 @@ export default function BookingForm() {
       window.location.hostname ===
         'localhost';
 
-    let storedTracking = {};
+    const attribution = getAttributionData();
+    const firstTouch = attribution.firstTouch || {};
+    const lastTouch = (() => {
+      try { return JSON.parse(sessionStorage.getItem('trz_last_touch') || 'null') || {}; }
+      catch { return {}; }
+    })();
+    const { sessionId, shortCode } = getSessionData();
 
-    try {
-      storedTracking =
-        JSON.parse(
-          sessionStorage.getItem(
-            'trz_tracking'
-          )
-        ) || {};
-    } catch (err) {
-      storedTracking = {};
-    }
-
-    const urlParams =
-      new URLSearchParams(
-        window.location.search
-      );
-
-    const trafficSource =
-      storedTracking.traffic_source ||
-      urlParams.get('utm_source') ||
-      'direct';
-
-    const utmMedium =
-      storedTracking.utm_medium ||
-      urlParams.get('utm_medium') ||
-      (urlParams.get('fbclid')
-        ? 'social_ad'
-        : 'none');
-
-    const utmCampaign =
-      storedTracking.utm_campaign ||
-      urlParams.get('utm_campaign') ||
-      'none';
-
-    const clickId =
-      storedTracking.click_id ||
-      urlParams.get('fbclid') ||
-      urlParams.get('gclid') ||
-      null;
-
-    const deviceType =
-      /Mobi|Android/i.test(
-        navigator.userAgent
-      )
-        ? 'Mobile'
-        : 'Desktop';
+    const trafficSource = lastTouch.source || attribution.source || 'direct';
+    const utmMedium = lastTouch.medium || attribution.medium || 'none';
+    const utmCampaign = lastTouch.campaign || attribution.campaign || 'none';
+    const clickId = lastTouch.clickId || attribution.clickId || null;
+    const deviceType = attribution.device || 'desktop';
 
     try {
       // Generate the booking ID client-side so tracking can attach
@@ -679,14 +645,25 @@ export default function BookingForm() {
                 `${formData.address.trim()}, ${selectedTransport.area}`,
               notes: bookingNotes,
               status: 'Pending',
-              traffic_source:
-                trafficSource,
+              traffic_source: trafficSource,
               utm_medium: utmMedium,
-              utm_campaign:
-                utmCampaign,
+              utm_campaign: utmCampaign,
               click_id: clickId,
-              device_type:
-                deviceType,
+              device_type: deviceType,
+              first_touch_source: firstTouch.source || null,
+              first_touch_medium: firstTouch.medium || null,
+              first_touch_campaign: firstTouch.campaign || null,
+              first_touch_click_id: firstTouch.clickId || null,
+              first_touch_referrer: firstTouch.referrer || null,
+              first_touch_landing_page: firstTouch.landingPage || null,
+              last_touch_source: lastTouch.source || trafficSource,
+              last_touch_medium: lastTouch.medium || utmMedium,
+              last_touch_campaign: lastTouch.campaign || utmCampaign,
+              last_touch_click_id: lastTouch.clickId || clickId,
+              last_touch_referrer: lastTouch.referrer || null,
+              last_touch_landing_page: lastTouch.landingPage || null,
+              attribution_session_id: sessionId,
+              attribution_tracking_code: shortCode,
               is_test:
                 isAdminOrDev
             }
