@@ -77,6 +77,7 @@ export default async function handler(req, res) {
     utm_campaign: typeof body.utm_campaign === 'string' ? body.utm_campaign.slice(0, 300) : null,
     utm_content: typeof body.utm_content === 'string' ? body.utm_content.slice(0, 300) : null,
     utm_term: typeof body.utm_term === 'string' ? body.utm_term.slice(0, 300) : null,
+    click_id: typeof body.click_id === 'string' ? body.click_id.slice(0, 500) : null,
     referrer: typeof body.referrer === 'string' ? body.referrer.slice(0, 1000) : null,
     device: typeof body.device === 'string' ? body.device.slice(0, 30) : null,
     popup_type: typeof body.popup_type === 'string' ? body.popup_type.slice(0, 100) : null,
