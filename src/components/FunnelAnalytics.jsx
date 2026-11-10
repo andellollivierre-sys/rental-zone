@@ -149,7 +149,7 @@ export default function FunnelAnalytics() {
         supabase
           .from('visitor_events')
           .select(
-            'session_id,event,source,utm_source,utm_medium,utm_campaign,referrer,device,is_test,created_at'
+            'session_id,visitor_id,ip_hash,event,source,utm_source,utm_medium,utm_campaign,referrer,device,is_test,created_at'
           )
           .eq('is_test', false)
           .order('created_at', { ascending: false }),
@@ -265,6 +265,54 @@ export default function FunnelAnalytics() {
       [...group.campaigns].join(', ') || '—',
     ])
     .sort((a, b) => b[1] - a[1]);
+
+  // Group recorded events by persistent browser ID. IP hashes are secondary clues only.
+  const visitorGroups = events.reduce((result, event) => {
+    if (!event.visitor_id) return result;
+
+    if (!result[event.visitor_id]) {
+      result[event.visitor_id] = {
+        sessions: new Set(),
+        ipHashes: new Set(),
+        eventCount: 0,
+        firstSeen: event.created_at,
+        lastSeen: event.created_at,
+      };
+    }
+
+    const visitor = result[event.visitor_id];
+    visitor.eventCount += 1;
+    if (event.session_id) visitor.sessions.add(event.session_id);
+    if (event.ip_hash) visitor.ipHashes.add(event.ip_hash);
+
+    const eventTime = new Date(event.created_at).getTime();
+    if (eventTime < new Date(visitor.firstSeen).getTime()) {
+      visitor.firstSeen = event.created_at;
+    }
+    if (eventTime > new Date(visitor.lastSeen).getTime()) {
+      visitor.lastSeen = event.created_at;
+    }
+    return result;
+  }, {});
+
+  const formatSeen = (value) =>
+    value
+      ? new Date(value).toLocaleString('en-TT', {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+        })
+      : '—';
+
+  const visitorRows = Object.entries(visitorGroups)
+    .map(([visitorId, visitor]) => [
+      visitorId,
+      String(visitor.sessions.size),
+      String(visitor.eventCount),
+      [...visitor.ipHashes].join(', ') || '—',
+      formatSeen(visitor.firstSeen),
+      formatSeen(visitor.lastSeen),
+    ])
+    .sort((a, b) => Number(b[1]) - Number(a[1]));
 
   const bookingStatuses = bookings.reduce((result, booking) => {
     const status = String(
@@ -425,6 +473,34 @@ export default function FunnelAnalytics() {
           rows={sourceRows.map((row) => row.map(String))}
           emptyMessage="No source attribution data recorded."
         />
+      </section>
+
+      <section style={panelStyle}>
+        <h3 style={{ margin: '0 0 6px', fontSize: 16 }}>
+          Repeat visitor IDs
+        </h3>
+        <p style={{ margin: '0 0 14px', color: '#64748b', fontSize: 12 }}>
+          Visitor ID is the primary repeat-browser match. IP hash is a secondary
+          network clue, not proof of a person's identity. Different people can
+          share an IP address, and one person can have different IDs across
+          browsers or devices. Older events without visitor IDs are not listed.
+        </p>
+        <DataTable
+          headers={[
+            'Visitor ID',
+            'Sessions',
+            'Events',
+            'IP hash(es)',
+            'First seen',
+            'Last seen',
+          ]}
+          rows={visitorRows}
+          emptyMessage="No visitor IDs recorded yet."
+        />
+        <p style={{ color: '#64748b', fontSize: 11, marginBottom: 0 }}>
+          Full pseudonymous IDs are shown so you can compare repeat visits.
+          Raw IP addresses are not displayed or stored by this tracking system.
+        </p>
       </section>
 
       <section style={panelStyle}>
