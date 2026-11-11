@@ -295,11 +295,18 @@ export default function FunnelAnalytics() {
     return result;
   }, {});
 
-  // Short, stable dashboard labels; full identifiers remain unchanged in Supabase.
-  const shortVisitorCode = (value) =>
-    value
-      ? `HTRZ-${String(value).replace(/[^a-z0-9]/gi, '').slice(0, 10).toUpperCase()}`
-      : '—';
+  // Compact, stable four-digit dashboard alias; original IDs remain in Supabase.
+  const shortVisitorCode = (value) => {
+    if (!value) return '—';
+    let hash = 2166136261;
+    for (const character of String(value)) {
+      hash ^= character.charCodeAt(0);
+      hash = Math.imul(hash, 16777619);
+    }
+    return `HTRZ-${(hash >>> 0) % 10000}`.replace(/HTRZ-(\\d)$/, 'HTRZ-000$1')
+      .replace(/HTRZ-(\\d{2})$/, 'HTRZ-00$1')
+      .replace(/HTRZ-(\\d{3})$/, 'HTRZ-0$1');
+  };
 
   const formatSeen = (value) =>
     value
