@@ -55,6 +55,24 @@ function classifyTraffic(params, referrer) {
   const utmCampaign = params.get('utm_campaign');
   const clickId = params.get('gclid') || params.get('gbraid') || params.get('wbraid') || params.get('fbclid') || params.get('msclkid') || null;
 
+  // ChatGPT may appear as a UTM source on the inbound link or inside
+  // a same-site referrer URL after an intermediate redirect.
+  let referrerUtmSource = '';
+  try {
+    referrerUtmSource = referrer ? (new URL(referrer).searchParams.get('utm_source') || '').toLowerCase() : '';
+  } catch {}
+
+  const normalizedUtmSource = (utmSource || '').toLowerCase();
+  if (['chatgpt.com', 'chatgpt'].includes(normalizedUtmSource) ||
+      ['chatgpt.com', 'chatgpt'].includes(referrerUtmSource)) {
+    return {
+      source: 'chatgpt',
+      medium: (utmMedium || 'referral').toLowerCase(),
+      campaign: utmCampaign,
+      clickId
+    };
+  }
+
   if (utmSource) {
     return {
       source: utmSource.toLowerCase(),
