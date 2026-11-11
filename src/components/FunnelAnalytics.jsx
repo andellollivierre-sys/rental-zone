@@ -295,6 +295,12 @@ export default function FunnelAnalytics() {
     return result;
   }, {});
 
+  // Short, stable dashboard labels; full identifiers remain unchanged in Supabase.
+  const shortVisitorCode = (value) =>
+    value
+      ? `HTRZ-${String(value).replace(/[^a-z0-9]/gi, '').slice(0, 10).toUpperCase()}`
+      : '—';
+
   const formatSeen = (value) =>
     value
       ? new Date(value).toLocaleString('en-TT', {
@@ -305,10 +311,10 @@ export default function FunnelAnalytics() {
 
   const visitorRows = Object.entries(visitorGroups)
     .map(([visitorId, visitor]) => [
-      visitorId,
+      shortVisitorCode(visitorId),
       String(visitor.sessions.size),
       String(visitor.eventCount),
-      [...visitor.ipHashes].join(', ') || '—',
+      [...visitor.ipHashes].map(shortVisitorCode).join(', ') || '—',
       formatSeen(visitor.firstSeen),
       formatSeen(visitor.lastSeen),
     ])
@@ -490,7 +496,7 @@ export default function FunnelAnalytics() {
             'Visitor ID',
             'Sessions',
             'Events',
-            'IP hash(es)',
+            'IP hash code(s)',
             'First seen',
             'Last seen',
           ]}
@@ -498,8 +504,9 @@ export default function FunnelAnalytics() {
           emptyMessage="No visitor IDs recorded yet."
         />
         <p style={{ color: '#64748b', fontSize: 11, marginBottom: 0 }}>
-          Full pseudonymous IDs are shown so you can compare repeat visits.
-          Raw IP addresses are not displayed or stored by this tracking system.
+          Short HTRZ codes are stable dashboard labels for repeat matching.
+          Full identifiers remain in Supabase; raw IP addresses are not displayed
+          or stored by this tracking system.
         </p>
       </section>
 
