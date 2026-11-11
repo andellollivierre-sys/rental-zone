@@ -295,7 +295,8 @@ export default function FunnelAnalytics() {
     return result;
   }, {});
 
-  // Compact, stable four-digit dashboard alias; original IDs remain in Supabase.
+  // Compact, stable four-character alphanumeric dashboard alias.
+  // Original identifiers remain unchanged in Supabase.
   const shortVisitorCode = (value) => {
     if (!value) return '—';
     let hash = 2166136261;
@@ -303,7 +304,7 @@ export default function FunnelAnalytics() {
       hash ^= character.charCodeAt(0);
       hash = Math.imul(hash, 16777619);
     }
-    return `HTRZ-${String((hash >>> 0) % 10000).padStart(4, '0')}`;
+    return `HTRZ-${(hash >>> 0).toString(36).toUpperCase().padStart(7, '0').slice(-4)}`;
   };
 
   const formatSeen = (value) =>
