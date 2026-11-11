@@ -303,9 +303,7 @@ export default function FunnelAnalytics() {
       hash ^= character.charCodeAt(0);
       hash = Math.imul(hash, 16777619);
     }
-    return `HTRZ-${(hash >>> 0) % 10000}`.replace(/HTRZ-(\\d)$/, 'HTRZ-000$1')
-      .replace(/HTRZ-(\\d{2})$/, 'HTRZ-00$1')
-      .replace(/HTRZ-(\\d{3})$/, 'HTRZ-0$1');
+    return `HTRZ-${String((hash >>> 0) % 10000).padStart(4, '0')}`;
   };
 
   const formatSeen = (value) =>
