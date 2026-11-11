@@ -6,6 +6,7 @@ import OurBouncer from './components/OurBouncer';
 import HowItWorks from './components/HowItWorks';
 import FAQ from './components/FAQ';
 import Contact from './components/Contact';
+import WhatsAppChannelBar from './components/WhatsAppChannelBar';
 
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState(
@@ -36,6 +37,7 @@ export default function App() {
 
   const isActive = (href) =>
     currentRoute === href || (href === '#home' && currentRoute === '');
+  const isHomePage = currentRoute === '#home' || currentRoute === '';
 
   return (
     <div
@@ -47,6 +49,7 @@ export default function App() {
         overflowX: 'hidden',
       }}
     >
+      {isHomePage && <WhatsAppChannelBar />}
       <style>
         {`
           .trz-desktop-nav {
