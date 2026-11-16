@@ -1665,6 +1665,67 @@ export default function BookingForm() {
             </div>
           </div>
 
+          {promotionPackage && (
+            <div
+              onClick={() => handlePackageSelect('promotion')}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handlePackageSelect('promotion');
+                }
+              }}
+              style={{
+                border: formData.package_type === 'promotion' ? '2px solid #16a34a' : '1px solid #86efac',
+                background: formData.package_type === 'promotion' ? '#f0fdf4' : '#ffffff',
+                padding: '14px 16px',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                position: 'relative',
+                transition: 'all 0.2s',
+                marginTop: '12px'
+              }}
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '-10px',
+                  right: '12px',
+                  background: '#16a34a',
+                  color: 'white',
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  padding: '3px 9px',
+                  borderRadius: '10px'
+                }}
+              >
+                LIMITED-TIME SPECIAL
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                <div>
+                  <div style={{ fontWeight: 'bold', color: '#166534', fontSize: '15px' }}>
+                    {promotionPackage.hours} Hours Special
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#15803d', fontWeight: '600', marginTop: '3px' }}>
+                    Save TT${promotionPackage.savings.toLocaleString('en-TT', { maximumFractionDigits: 2 })}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '3px' }}>
+                    Available while this offer is active
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div style={{ fontSize: '12px', color: '#94a3b8', textDecoration: 'line-through' }}>
+                    TT${promotionPackage.regularValue.toLocaleString('en-TT', { maximumFractionDigits: 2 })}
+                  </div>
+                  <div style={{ fontWeight: 'bold', color: '#15803d', fontSize: '19px' }}>
+                    TT${promotionPackage.price.toLocaleString('en-TT', { maximumFractionDigits: 2 })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div
             style={{
               display:
