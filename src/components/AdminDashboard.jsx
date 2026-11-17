@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import FunnelAnalytics from './FunnelAnalytics';
+import TestCentre from './admin/TestCentre';
 
 const ADMIN_EMAIL = 'andell.ollivierre@gmail.com';
 
@@ -2350,6 +2351,13 @@ export default function AdminDashboard() {
           💰 Business Finance
         </button>
 
+        <button onClick={() => setActiveTab('test')} style={{
+          background: activeTab === 'test' ? '#0f172a' : '#f1f5f9',
+          color: activeTab === 'test' ? 'white' : '#475569',
+          border: 'none', padding: '8px 16px', borderRadius: '8px',
+          fontWeight: 'bold', cursor: 'pointer', fontSize: '13px'
+        }}>🧪 Test Centre</button>
+
         <button
           onClick={() =>
             setActiveTab(
@@ -2387,7 +2395,9 @@ export default function AdminDashboard() {
           CONDITIONAL TAB VIEW
       ======================================================== */}
 
-      {activeTab ===
+      {activeTab === 'test' ? (
+        <TestCentre session={session} />
+      ) : activeTab ===
       'analytics' ? (
         <div
           style={{
