@@ -5,6 +5,12 @@ import { trackTrzEvent, createPageTimer, getAttributionData, getSessionData, get
 // Keep your existing Discord webhook URL in this constant.
 const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1551792830639382571/dxVXhU-U6CJxCGdUfBypOxjy3uOPK1mjismTZgLGNP3kyGPuh0Dn3YAlgmjcFLtHcXpU';
 
+// Track progress by field name only. Never send the visitor's typed values.
+const BOOKING_TRACKABLE_FIELDS = new Set([
+  'customer_name', 'phone', 'package_type', 'event_date',
+  'start_time', 'delivery_area', 'address', 'notes'
+]);
+
 export default function BookingForm() {
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -42,6 +48,43 @@ export default function BookingForm() {
 
   const pageTimerRef = useRef(null);
   const pageExitTrackedRef = useRef(false);
+  const formInteractionRef = useRef(false);
+  const formSubmittedRef = useRef(false);
+  const formExitTrackedRef = useRef(false);
+  const lastTouchedFieldRef = useRef(null);
+  const completedFieldsRef = useRef(new Set());
+
+  const trackBookingFieldEvent = (action, fieldName) => {
+    if (!BOOKING_TRACKABLE_FIELDS.has(fieldName)) return;
+    try {
+      const storageKey = `trz_booking_field_${action}_${fieldName}`;
+      if (sessionStorage.getItem(storageKey)) return;
+      sessionStorage.setItem(storageKey, 'true');
+    } catch {}
+    trackTrzEvent(`booking_field_${action}_${fieldName}`);
+  };
+
+  const trackBookingFormExit = () => {
+    if (formSubmittedRef.current || formExitTrackedRef.current) return;
+    formExitTrackedRef.current = true;
+    if (!formInteractionRef.current) {
+      trackTrzEvent('booking_form_abandoned_no_interaction');
+      return;
+    }
+    const lastField = BOOKING_TRACKABLE_FIELDS.has(lastTouchedFieldRef.current)
+      ? lastTouchedFieldRef.current
+      : 'unknown';
+    trackTrzEvent(`booking_form_abandoned_after_${lastField}`);
+  };
+
+  const trackBookingPageExit = () => {
+    if (pageExitTrackedRef.current) return;
+    pageExitTrackedRef.current = true;
+    const duration = pageTimerRef.current
+      ? pageTimerRef.current.getSeconds()
+      : 0;
+    trackTrzEvent('page_exit', { page_duration_seconds: duration });
+  };
 
   const packages = {
     '2_hours': {
@@ -243,24 +286,13 @@ export default function BookingForm() {
       trackTrzEvent('viewed_booking_page');
     }
 
+    trackTrzEvent('booking_form_viewed');
     pageTimerRef.current = createPageTimer();
 
     const handlePageExit = () => {
-      if (pageExitTrackedRef.current) return;
-
-      pageExitTrackedRef.current = true;
-
-      const duration = pageTimerRef.current
-        ? pageTimerRef.current.getSeconds()
-        : 0;
-
-      trackTrzEvent('page_exit', {
-        page_duration_seconds: duration
-      });
-
-      if (pageTimerRef.current) {
-        pageTimerRef.current.cleanup();
-      }
+      trackBookingPageExit();
+      trackBookingFormExit();
+      if (pageTimerRef.current) pageTimerRef.current.cleanup();
     };
 
     window.addEventListener(
@@ -308,14 +340,11 @@ export default function BookingForm() {
     notifyDiscordOnView();
 
     return () => {
-      window.removeEventListener(
-        'pagehide',
-        handlePageExit
-      );
-
-      if (pageTimerRef.current) {
-        pageTimerRef.current.cleanup();
-      }
+      window.removeEventListener('pagehide', handlePageExit);
+      // Record exits caused by in-app navigation as well as tab closure.
+      trackBookingPageExit();
+      trackBookingFormExit();
+      if (pageTimerRef.current) pageTimerRef.current.cleanup();
     };
   }, []);
 
@@ -341,8 +370,51 @@ export default function BookingForm() {
     }
   };
 
+  const handleFormFocusCapture = (e) => {
+    const fieldName = e.target?.name;
+    if (!BOOKING_TRACKABLE_FIELDS.has(fieldName)) return;
+    formInteractionRef.current = true;
+    lastTouchedFieldRef.current = fieldName;
+    trackBookingStarted();
+    trackBookingFieldEvent('focused', fieldName);
+  };
+
+  const handleFormBlurCapture = (e) => {
+    const target = e.target;
+    const fieldName = target?.name;
+    if (!BOOKING_TRACKABLE_FIELDS.has(fieldName)) return;
+    formInteractionRef.current = true;
+    lastTouchedFieldRef.current = fieldName;
+    const rawValue = target.type === 'checkbox' ? target.checked : target.value;
+    const hasValue = String(rawValue ?? '').trim().length > 0;
+    const isValid = typeof target.checkValidity === 'function'
+      ? target.checkValidity()
+      : true;
+    if (hasValue && isValid) {
+      trackBookingFieldEvent('completed', fieldName);
+      completedFieldsRef.current.add(fieldName);
+    } else if (target.required) {
+      trackBookingFieldEvent('left_empty', fieldName);
+    } else {
+      trackBookingFieldEvent('skipped', fieldName);
+    }
+  };
+
+  const handleFormInvalidCapture = (e) => {
+    const fieldName = e.target?.name;
+    if (!BOOKING_TRACKABLE_FIELDS.has(fieldName)) return;
+    formInteractionRef.current = true;
+    lastTouchedFieldRef.current = fieldName;
+    trackBookingFieldEvent('invalid', fieldName);
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (BOOKING_TRACKABLE_FIELDS.has(name)) {
+      formInteractionRef.current = true;
+      lastTouchedFieldRef.current = name;
+      trackBookingFieldEvent('started', name);
+    }
 
     trackBookingStarted();
 
@@ -362,7 +434,13 @@ export default function BookingForm() {
 
     if (!selectedPackage) return;
 
+    formInteractionRef.current = true;
+    lastTouchedFieldRef.current = 'package_type';
     trackBookingStarted();
+    trackBookingFieldEvent('focused', 'package_type');
+    trackBookingFieldEvent('started', 'package_type');
+    trackBookingFieldEvent('completed', 'package_type');
+    trackTrzEvent(`booking_package_selected_${pkgKey}`);
 
     setFormData((prev) => ({
       ...prev,
@@ -393,6 +471,7 @@ export default function BookingForm() {
 
     const fetchConfirmedSlots = async () => {
       setCheckingAvailability(true);
+      trackTrzEvent('availability_check_started');
 
       const { data, error } = await supabase
         .from('bookings')
@@ -407,8 +486,12 @@ export default function BookingForm() {
 
       if (!error && data) {
         setBookedSlots(data);
+        trackTrzEvent(data.length > 0
+          ? 'availability_check_completed_busy'
+          : 'availability_check_completed_open');
       } else {
         setBookedSlots([]);
+        trackTrzEvent('availability_check_failed');
       }
 
       setCheckingAvailability(false);
@@ -448,7 +531,7 @@ export default function BookingForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    trackTrzEvent('booking_submit_attempted');
     trackBookingStarted();
 
     setSubmitting(true);
@@ -458,6 +541,7 @@ export default function BookingForm() {
       availablePackages[formData.package_type];
 
     if (!selectedPkg) {
+      trackTrzEvent('booking_submit_blocked_invalid_package');
       setErrorMessage(
         '❌ Please select a valid rental package.'
       );
@@ -510,6 +594,7 @@ export default function BookingForm() {
     );
 
     if (!endTime) {
+      trackTrzEvent('booking_submit_blocked_invalid_time');
       setErrorMessage(
         '❌ This time slot crosses midnight. Please choose an earlier start time.'
       );
@@ -544,6 +629,7 @@ export default function BookingForm() {
         });
 
       if (hasConflict) {
+        trackTrzEvent('booking_submit_blocked_time_conflict');
         setErrorMessage(
           '❌ The selected time slot conflicts with an already confirmed rental. Please choose another time.'
         );
@@ -554,9 +640,10 @@ export default function BookingForm() {
     }
 
     if (!formData.delivery_area || !formData.address.trim()) {
+      trackTrzEvent('booking_submit_blocked_delivery_details');
       setErrorMessage('Please select your delivery area and enter the full delivery address.'); setSubmitting(false); return;
     }
-    if (!selectedTransport) { setErrorMessage('Please select a valid delivery area.'); setSubmitting(false); return; }
+    if (!selectedTransport) { trackTrzEvent('booking_submit_blocked_delivery_area'); setErrorMessage('Please select a valid delivery area.'); setSubmitting(false); return; }
     // All packages are now payment-on-delivery.
     const bookingTotal = selectedPkg.price + (selectedTransport.fee ?? 0);
     const balanceDue = bookingTotal;
@@ -671,6 +758,7 @@ export default function BookingForm() {
           ]);
 
       if (error) throw error;
+      formSubmittedRef.current = true;
 
       // Canonical booking funnel event.
       trackTrzEvent(
@@ -777,6 +865,7 @@ export default function BookingForm() {
 
       setSubmitting(false);
     } catch (error) {
+      trackTrzEvent('booking_submit_failed_database');
       console.error(
         'Error saving booking:',
         error.message
@@ -1135,6 +1224,9 @@ export default function BookingForm() {
 
         <form
           onSubmit={handleSubmit}
+          onFocusCapture={handleFormFocusCapture}
+          onBlurCapture={handleFormBlurCapture}
+          onInvalidCapture={handleFormInvalidCapture}
           style={{
             display: 'flex',
             flexDirection:
