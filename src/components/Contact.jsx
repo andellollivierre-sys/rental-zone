@@ -155,6 +155,7 @@ export default function Contact() {
 
           <a
             href={`tel:${PHONE_NUMBER}`}
+            onClick={() => trackTrzEvent('contact_link_clicked_phone')}
             style={contactCardStyle}
           >
             <div>
@@ -172,6 +173,7 @@ export default function Contact() {
 
           <a
             href={WHATSAPP_URL}
+            onClick={() => trackTrzEvent('contact_link_clicked_whatsapp')}
             target="_blank"
             rel="noopener noreferrer"
             style={contactCardStyle}
@@ -191,6 +193,7 @@ export default function Contact() {
 
           <a
             href={`mailto:${EMAIL_ADDRESS}`}
+            onClick={() => trackTrzEvent('contact_link_clicked_email')}
             style={contactCardStyle}
           >
             <div>
@@ -208,6 +211,7 @@ export default function Contact() {
 
           <a
             href={FACEBOOK_URL}
+            onClick={() => trackTrzEvent('contact_link_clicked_facebook')}
             target="_blank"
             rel="noopener noreferrer"
             style={contactCardStyle}
@@ -227,6 +231,7 @@ export default function Contact() {
 
           <a
             href={INSTAGRAM_URL}
+            onClick={() => trackTrzEvent('contact_link_clicked_instagram')}
             target="_blank"
             rel="noopener noreferrer"
             style={contactCardStyle}
@@ -246,6 +251,7 @@ export default function Contact() {
 
           <a
             href={TIKTOK_URL}
+            onClick={() => trackTrzEvent('contact_link_clicked_tiktok')}
             target="_blank"
             rel="noopener noreferrer"
             style={contactCardStyle}
