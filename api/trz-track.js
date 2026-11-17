@@ -2,14 +2,47 @@ import { createHmac } from 'node:crypto';
 import { supabase } from '../src/supabaseClient.js';
 
 const ALLOWED_EVENTS = new Set([
-  'session_started', 'viewed_landing_page', 'promotional_popup_opened',
-  'promotional_offer_viewed', 'popup_opened', 'dismiss_intent_popup_close_btn',
+  'session_started', 'viewed_landing_page', 'viewed_booking_page',
+  'booking_form_viewed', 'booking_started', 'booking_submit_attempted',
+  'booking_submitted', 'promo_booking_submitted', 'promo_booking_selected',
+  'promo_booking_expired', 'package_selected', 'date_selected',
+  'availability_check_started', 'availability_check_completed_open',
+  'availability_check_completed_busy', 'availability_check_failed',
   'page_exit', 'clicked_view_price', 'clicked_view_size', 'whatsapp_clicked',
-  'clicked_promotional_offer', 'clicked_check_availability',
-  'viewed_booking_page', 'promo_booking_selected', 'booking_started',
-  'package_selected', 'date_selected', 'booking_submitted',
-  'contact_view', 'contact_book_click', 'contact_special_click'
+  'clicked_promotional_offer', 'clicked_check_availability', 'clicked_book_now',
+  'popup_opened', 'popup_closed', 'promotional_popup_opened',
+  'promotional_popup_closed', 'promotional_popup_cta_clicked',
+  'promotional_popup_expired', 'promotional_offer_viewed',
+  'promotional_offer_expired', 'dismiss_intent_popup_close_btn',
+  'dismiss_intent_popup_backdrop', 'click_featured_image_zoom',
+  'click_price_modal_switch_to_space', 'click_space_modal_switch_to_price',
+  'share_whatsapp_clicked', 'share_facebook_clicked', 'share_x_clicked',
+  'share_copy_link_clicked', 'share_copy_link_completed',
+  'share_native_clicked', 'share_native_completed', 'share_native_failed',
+  'whatsapp_channel_clicked', 'contact_view', 'contact_book_click',
+  'contact_special_click', 'our_bouncer_view', 'our_bouncer_book_click',
+  'our_bouncer_2h_click', 'our_bouncer_3h_click',
+  'our_bouncer_full_day_click', 'our_bouncer_special_click',
+  'our_bouncer_bottom_book_click', 'how_it_works_view',
+  'how_it_works_book_click', 'how_it_works_special_click', 'faq_view',
+  'bubble_machine_addon_selected', 'booking_submit_blocked_invalid_package',
+  'booking_submit_blocked_invalid_time', 'booking_submit_blocked_time_conflict',
+  'booking_submit_blocked_delivery_details', 'booking_submit_blocked_delivery_area',
+  'booking_submit_failed_database', 'booking_form_abandoned_no_interaction',
+  'contact_link_clicked_phone', 'contact_link_clicked_whatsapp',
+  'contact_link_clicked_email', 'contact_link_clicked_facebook',
+  'contact_link_clicked_instagram', 'contact_link_clicked_tiktok'
 ]);
+
+function isAllowedEvent(eventName) {
+  if (typeof eventName !== 'string') return false;
+  return ALLOWED_EVENTS.has(eventName) ||
+    /^click_gallery_image_\\d+$/.test(eventName) ||
+    /^navigation_clicked_(home|booking|our_bouncer|how_it_works|faq|contact)$/.test(eventName) ||
+    /^booking_package_selected_(2_hours|3_hours|full_day|promotion)$/.test(eventName) ||
+    /^booking_field_(focused|started|completed|left_empty|invalid|skipped)_(customer_name|phone|package_type|event_date|start_time|delivery_area|address|notes)$/.test(eventName) ||
+    /^booking_form_abandoned_after_(customer_name|phone|package_type|event_date|start_time|delivery_area|address|notes|unknown)$/.test(eventName);
+}
 
 function getClientIp(req) {
   // Vercel supplies x-real-ip from the connection; do not trust a browser body value.
@@ -54,7 +87,7 @@ export default async function handler(req, res) {
   if (!secret) return res.status(503).json({ error: 'Tracking is not configured' });
 
   const body = req.body && typeof req.body === 'object' ? req.body : {};
-  if (!ALLOWED_EVENTS.has(body.event)) {
+  if (!isAllowedEvent(body.event)) {
     return res.status(400).json({ error: 'Invalid event' });
   }
 
