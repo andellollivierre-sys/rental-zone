@@ -149,7 +149,7 @@ export default function FunnelAnalytics() {
         supabase
           .from('visitor_events')
           .select(
-            'session_id,visitor_id,ip_hash,event,source,utm_source,utm_medium,utm_campaign,referrer,device,is_test,created_at'
+            'session_id,visitor_id,ip_hash,event,page,source,utm_source,utm_medium,utm_campaign,referrer,device,is_test,created_at'
           )
           .eq('is_test', false)
           .order('created_at', { ascending: false }),
@@ -197,6 +197,23 @@ export default function FunnelAnalytics() {
     'clicked_check_availability',
   ]);
   const whatsappSessions = uniqueSessions(events, ['whatsapp_clicked']);
+
+  const pageGroups = events.reduce((result, event) => {
+    const page = event.page || '(page not recorded)';
+    if (!result[page]) result[page] = { events: 0, sessions: new Set(), actions: new Set() };
+    result[page].events += 1;
+    if (event.session_id) result[page].sessions.add(event.session_id);
+    result[page].actions.add(event.event);
+    return result;
+  }, {});
+  const pageRows = Object.entries(pageGroups)
+    .map(([page, data]) => [
+      page,
+      String(data.sessions.size),
+      String(data.events),
+      [...data.actions].sort().join(', ')
+    ])
+    .sort((a, b) => Number(b[1]) - Number(a[1]));
 
   const eventCounts = Object.entries(
     events.reduce((result, event) => {
@@ -459,6 +476,20 @@ export default function FunnelAnalytics() {
             ['Submitted booking form', submittedSessions],
           ].map((row) => row.map(String))}
           emptyMessage="No funnel events recorded."
+        />
+      </section>
+
+      <section style={panelStyle}>
+        <h3 style={{ margin: '0 0 6px', fontSize: 16 }}>
+          Page / hash performance
+        </h3>
+        <p style={{ margin: '0 0 14px', color: '#64748b', fontSize: 12 }}>
+          Live non-test visits and actions grouped by the exact page path and hash.
+        </p>
+        <DataTable
+          headers={['Page / hash', 'Sessions', 'Events', 'Recorded actions']}
+          rows={pageRows}
+          emptyMessage="No page-level tracking data recorded."
         />
       </section>
 
