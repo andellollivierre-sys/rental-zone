@@ -116,9 +116,14 @@ export function getAttributionData() {
   const referrer = document.referrer || null;
   const current = classifyTraffic(urlParams, referrer);
   const landingPage = window.location.pathname + window.location.search;
-  const isTest =
+  const testParam =
     urlParams.get('test') === 'true' ||
     urlParams.get('is_test') === '1' ||
+    urlParams.get('trz_test') === '1';
+  if (testParam) sessionStorage.setItem('trz_test_mode', 'true');
+  const isTest =
+    testParam ||
+    sessionStorage.getItem('trz_test_mode') === 'true' ||
     localStorage.getItem('dev_mode') === 'true' ||
     localStorage.getItem('is_admin') === 'true' ||
     window.location.hostname === 'localhost' ||
