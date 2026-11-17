@@ -13,7 +13,7 @@ const ALLOWED_EVENTS = new Set([
   'our_bouncer_view', 'our_bouncer_2h_click', 'our_bouncer_3h_click',
   'our_bouncer_book_click', 'our_bouncer_bottom_book_click',
   'our_bouncer_full_day_click', 'our_bouncer_special_click',
-  'promo_booking_expired', 'promotional_offer_expired',
+  'promo_booking_expired', 'promo_booking_submitted', 'promotional_offer_expired',
   'click_featured_image_zoom', 'clicked_book_now',
   'share_copy_link_clicked', 'share_copy_link_completed',
   'share_facebook_clicked', 'share_native_clicked',
