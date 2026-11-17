@@ -8,7 +8,18 @@ const ALLOWED_EVENTS = new Set([
   'clicked_promotional_offer', 'clicked_check_availability',
   'viewed_booking_page', 'promo_booking_selected', 'booking_started',
   'package_selected', 'date_selected', 'booking_submitted',
-  'contact_view', 'contact_book_click', 'contact_special_click'
+  'contact_view', 'contact_book_click', 'contact_special_click',
+  'dismiss_intent_popup_backdrop', 'faq_view', 'how_it_works_view',
+  'our_bouncer_view', 'our_bouncer_2h_click', 'our_bouncer_3h_click',
+  'our_bouncer_book_click', 'our_bouncer_bottom_book_click',
+  'our_bouncer_full_day_click', 'our_bouncer_special_click',
+  'promo_booking_expired', 'promotional_offer_expired',
+  'click_featured_image_zoom', 'clicked_book_now',
+  'share_copy_link_clicked', 'share_copy_link_completed',
+  'share_facebook_clicked', 'share_native_clicked',
+  'share_native_completed', 'share_native_failed',
+  'share_whatsapp_clicked', 'share_x_clicked',
+  'whatsapp_channel_clicked'
 ]);
 
 function getClientIp(req) {
