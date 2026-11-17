@@ -37,9 +37,10 @@ const ALLOWED_EVENTS = new Set([
 function isAllowedEvent(eventName) {
   if (typeof eventName !== 'string') return false;
   return ALLOWED_EVENTS.has(eventName) ||
-    /^click_gallery_image_\\d+$/.test(eventName) ||
+    /^click_gallery_image_\d+$/.test(eventName) ||
     /^navigation_clicked_(home|booking|our_bouncer|how_it_works|faq|contact)$/.test(eventName) ||
     /^booking_package_selected_(2_hours|3_hours|full_day|promotion)$/.test(eventName) ||
+    /^booking_delivery_zone_selected_(free_delivery|zone_1|zone_2|zone_3|custom_quote)$/.test(eventName) ||
     /^booking_field_(focused|started|completed|left_empty|invalid|skipped)_(customer_name|phone|package_type|event_date|start_time|delivery_area|address|notes)$/.test(eventName) ||
     /^booking_form_abandoned_after_(customer_name|phone|package_type|event_date|start_time|delivery_area|address|notes|unknown)$/.test(eventName);
 }
