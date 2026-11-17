@@ -121,11 +121,11 @@ export function getAttributionData() {
     urlParams.get('is_test') === '1' ||
     urlParams.get('trz_test') === '1';
   if (testParam) sessionStorage.setItem('trz_test_mode', 'true');
+  // Admin authentication is not test mode. Only an explicit test flag,
+  // an active test session, or a local development host marks activity as test.
   const isTest =
     testParam ||
     sessionStorage.getItem('trz_test_mode') === 'true' ||
-    localStorage.getItem('dev_mode') === 'true' ||
-    localStorage.getItem('is_admin') === 'true' ||
     window.location.hostname === 'localhost' ||
     window.location.hostname === '127.0.0.1';
 
