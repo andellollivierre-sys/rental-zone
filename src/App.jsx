@@ -6,6 +6,7 @@ import OurBouncer from './components/OurBouncer';
 import HowItWorks from './components/HowItWorks';
 import FAQ from './components/FAQ';
 import Contact from './components/Contact';
+import { trackTrzEvent } from './utils/trzTracker';
 
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState(
@@ -146,6 +147,12 @@ export default function App() {
               <a
                 key={link.href}
                 href={link.href}
+                onClick={() => {
+                  if (link.href !== '#admin') {
+                    const route = link.href.replace(/^#/, '').replace(/-/g, '_');
+                    trackTrzEvent(`navigation_clicked_${route}`);
+                  }
+                }}
                 style={{
                   color: isActive(link.href) ? '#38bdf8' : '#94a3b8',
                   textDecoration: 'none',
@@ -202,7 +209,13 @@ export default function App() {
               <a
                 key={link.href}
                 href={link.href}
-                onClick={() => setMenuOpen(false)}
+                onClick={() => {
+                  if (link.href !== '#admin') {
+                    const route = link.href.replace(/^#/, '').replace(/-/g, '_');
+                    trackTrzEvent(`navigation_clicked_${route}`);
+                  }
+                  setMenuOpen(false);
+                }}
                 style={{
                   color: isActive(link.href) ? '#38bdf8' : '#e2e8f0',
                   textDecoration: 'none',
