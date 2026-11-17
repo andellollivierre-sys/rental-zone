@@ -51,16 +51,22 @@ export default function BookingForm() {
   const formInteractionRef = useRef(false);
   const formSubmittedRef = useRef(false);
   const formExitTrackedRef = useRef(false);
+  const bookingStartedRef = useRef(false);
   const lastTouchedFieldRef = useRef(null);
-  const completedFieldsRef = useRef(new Set());
+  const fieldEventSetsRef = useRef({
+    focused: new Set(),
+    started: new Set(),
+    completed: new Set(),
+    left_empty: new Set(),
+    invalid: new Set(),
+    skipped: new Set(),
+  });
 
   const trackBookingFieldEvent = (action, fieldName) => {
     if (!BOOKING_TRACKABLE_FIELDS.has(fieldName)) return;
-    try {
-      const storageKey = `trz_booking_field_${action}_${fieldName}`;
-      if (sessionStorage.getItem(storageKey)) return;
-      sessionStorage.setItem(storageKey, 'true');
-    } catch {}
+    const eventSet = fieldEventSetsRef.current[action];
+    if (!eventSet || eventSet.has(fieldName)) return;
+    eventSet.add(fieldName);
     trackTrzEvent(`booking_field_${action}_${fieldName}`);
   };
 
@@ -349,25 +355,9 @@ export default function BookingForm() {
   }, []);
 
   const trackBookingStarted = () => {
-    try {
-      const alreadyStarted = sessionStorage.getItem(
-        'trz_booking_started'
-      );
-
-      if (alreadyStarted) return;
-
-      sessionStorage.setItem(
-        'trz_booking_started',
-        'true'
-      );
-
-      trackTrzEvent('booking_started');
-    } catch (err) {
-      console.warn(
-        '[TRZ TRACK] booking_started error:',
-        err
-      );
-    }
+    if (bookingStartedRef.current) return;
+    bookingStartedRef.current = true;
+    trackTrzEvent('booking_started');
   };
 
   const handleFormFocusCapture = (e) => {
@@ -392,7 +382,6 @@ export default function BookingForm() {
       : true;
     if (hasValue && isValid) {
       trackBookingFieldEvent('completed', fieldName);
-      completedFieldsRef.current.add(fieldName);
     } else if (target.required) {
       trackBookingFieldEvent('left_empty', fieldName);
     } else {
