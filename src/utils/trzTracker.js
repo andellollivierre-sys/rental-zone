@@ -129,8 +129,12 @@ export function getAttributionData() {
     window.location.hostname === 'localhost' ||
     window.location.hostname === '127.0.0.1';
 
+  // Keep test attribution in its own storage keys so a QA run cannot
+  // overwrite the first-touch source for a real customer visit.
+  const firstTouchKey = isTest ? 'trz_first_touch_test' : 'trz_first_touch';
+  const lastTouchKey = isTest ? 'trz_last_touch_test' : 'trz_last_touch';
   let firstTouch = null;
-  try { firstTouch = JSON.parse(localStorage.getItem('trz_first_touch') || 'null'); } catch {}
+  try { firstTouch = JSON.parse(localStorage.getItem(firstTouchKey) || 'null'); } catch {}
   if (!firstTouch || (firstTouch.source === 'direct' && current.source !== 'direct')) {
     if (current.source !== 'direct' || !firstTouch) {
       firstTouch = {
@@ -142,7 +146,7 @@ export function getAttributionData() {
         landingPage,
         capturedAt: new Date().toISOString()
       };
-      localStorage.setItem('trz_first_touch', JSON.stringify(firstTouch));
+      localStorage.setItem(firstTouchKey, JSON.stringify(firstTouch));
     }
   }
 
@@ -155,7 +159,7 @@ export function getAttributionData() {
     landingPage,
     capturedAt: new Date().toISOString()
   };
-  sessionStorage.setItem('trz_last_touch', JSON.stringify(lastTouch));
+  sessionStorage.setItem(lastTouchKey, JSON.stringify(lastTouch));
 
   const ua = navigator.userAgent || '';
   let device = 'desktop';
