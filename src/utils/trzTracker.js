@@ -220,7 +220,7 @@ export async function trackTrzEvent(eventName, additionalData = {}) {
       tracking_code: shortCode,
       visitor_id: getVisitorId(),
       event: eventName,
-      page: window.location.pathname || '/',
+      page: `${window.location.pathname || '/'}${window.location.hash || ''}`,
       page_duration_seconds: additionalData.page_duration_seconds || 0,
       source: attr.source,
       utm_source: attr.utmSource,
