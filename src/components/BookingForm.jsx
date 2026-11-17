@@ -426,6 +426,13 @@ export default function BookingForm() {
     if (name === 'event_date' && value) {
       trackTrzEvent('date_selected');
     }
+
+    if (name === 'delivery_area' && value) {
+      const selectedZone = Object.entries(transportZones)
+        .find(([, config]) => config.areas.includes(value))?.[0] || 'Custom quote';
+      const zoneCode = selectedZone.toLowerCase().replace(/\\s+/g, '_');
+      trackTrzEvent(`booking_delivery_zone_selected_${zoneCode}`);
+    }
   };
 
   const handlePackageSelect = (pkgKey) => {
