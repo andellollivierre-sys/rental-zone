@@ -270,38 +270,29 @@ export default function BookingForm() {
 
     const notifyDiscordOnView = async () => {
       try {
-        if (getAttributionData().isTest || !DISCORD_WEBHOOK_URL) return;
+        if (!DISCORD_WEBHOOK_URL) return;
 
-        // Prevent spamming Discord if the same visitor refreshes
-        // the page multiple times in the same session.
-        const alreadyAlerted = sessionStorage.getItem(
-          'discord_booking_view_sent'
-        );
-
-        if (alreadyAlerted) return;
-
-        sessionStorage.setItem(
-          'discord_booking_view_sent',
-          'true'
-        );
+        // Keep one page-view alert per session, but make test alerts visible.
+        const isTest = getAttributionData().isTest;
+        const alertKey = isTest
+          ? 'discord_test_booking_view_sent'
+          : 'discord_booking_view_sent';
+        if (sessionStorage.getItem(alertKey)) return;
+        sessionStorage.setItem(alertKey, 'true');
 
         const discordMessage = {
-          content:
-            `👀 **A prospect just opened the Booking Form page!**`
+          content: isTest
+            ? '🧪 **[TEST] Booking page opened in the live website test session. No real customer booking.**'
+            : '👀 **A prospect just opened the Booking Form page!**'
         };
 
         await fetch(DISCORD_WEBHOOK_URL, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(discordMessage)
         });
       } catch (err) {
-        console.error(
-          'Discord page-view ping failed:',
-          err
-        );
+        console.error('Discord page-view ping failed:', err);
       }
     };
 
@@ -688,14 +679,10 @@ export default function BookingForm() {
         );
       }
 
-      if (!isAdminOrDev && DISCORD_WEBHOOK_URL) {
+      if (DISCORD_WEBHOOK_URL) {
         const discordMessage = {
           content:
-            `🚨 **NEW BOOKING SUBMITTED!** ${
-              isAdminOrDev
-                ? '(TEST)'
-                : ''
-            }\n` +
+            `${isAdminOrDev ? '🧪 **[TEST — DO NOT PROCESS] TEST BOOKING SUBMITTED**' : '🚨 **NEW BOOKING SUBMITTED!**'}\n` +
             `👤 **Client:** ${formData.customer_name}\n` +
             `📞 **Phone:** ${formData.phone}\n` +
             `📍 **Address:** ${formData.address}, ${selectedTransport.area}\n` +
@@ -709,7 +696,8 @@ export default function BookingForm() {
                 : ''
             }` +
             `💵 **Payment:** Due on Delivery\n` +
-            `🌐 **Source:** ${trafficSource}`
+            `🌐 **Source:** ${trafficSource}\n` +
+        (isAdminOrDev ? `🧪 **TEST RECORD ONLY — Booking ID: ${bookingId} — Not a customer order.**` : '')
         };
 
         await fetch(
@@ -802,7 +790,7 @@ export default function BookingForm() {
 
     const textMessage =
       encodeURIComponent(
-        `Hi Rental Zone! I just booked the Spider-Man Bouncy Castle.\n\n` +
+        `${confirmedBooking.isTest ? '[TEST — DO NOT PROCESS] ' : ''}Hi Rental Zone! I just booked the Spider-Man Bouncy Castle.\n\n` +
           `👤 Name: ${confirmedBooking.customer_name}\n` +
           `📞 Phone: ${confirmedBooking.phone}\n` +
           `📅 Date: ${confirmedBooking.event_date}\n` +
@@ -888,7 +876,7 @@ export default function BookingForm() {
             }}
           >
             {confirmedBooking.isTest
-              ? 'This test is stored separately. No customer notification was sent and no real availability or booking records were changed.'
+              ? 'TEST ONLY: The booking is stored separately. A clearly labelled TEST notification was sent to the configured alert channel. The WhatsApp message is labelled TEST and will open as a draft for inspection.'
               : "Your order is logged as Pending. We'll contact you to confirm the booking."}
           </p>
 
@@ -993,7 +981,7 @@ export default function BookingForm() {
             </div>
           </div>
 
-          {!confirmedBooking.isTest && <button
+          <button
             onClick={openWhatsApp}
             style={{
               width: '100%',
@@ -1014,8 +1002,8 @@ export default function BookingForm() {
                 '0 2px 4px rgba(34,197,94,0.2)'
             }}
           >
-            💬 Open WhatsApp to Send Booking
-          </button>}
+            {confirmedBooking.isTest ? '🧪 Open TEST WhatsApp Message' : '💬 Open WhatsApp to Send Booking'}
+          </button>
 
           <button
             onClick={() =>
