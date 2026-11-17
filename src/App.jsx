@@ -13,6 +13,32 @@ export default function App() {
     window.location.hash || '#home'
   );
   const [menuOpen, setMenuOpen] = useState(false);
+  const [testMode, setTestMode] = useState(
+    new URLSearchParams(window.location.search).get('test') === 'true' ||
+    new URLSearchParams(window.location.search).get('is_test') === '1' ||
+    new URLSearchParams(window.location.search).get('trz_test') === '1' ||
+    sessionStorage.getItem('trz_test_mode') === 'true'
+  );
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('test') === 'true' || params.get('is_test') === '1' || params.get('trz_test') === '1') {
+      sessionStorage.setItem('trz_test_mode', 'true');
+      setTestMode(true);
+    }
+  }, []);
+
+  const endTestSession = () => {
+    sessionStorage.removeItem('trz_test_mode');
+    const params = new URLSearchParams(window.location.search);
+    params.delete('test');
+    params.delete('is_test');
+    params.delete('trz_test');
+    const query = params.toString();
+    window.history.replaceState({}, '', window.location.pathname + (query ? '?' + query : '') + window.location.hash);
+    setTestMode(false);
+    window.location.reload();
+  };
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -220,6 +246,13 @@ export default function App() {
           </div>
         )}
       </nav>
+
+      {testMode && (
+        <div style={{ position: 'sticky', top: 56, zIndex: 49, background: '#7c2d12', color: '#fff7ed', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', fontSize: '13px', fontWeight: 700 }}>
+          <span>🧪 TEST SESSION — activity and booking submissions are isolated from live records.</span>
+          <button onClick={endTestSession} style={{ background: '#fff7ed', color: '#7c2d12', border: 0, borderRadius: 6, padding: '7px 10px', fontWeight: 800, whiteSpace: 'nowrap' }}>End Test</button>
+        </div>
+      )}
 
       {/* Main Content Router */}
       <main
