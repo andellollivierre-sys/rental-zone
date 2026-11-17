@@ -25,6 +25,7 @@ const ALLOWED_EVENTS = new Set([
   'our_bouncer_full_day_click', 'our_bouncer_special_click',
   'our_bouncer_bottom_book_click', 'how_it_works_view',
   'how_it_works_book_click', 'how_it_works_special_click', 'faq_view',
+  'faq_book_click', 'faq_special_click',
   'bubble_machine_addon_selected', 'booking_submit_blocked_invalid_package',
   'booking_submit_blocked_invalid_time', 'booking_submit_blocked_time_conflict',
   'booking_submit_blocked_delivery_details', 'booking_submit_blocked_delivery_area',
