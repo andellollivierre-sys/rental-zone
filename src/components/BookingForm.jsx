@@ -1,9 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
-import { trackTrzEvent, createPageTimer } from '../utils/trzTracker';
+import { trackTrzEvent, createPageTimer, getAttributionData, getSessionData, getVisitorId } from '../utils/trzTracker';
 
 // Keep your existing Discord webhook URL in this constant.
 const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1551792830639382571/dxVXhU-U6CJxCGdUfBypOxjy3uOPK1mjismTZgLGNP3kyGPuh0Dn3YAlgmjcFLtHcXpU';
+
+// Track progress by field name only. Never send the visitor's typed values.
+const BOOKING_TRACKABLE_FIELDS = new Set([
+  'customer_name', 'phone', 'package_type', 'event_date',
+  'start_time', 'delivery_area', 'address', 'notes'
+]);
 
 export default function BookingForm() {
   const [formData, setFormData] = useState({
@@ -13,6 +19,7 @@ export default function BookingForm() {
     start_time: '',
     package_type: '3_hours',
     address: '',
+    delivery_area: '',
     notes: ''
   });
 
@@ -25,8 +32,59 @@ export default function BookingForm() {
   const [promotionalOffer, setPromotionalOffer] = useState(null);
   const [loadingPromotion, setLoadingPromotion] = useState(true);
 
+  // Fixed delivery zones from Chaguanas; locations outside the listed range require a custom quote.
+  const transportZones = {
+    'Free delivery': { fee: 0, areas: ['Chaguanas', 'Cunupia', 'Charlieville', 'Endeavour', 'Freeport', 'Carapichaima', 'Couva'] },
+    'Zone 1': { fee: 100, areas: ['Tunapuna', 'St. Augustine', 'San Juan', 'Port of Spain', 'Arima'] },
+    'Zone 2': { fee: 150, areas: ['Diego Martin', 'Marabella', 'San Fernando', 'Gasparillo', 'Princes Town', 'Sangre Grande'] },
+    'Zone 3': { fee: 200, areas: ['Penal', 'Debe', 'Siparia', 'Point Fortin', 'Rio Claro'] },
+    'Custom quote': { fee: null, areas: ['Mayaro', 'Toco', 'Other / Not listed'] }
+  };
+  const selectedTransport = Object.entries(transportZones)
+    .flatMap(([zone, config]) => config.areas.map((area) => ({ area, zone, fee: config.fee })))
+    .find((item) => item.area === formData.delivery_area);
+  const transportFee = selectedTransport?.fee ?? 0;
+  const requiresTransportQuote = selectedTransport?.fee === null;
+
   const pageTimerRef = useRef(null);
   const pageExitTrackedRef = useRef(false);
+  const formInteractionRef = useRef(false);
+  const formSubmittedRef = useRef(false);
+  const formExitTrackedRef = useRef(false);
+  const lastTouchedFieldRef = useRef(null);
+  const completedFieldsRef = useRef(new Set());
+
+  const trackBookingFieldEvent = (action, fieldName) => {
+    if (!BOOKING_TRACKABLE_FIELDS.has(fieldName)) return;
+    try {
+      const storageKey = `trz_booking_field_${action}_${fieldName}`;
+      if (sessionStorage.getItem(storageKey)) return;
+      sessionStorage.setItem(storageKey, 'true');
+    } catch {}
+    trackTrzEvent(`booking_field_${action}_${fieldName}`);
+  };
+
+  const trackBookingFormExit = () => {
+    if (formSubmittedRef.current || formExitTrackedRef.current) return;
+    formExitTrackedRef.current = true;
+    if (!formInteractionRef.current) {
+      trackTrzEvent('booking_form_abandoned_no_interaction');
+      return;
+    }
+    const lastField = BOOKING_TRACKABLE_FIELDS.has(lastTouchedFieldRef.current)
+      ? lastTouchedFieldRef.current
+      : 'unknown';
+    trackTrzEvent(`booking_form_abandoned_after_${lastField}`);
+  };
+
+  const trackBookingPageExit = () => {
+    if (pageExitTrackedRef.current) return;
+    pageExitTrackedRef.current = true;
+    const duration = pageTimerRef.current
+      ? pageTimerRef.current.getSeconds()
+      : 0;
+    trackTrzEvent('page_exit', { page_duration_seconds: duration });
+  };
 
   const packages = {
     '2_hours': {
@@ -228,24 +286,13 @@ export default function BookingForm() {
       trackTrzEvent('viewed_booking_page');
     }
 
+    trackTrzEvent('booking_form_viewed');
     pageTimerRef.current = createPageTimer();
 
     const handlePageExit = () => {
-      if (pageExitTrackedRef.current) return;
-
-      pageExitTrackedRef.current = true;
-
-      const duration = pageTimerRef.current
-        ? pageTimerRef.current.getSeconds()
-        : 0;
-
-      trackTrzEvent('page_exit', {
-        page_duration_seconds: duration
-      });
-
-      if (pageTimerRef.current) {
-        pageTimerRef.current.cleanup();
-      }
+      trackBookingPageExit();
+      trackBookingFormExit();
+      if (pageTimerRef.current) pageTimerRef.current.cleanup();
     };
 
     window.addEventListener(
@@ -293,14 +340,11 @@ export default function BookingForm() {
     notifyDiscordOnView();
 
     return () => {
-      window.removeEventListener(
-        'pagehide',
-        handlePageExit
-      );
-
-      if (pageTimerRef.current) {
-        pageTimerRef.current.cleanup();
-      }
+      window.removeEventListener('pagehide', handlePageExit);
+      // Record exits caused by in-app navigation as well as tab closure.
+      trackBookingPageExit();
+      trackBookingFormExit();
+      if (pageTimerRef.current) pageTimerRef.current.cleanup();
     };
   }, []);
 
@@ -326,8 +370,51 @@ export default function BookingForm() {
     }
   };
 
+  const handleFormFocusCapture = (e) => {
+    const fieldName = e.target?.name;
+    if (!BOOKING_TRACKABLE_FIELDS.has(fieldName)) return;
+    formInteractionRef.current = true;
+    lastTouchedFieldRef.current = fieldName;
+    trackBookingStarted();
+    trackBookingFieldEvent('focused', fieldName);
+  };
+
+  const handleFormBlurCapture = (e) => {
+    const target = e.target;
+    const fieldName = target?.name;
+    if (!BOOKING_TRACKABLE_FIELDS.has(fieldName)) return;
+    formInteractionRef.current = true;
+    lastTouchedFieldRef.current = fieldName;
+    const rawValue = target.type === 'checkbox' ? target.checked : target.value;
+    const hasValue = String(rawValue ?? '').trim().length > 0;
+    const isValid = typeof target.checkValidity === 'function'
+      ? target.checkValidity()
+      : true;
+    if (hasValue && isValid) {
+      trackBookingFieldEvent('completed', fieldName);
+      completedFieldsRef.current.add(fieldName);
+    } else if (target.required) {
+      trackBookingFieldEvent('left_empty', fieldName);
+    } else {
+      trackBookingFieldEvent('skipped', fieldName);
+    }
+  };
+
+  const handleFormInvalidCapture = (e) => {
+    const fieldName = e.target?.name;
+    if (!BOOKING_TRACKABLE_FIELDS.has(fieldName)) return;
+    formInteractionRef.current = true;
+    lastTouchedFieldRef.current = fieldName;
+    trackBookingFieldEvent('invalid', fieldName);
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (BOOKING_TRACKABLE_FIELDS.has(name)) {
+      formInteractionRef.current = true;
+      lastTouchedFieldRef.current = name;
+      trackBookingFieldEvent('started', name);
+    }
 
     trackBookingStarted();
 
@@ -339,6 +426,13 @@ export default function BookingForm() {
     if (name === 'event_date' && value) {
       trackTrzEvent('date_selected');
     }
+
+    if (name === 'delivery_area' && value) {
+      const selectedZone = Object.entries(transportZones)
+        .find(([, config]) => config.areas.includes(value))?.[0] || 'Custom quote';
+      const zoneCode = selectedZone.toLowerCase().replace(/\s+/g, '_');
+      trackTrzEvent(`booking_delivery_zone_selected_${zoneCode}`);
+    }
   };
 
   const handlePackageSelect = (pkgKey) => {
@@ -347,7 +441,13 @@ export default function BookingForm() {
 
     if (!selectedPackage) return;
 
+    formInteractionRef.current = true;
+    lastTouchedFieldRef.current = 'package_type';
     trackBookingStarted();
+    trackBookingFieldEvent('focused', 'package_type');
+    trackBookingFieldEvent('started', 'package_type');
+    trackBookingFieldEvent('completed', 'package_type');
+    trackTrzEvent(`booking_package_selected_${pkgKey}`);
 
     setFormData((prev) => ({
       ...prev,
@@ -378,6 +478,7 @@ export default function BookingForm() {
 
     const fetchConfirmedSlots = async () => {
       setCheckingAvailability(true);
+      trackTrzEvent('availability_check_started');
 
       const { data, error } = await supabase
         .from('bookings')
@@ -392,8 +493,12 @@ export default function BookingForm() {
 
       if (!error && data) {
         setBookedSlots(data);
+        trackTrzEvent(data.length > 0
+          ? 'availability_check_completed_busy'
+          : 'availability_check_completed_open');
       } else {
         setBookedSlots([]);
+        trackTrzEvent('availability_check_failed');
       }
 
       setCheckingAvailability(false);
@@ -433,7 +538,7 @@ export default function BookingForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    trackTrzEvent('booking_submit_attempted');
     trackBookingStarted();
 
     setSubmitting(true);
@@ -443,6 +548,7 @@ export default function BookingForm() {
       availablePackages[formData.package_type];
 
     if (!selectedPkg) {
+      trackTrzEvent('booking_submit_blocked_invalid_package');
       setErrorMessage(
         '❌ Please select a valid rental package.'
       );
@@ -495,6 +601,7 @@ export default function BookingForm() {
     );
 
     if (!endTime) {
+      trackTrzEvent('booking_submit_blocked_invalid_time');
       setErrorMessage(
         '❌ This time slot crosses midnight. Please choose an earlier start time.'
       );
@@ -529,6 +636,7 @@ export default function BookingForm() {
         });
 
       if (hasConflict) {
+        trackTrzEvent('booking_submit_blocked_time_conflict');
         setErrorMessage(
           '❌ The selected time slot conflicts with an already confirmed rental. Please choose another time.'
         );
@@ -538,8 +646,14 @@ export default function BookingForm() {
       }
     }
 
+    if (!formData.delivery_area || !formData.address.trim()) {
+      trackTrzEvent('booking_submit_blocked_delivery_details');
+      setErrorMessage('Please select your delivery area and enter the full delivery address.'); setSubmitting(false); return;
+    }
+    if (!selectedTransport) { trackTrzEvent('booking_submit_blocked_delivery_area'); setErrorMessage('Please select a valid delivery area.'); setSubmitting(false); return; }
     // All packages are now payment-on-delivery.
-    const balanceDue = selectedPkg.price;
+    const bookingTotal = selectedPkg.price + (selectedTransport.fee ?? 0);
+    const balanceDue = bookingTotal;
 
     const isAdminOrDev =
       localStorage.getItem(
@@ -551,53 +665,19 @@ export default function BookingForm() {
       window.location.hostname ===
         'localhost';
 
-    let storedTracking = {};
+    const attribution = getAttributionData();
+    const firstTouch = attribution.firstTouch || {};
+    const lastTouch = (() => {
+      try { return JSON.parse(sessionStorage.getItem('trz_last_touch') || 'null') || {}; }
+      catch { return {}; }
+    })();
+    const { sessionId, shortCode } = getSessionData();
 
-    try {
-      storedTracking =
-        JSON.parse(
-          sessionStorage.getItem(
-            'trz_tracking'
-          )
-        ) || {};
-    } catch (err) {
-      storedTracking = {};
-    }
-
-    const urlParams =
-      new URLSearchParams(
-        window.location.search
-      );
-
-    const trafficSource =
-      storedTracking.traffic_source ||
-      urlParams.get('utm_source') ||
-      'direct';
-
-    const utmMedium =
-      storedTracking.utm_medium ||
-      urlParams.get('utm_medium') ||
-      (urlParams.get('fbclid')
-        ? 'social_ad'
-        : 'none');
-
-    const utmCampaign =
-      storedTracking.utm_campaign ||
-      urlParams.get('utm_campaign') ||
-      'none';
-
-    const clickId =
-      storedTracking.click_id ||
-      urlParams.get('fbclid') ||
-      urlParams.get('gclid') ||
-      null;
-
-    const deviceType =
-      /Mobi|Android/i.test(
-        navigator.userAgent
-      )
-        ? 'Mobile'
-        : 'Desktop';
+    const trafficSource = lastTouch.source || attribution.source || 'direct';
+    const utmMedium = lastTouch.medium || attribution.medium || 'none';
+    const utmCampaign = lastTouch.campaign || attribution.campaign || 'none';
+    const clickId = lastTouch.clickId || attribution.clickId || null;
+    const deviceType = attribution.device || 'desktop';
 
     try {
       // Generate the booking ID client-side so tracking can attach
@@ -612,8 +692,11 @@ export default function BookingForm() {
       const isPromotional =
         selectedPkg.isPromotional === true;
 
-      let bookingNotes =
-        formData.notes || '';
+      const transportNote = selectedTransport.fee === null
+        ? `[TRANSPORT: ${selectedTransport.area} | ${selectedTransport.zone} | PRICE TO BE QUOTED]`
+        : `[TRANSPORT: ${selectedTransport.area} | ${selectedTransport.zone} | TT${selectedTransport.fee} delivery + setup + collection]`;
+      let bookingNotes = formData.notes || '';
+      bookingNotes = bookingNotes.trim() ? `${transportNote}\n${bookingNotes.trim()}` : transportNote;
 
       if (isPromotional) {
         const regularValue =
@@ -648,28 +731,41 @@ export default function BookingForm() {
               package_type:
                 selectedPkg.name,
               total_price:
-                selectedPkg.price,
+                bookingTotal,
               deposit_amount: 0,
               balance_due:
                 balanceDue,
               address:
-                formData.address,
+                `${formData.address.trim()}, ${selectedTransport.area}`,
               notes: bookingNotes,
               status: 'Pending',
-              traffic_source:
-                trafficSource,
+              traffic_source: trafficSource,
               utm_medium: utmMedium,
-              utm_campaign:
-                utmCampaign,
+              utm_campaign: utmCampaign,
               click_id: clickId,
-              device_type:
-                deviceType,
+              device_type: deviceType,
+              first_touch_source: firstTouch.source || null,
+              first_touch_medium: firstTouch.medium || null,
+              first_touch_campaign: firstTouch.campaign || null,
+              first_touch_click_id: firstTouch.clickId || null,
+              first_touch_referrer: firstTouch.referrer || null,
+              first_touch_landing_page: firstTouch.landingPage || null,
+              last_touch_source: lastTouch.source || trafficSource,
+              last_touch_medium: lastTouch.medium || utmMedium,
+              last_touch_campaign: lastTouch.campaign || utmCampaign,
+              last_touch_click_id: lastTouch.clickId || clickId,
+              last_touch_referrer: lastTouch.referrer || null,
+              last_touch_landing_page: lastTouch.landingPage || null,
+              attribution_session_id: sessionId,
+              attribution_tracking_code: shortCode,
+              visitor_id: getVisitorId(),
               is_test:
                 isAdminOrDev
             }
           ]);
 
       if (error) throw error;
+      formSubmittedRef.current = true;
 
       // Canonical booking funnel event.
       trackTrzEvent(
@@ -714,9 +810,11 @@ export default function BookingForm() {
             }\n` +
             `👤 **Client:** ${formData.customer_name}\n` +
             `📞 **Phone:** ${formData.phone}\n` +
-            `📍 **Address:** ${formData.address}\n` +
+            `📍 **Address:** ${formData.address}, ${selectedTransport.area}\n` +
+            `🚚 **Delivery, Setup & Collection:** ${selectedTransport.zone} - ${selectedTransport.fee === null ? 'QUOTE REQUIRED' : `TT${selectedTransport.fee}`}\n` +
             `📅 **Date:** ${formData.event_date} (${formData.start_time} - ${endTime})\n` +
-            `📦 **Package:** ${selectedPkg.name} (TT$${selectedPkg.price})\n` +
+            `📦 **Package:** ${selectedPkg.name} (TT${selectedPkg.price})\n` +
+            `💰 **Total:** TT${bookingTotal}${requiresTransportQuote ? ' (transport quote pending)' : ''}\n` +
             `${
               isPromotional
                 ? `🔥 **PROMOTION:** Normal value TT$${selectedPkg.regularValue} | Savings TT$${selectedPkg.savings}\n`
@@ -748,12 +846,18 @@ export default function BookingForm() {
 
       setConfirmedBooking({
         ...formData,
+        address: `${formData.address.trim()}, ${selectedTransport.area}`,
+        transportArea: selectedTransport.area,
+        transportZone: selectedTransport.zone,
+        transportFee: selectedTransport.fee,
+        transportQuoteRequired: selectedTransport.fee === null,
         booking_id: bookingId,
         end_time: endTime,
         packageName:
           selectedPkg.name,
         price:
-          selectedPkg.price,
+          bookingTotal,
+        rentalPrice: selectedPkg.price,
         deposit: 0,
         balance:
           balanceDue,
@@ -768,6 +872,7 @@ export default function BookingForm() {
 
       setSubmitting(false);
     } catch (error) {
+      trackTrzEvent('booking_submit_failed_database');
       console.error(
         'Error saving booking:',
         error.message
@@ -802,7 +907,7 @@ export default function BookingForm() {
     const promotionLine =
       confirmedBooking.isPromotional
         ? `🔥 Promotional Offer: ${confirmedBooking.packageName}\n` +
-          `💰 Promo Price: TT$${confirmedBooking.price}\n` +
+          `💰 Promo Price: TT${confirmedBooking.rentalPrice}\n` +
           `📊 Normal Value: TT$${confirmedBooking.promotionRegularValue}\n` +
           `💸 Savings: TT$${confirmedBooking.promotionSavings}\n`
         : '';
@@ -815,7 +920,11 @@ export default function BookingForm() {
           `📅 Date: ${confirmedBooking.event_date}\n` +
           `⏰ Time: ${confirmedBooking.start_time} - ${confirmedBooking.end_time} (${confirmedBooking.packageName})\n` +
           promotionLine +
-          `💰 Total: TT$${confirmedBooking.price}\n` +
+          `🧾 COST BREAKDOWN\n` +
+          `Bouncer rental: TT${confirmedBooking.rentalPrice}\n` +
+          `Transport / delivery: ${confirmedBooking.transportQuoteRequired ? 'QUOTE PENDING' : `TT${confirmedBooking.transportFee}`}\n` +
+          `Setup: FREE\nBreakdown: FREE\nAttendant: FREE\n` +
+          `${confirmedBooking.transportQuoteRequired ? 'PACKAGE SUBTOTAL' : 'TOTAL DUE ON DELIVERY'}: TT${confirmedBooking.price}\n` +
           `💵 Payment: Due on Delivery\n` +
           `📍 Address: ${confirmedBooking.address}\n` +
           (confirmedBooking.notes
@@ -977,11 +1086,19 @@ export default function BookingForm() {
                 marginTop: '4px'
               }}
             >
-              💰 <b>Total Price:</b>{' '}
-              TT$
-              {
-                confirmedBooking.price
-              }
+              🧾 <b>COST BREAKDOWN</b>
+              <br />
+              Bouncer rental: TT${confirmedBooking.rentalPrice}
+              <br />
+              Transport / delivery:{' '}
+              {confirmedBooking.transportQuoteRequired
+                ? 'QUOTE PENDING'
+                : `TT${confirmedBooking.transportFee}`}
+              <br />
+              Setup: FREE · Breakdown: FREE · Attendant: FREE
+              <br />
+              💰 <b>{confirmedBooking.transportQuoteRequired ? 'PACKAGE SUBTOTAL' : 'TOTAL DUE ON DELIVERY'}:</b>{' '}
+              TT${confirmedBooking.price}
               <br />
               💵 <b>Payment:</b>{' '}
               Due on Delivery
@@ -1114,6 +1231,9 @@ export default function BookingForm() {
 
         <form
           onSubmit={handleSubmit}
+          onFocusCapture={handleFormFocusCapture}
+          onBlurCapture={handleFormBlurCapture}
+          onInvalidCapture={handleFormInvalidCapture}
           style={{
             display: 'flex',
             flexDirection:
@@ -1644,6 +1764,67 @@ export default function BookingForm() {
             </div>
           </div>
 
+          {promotionPackage && (
+            <div
+              onClick={() => handlePackageSelect('promotion')}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handlePackageSelect('promotion');
+                }
+              }}
+              style={{
+                border: formData.package_type === 'promotion' ? '2px solid #16a34a' : '1px solid #86efac',
+                background: formData.package_type === 'promotion' ? '#f0fdf4' : '#ffffff',
+                padding: '14px 16px',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                position: 'relative',
+                transition: 'all 0.2s',
+                marginTop: '12px'
+              }}
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '-10px',
+                  right: '12px',
+                  background: '#16a34a',
+                  color: 'white',
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  padding: '3px 9px',
+                  borderRadius: '10px'
+                }}
+              >
+                LIMITED-TIME SPECIAL
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                <div>
+                  <div style={{ fontWeight: 'bold', color: '#166534', fontSize: '15px' }}>
+                    {promotionPackage.hours} Hours Special
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#15803d', fontWeight: '600', marginTop: '3px' }}>
+                    Save TT${promotionPackage.savings.toLocaleString('en-TT', { maximumFractionDigits: 2 })}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '3px' }}>
+                    Available while this offer is active
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div style={{ fontSize: '12px', color: '#94a3b8', textDecoration: 'line-through' }}>
+                    TT${promotionPackage.regularValue.toLocaleString('en-TT', { maximumFractionDigits: 2 })}
+                  </div>
+                  <div style={{ fontWeight: 'bold', color: '#15803d', fontSize: '19px' }}>
+                    TT${promotionPackage.price.toLocaleString('en-TT', { maximumFractionDigits: 2 })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div
             style={{
               display:
@@ -1875,7 +2056,7 @@ export default function BookingForm() {
                 <strong>
                   TT$
                   {
-                    currentPkg.price
+                    currentPkg.price + transportFee
                   }
                 </strong>
               </span>
@@ -1883,23 +2064,36 @@ export default function BookingForm() {
           )}
 
           <div>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#334155', marginBottom: '4px' }}>
+              Delivery Area / Community
+            </label>
+            <select name="delivery_area" value={formData.delivery_area} onChange={handleChange} required style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', background: '#fff' }}>
+              <option value="">Select your area</option>
+              {Object.entries(transportZones).map(([zone, config]) => (
+                <optgroup
+                  key={zone}
+                  label={zone + (config.fee === null ? '' : ` — TT$${config.fee}`)}
+                >
+                  {config.areas.map((area) => (
+                    <option key={area} value={area}>{area}</option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+
+          <div>
             <label
               style={{
-                display:
-                  'block',
-                fontSize:
-                  '12px',
-                fontWeight:
-                  'bold',
-                color:
-                  '#334155',
-                marginBottom:
-                  '4px'
+                display: 'block',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                color: '#334155',
+                marginBottom: '4px'
               }}
             >
               Delivery Address / Location
             </label>
-
             <input
               type="text"
               name="address"

@@ -145,30 +145,39 @@ export default function FunnelAnalytics() {
     setBookingWarning('');
 
     try {
-      const [eventResult, bookingResult] = await Promise.all([
-        supabase
+      const eventRows = [];
+      const pageSize = 1000;
+      const maximumRows = 20000;
+      for (let offset = 0; offset < maximumRows; offset += pageSize) {
+        const { data, error } = await supabase
           .from('visitor_events')
           .select(
-            'session_id,event,source,utm_source,utm_medium,utm_campaign,referrer,device,is_test,created_at'
+            'session_id,visitor_id,ip_hash,event,page,source,utm_source,utm_medium,utm_campaign,referrer,device,is_test,created_at'
           )
           .eq('is_test', false)
-          .order('created_at', { ascending: false }),
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(offset, offset + pageSize - 1);
 
-        supabase.from('bookings').select('*'),
-      ]);
+        if (error) throw error;
+        eventRows.push(...(data || []));
+        if (!data || data.length < pageSize) break;
+      }
 
-      if (eventResult.error) throw eventResult.error;
+      const { data: bookingData, error: bookingError } = await supabase
+        .from('bookings')
+        .select('*');
 
-      setEvents(eventResult.data || []);
+      setEvents(eventRows);
 
-      if (bookingResult.error) {
+      if (bookingError) {
         setBookings([]);
         setBookingWarning(
-          `Booking records could not be loaded: ${bookingResult.error.message}`
+          `Booking records could not be loaded: ${bookingError.message}`
         );
       } else {
         setBookings(
-          (bookingResult.data || []).filter((booking) => !booking.is_test)
+          (bookingData || []).filter((booking) => !booking.is_test)
         );
       }
     } catch (err) {
@@ -265,6 +274,150 @@ export default function FunnelAnalytics() {
       [...group.campaigns].join(', ') || '—',
     ])
     .sort((a, b) => b[1] - a[1]);
+
+  // Group recorded events by persistent browser ID. IP hashes are secondary clues only.
+  const visitorGroups = events.reduce((result, event) => {
+    if (!event.visitor_id) return result;
+
+    if (!result[event.visitor_id]) {
+      result[event.visitor_id] = {
+        sessions: new Set(),
+        ipHashes: new Set(),
+        eventCount: 0,
+        firstSeen: event.created_at,
+        lastSeen: event.created_at,
+      };
+    }
+
+    const visitor = result[event.visitor_id];
+    visitor.eventCount += 1;
+    if (event.session_id) visitor.sessions.add(event.session_id);
+    if (event.ip_hash) visitor.ipHashes.add(event.ip_hash);
+
+    const eventTime = new Date(event.created_at).getTime();
+    if (eventTime < new Date(visitor.firstSeen).getTime()) {
+      visitor.firstSeen = event.created_at;
+    }
+    if (eventTime > new Date(visitor.lastSeen).getTime()) {
+      visitor.lastSeen = event.created_at;
+    }
+    return result;
+  }, {});
+
+  // Compact, stable four-character alphanumeric dashboard alias.
+  // Original identifiers remain unchanged in Supabase.
+  const shortVisitorCode = (value) => {
+    if (!value) return '—';
+    let hash = 2166136261;
+    for (const character of String(value)) {
+      hash ^= character.charCodeAt(0);
+      hash = Math.imul(hash, 16777619);
+    }
+    return `HTRZ-${(hash >>> 0).toString(36).toUpperCase().padStart(7, '0').slice(-4)}`;
+  };
+
+  const formatSeen = (value) =>
+    value
+      ? new Date(value).toLocaleString('en-TT', {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+        })
+      : '—';
+
+  const visitorRows = Object.entries(visitorGroups)
+    .map(([visitorId, visitor]) => [
+      shortVisitorCode(visitorId),
+      String(visitor.sessions.size),
+      String(visitor.eventCount),
+      [...visitor.ipHashes].map(shortVisitorCode).join(', ') || '—',
+      formatSeen(visitor.firstSeen),
+      formatSeen(visitor.lastSeen),
+    ])
+    .sort((a, b) => Number(b[1]) - Number(a[1]));
+
+  const bookingFields = [
+    ['customer_name', 'Full name'],
+    ['phone', 'WhatsApp phone'],
+    ['package_type', 'Rental package'],
+    ['event_date', 'Event date'],
+    ['start_time', 'Start time'],
+    ['delivery_area', 'Delivery area'],
+    ['address', 'Delivery address'],
+    ['notes', 'Optional notes'],
+  ];
+
+  const bookingFieldRows = bookingFields.map(([field, label]) => [
+    label,
+    uniqueSessions(events, [`booking_field_focused_${field}`]),
+    uniqueSessions(events, [`booking_field_started_${field}`]),
+    uniqueSessions(events, [`booking_field_completed_${field}`]),
+    uniqueSessions(events, [`booking_field_left_empty_${field}`]),
+    uniqueSessions(events, [`booking_field_invalid_${field}`]),
+  ]).map((row) => row.map(String));
+
+  const abandonmentGroups = events.reduce((result, event) => {
+    const prefix = 'booking_form_abandoned_after_';
+    const stage = event.event === 'booking_form_abandoned_no_interaction'
+      ? 'No form interaction'
+      : event.event.startsWith(prefix)
+        ? event.event.slice(prefix.length).replaceAll('_', ' ')
+        : null;
+    if (!stage) return result;
+    if (!result[stage]) result[stage] = new Set();
+    if (event.session_id) result[stage].add(event.session_id);
+    return result;
+  }, {});
+
+  const abandonmentRows = Object.entries(abandonmentGroups)
+    .map(([stage, sessions]) => [stage, String(sessions.size)])
+    .sort((a, b) => Number(b[1]) - Number(a[1]));
+
+  const recentSessions = Object.values(events.reduce((result, event) => {
+    if (!event.session_id) return result;
+    if (!result[event.session_id]) {
+      result[event.session_id] = {
+        sessionId: event.session_id,
+        visitorId: event.visitor_id,
+        eventCount: 0,
+        firstSeen: event.created_at,
+        lastSeen: event.created_at,
+        lastEvent: event.event,
+        lastPage: event.page || '/',
+        lastSource: event,
+      };
+    }
+    const session = result[event.session_id];
+    session.eventCount += 1;
+    const time = new Date(event.created_at).getTime();
+    if (time < new Date(session.firstSeen).getTime()) session.firstSeen = event.created_at;
+    if (time >= new Date(session.lastSeen).getTime()) {
+      session.lastSeen = event.created_at;
+      session.lastEvent = event.event;
+      session.lastPage = event.page || '/';
+      session.lastSource = event;
+      session.visitorId = event.visitor_id || session.visitorId;
+    }
+    return result;
+  }, {})).sort((a, b) => new Date(b.lastSeen) - new Date(a.lastSeen));
+
+  const recentJourneyRows = recentSessions.slice(0, 25).map((session) => [
+    shortVisitorCode(session.visitorId),
+    sourceName(session.lastSource),
+    session.lastPage,
+    EVENT_LABELS[session.lastEvent] || session.lastEvent.replaceAll('_', ' '),
+    String(session.eventCount),
+    formatSeen(session.lastSeen),
+  ]);
+
+  const submitAttempts = uniqueSessions(events, ['booking_submit_attempted']);
+  const submitBlocked = uniqueSessions(events, [
+    'booking_submit_blocked_invalid_package',
+    'booking_submit_blocked_invalid_time',
+    'booking_submit_blocked_time_conflict',
+    'booking_submit_blocked_delivery_details',
+    'booking_submit_blocked_delivery_area',
+  ]);
+  const submitFailed = uniqueSessions(events, ['booking_submit_failed_database']);
 
   const bookingStatuses = bookings.reduce((result, booking) => {
     const status = String(
@@ -404,6 +557,51 @@ export default function FunnelAnalytics() {
 
       <section style={panelStyle}>
         <h3 style={{ margin: '0 0 6px', fontSize: 16 }}>
+          Booking form progress and drop-off
+        </h3>
+        <p style={{ margin: '0 0 14px', color: '#64748b', fontSize: 12 }}>
+          Unique sessions reaching each field. Tracking stores field names and completion states only; it never stores typed names, phone numbers, addresses, or notes.
+        </p>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))',
+          gap: 10,
+          marginBottom: 14,
+        }}>
+          <Metric label="Submit attempts" value={submitAttempts} />
+          <Metric label="Blocked by form checks" value={submitBlocked} />
+          <Metric label="Save failures" value={submitFailed} />
+          <Metric label="Bookings submitted" value={submittedSessions} />
+        </div>
+        <DataTable
+          headers={['Field', 'Focused', 'Started', 'Completed', 'Left empty', 'Invalid']}
+          rows={bookingFieldRows}
+          emptyMessage="No field-level booking events recorded yet."
+        />
+        <h4 style={{ margin: '18px 0 8px', fontSize: 14 }}>Where unfinished forms stopped</h4>
+        <DataTable
+          headers={['Last recorded stage', 'Sessions']}
+          rows={abandonmentRows}
+          emptyMessage="No abandoned booking forms recorded yet."
+        />
+      </section>
+
+      <section style={panelStyle}>
+        <h3 style={{ margin: '0 0 6px', fontSize: 16 }}>
+          Recent visitor journeys
+        </h3>
+        <p style={{ margin: '0 0 14px', color: '#64748b', fontSize: 12 }}>
+          Last recorded action for each recent browser session. This helps identify the page and action where a session ended.
+        </p>
+        <DataTable
+          headers={['Visitor', 'Source', 'Last page', 'Last action', 'Events', 'Last seen']}
+          rows={recentJourneyRows}
+          emptyMessage="No visitor journeys recorded yet."
+        />
+      </section>
+
+      <section style={panelStyle}>
+        <h3 style={{ margin: '0 0 6px', fontSize: 16 }}>
           Traffic source performance
         </h3>
         <p style={{ margin: '0 0 14px', color: '#64748b', fontSize: 12 }}>
@@ -425,6 +623,35 @@ export default function FunnelAnalytics() {
           rows={sourceRows.map((row) => row.map(String))}
           emptyMessage="No source attribution data recorded."
         />
+      </section>
+
+      <section style={panelStyle}>
+        <h3 style={{ margin: '0 0 6px', fontSize: 16 }}>
+          Repeat visitor IDs
+        </h3>
+        <p style={{ margin: '0 0 14px', color: '#64748b', fontSize: 12 }}>
+          Visitor ID is the primary repeat-browser match. IP hash is a secondary
+          network clue, not proof of a person's identity. Different people can
+          share an IP address, and one person can have different IDs across
+          browsers or devices. Older events without visitor IDs are not listed.
+        </p>
+        <DataTable
+          headers={[
+            'Visitor ID',
+            'Sessions',
+            'Events',
+            'IP hash code(s)',
+            'First seen',
+            'Last seen',
+          ]}
+          rows={visitorRows}
+          emptyMessage="No visitor IDs recorded yet."
+        />
+        <p style={{ color: '#64748b', fontSize: 11, marginBottom: 0 }}>
+          Short HTRZ codes are stable dashboard labels for repeat matching.
+          Full identifiers remain in Supabase; raw IP addresses are not displayed
+          or stored by this tracking system.
+        </p>
       </section>
 
       <section style={panelStyle}>

@@ -44,21 +44,27 @@ const steps = [
   },
   {
     number: '4',
-    title: 'Enter your delivery address',
-    text: 'Tell us where the bouncer needs to be delivered and set up.',
-    details: ['Delivery address'],
+    title: 'Choose your delivery area',
+    text: 'Select your community from the delivery-area dropdown. The transport charge is calculated from the selected zone and added to your rental total. Areas needing a custom quote will be confirmed with you before the booking is approved.',
+    details: ['Free delivery area', 'Zone 1: TT$100', 'Zone 2: TT$150', 'Zone 3: TT$200', 'Custom quote'],
   },
   {
     number: '5',
-    title: 'Add optional information',
-    text: 'If there is anything else we should know about your event or location, you can add it here.',
-    details: ['Optional notes'],
+    title: 'Enter your delivery address',
+    text: 'Provide the full address where the bouncer needs to be delivered and set up. Make sure it matches the delivery area you selected.',
+    details: ['Community', 'Full delivery address'],
   },
   {
     number: '6',
-    title: 'Generate your booking',
-    text: 'Submit the completed form to generate your booking request. We then review the details and contact you through WhatsApp to confirm.',
-    details: ['Submit booking request', 'Review and confirmation'],
+    title: 'Add optional information',
+    text: 'Add any other details we should know about your event or location.',
+    details: ['Optional notes'],
+  },
+  {
+    number: '7',
+    title: 'Submit your booking request',
+    text: 'Submit the completed form. Your request details are prepared for WhatsApp, where we review the information with you and confirm the booking.',
+    details: ['Submit request', 'WhatsApp review', 'Booking confirmation'],
   },
 ];
 
@@ -380,9 +386,11 @@ export default function HowItWorks() {
                 'Your Details',
                 'Select Rental',
                 'Check Availability',
+                'Delivery Area',
                 'Address',
+                'Transport + Total',
                 'Optional Notes',
-                'Generate Booking',
+                'Submit Request',
               ].map((item, index, array) => (
                 <React.Fragment key={item}>
                   <span
@@ -457,6 +465,43 @@ export default function HowItWorks() {
               }}
             >
               <strong>Use:</strong> Dry use only
+            </div>
+
+            <div
+              style={{
+                background: '#f8fafc',
+                borderRadius: '12px',
+                padding: '16px',
+                border: '1px solid #e2e8f0',
+              }}
+            >
+              <strong style={{ display: 'block', marginBottom: '8px' }}>
+                Delivery and transportation
+              </strong>
+              <p style={{ margin: '0 0 10px', color: '#475569', fontSize: '14px', lineHeight: 1.55 }}>
+                Choose your community in the booking form. The applicable transport charge is added to the rental price and covers delivery, setup and collection.
+              </p>
+              <div style={{ display: 'grid', gap: '6px', fontSize: '14px', color: '#334155' }}>
+                <div><strong>Free delivery — TT$0:</strong> Chaguanas, Cunupia, Charlieville, Endeavour, Freeport, Carapichaima and Couva</div>
+                <div><strong>Zone 1 — TT$100:</strong> Tunapuna, St. Augustine, San Juan, Port of Spain and Arima</div>
+                <div><strong>Zone 2 — TT$150:</strong> Diego Martin, Marabella, San Fernando, Gasparillo, Princes Town and Sangre Grande</div>
+                <div><strong>Zone 3 — TT$200:</strong> Penal, Debe, Siparia, Point Fortin and Rio Claro</div>
+                <div><strong>Custom quote:</strong> Mayaro, Toco and locations not listed</div>
+              </div>
+              <p style={{ margin: '10px 0 0', color: '#475569', fontSize: '14px', lineHeight: 1.55 }}>
+                Your displayed total includes the rental and applicable transport charge. For custom-quote locations, the transport amount is confirmed separately before approval.
+              </p>
+            </div>
+
+            <div
+              style={{
+                background: '#f8fafc',
+                borderRadius: '12px',
+                padding: '15px 16px',
+                border: '1px solid #e2e8f0',
+              }}
+            >
+              <strong>Payment:</strong> No deposit required. Full payment is due on delivery.
             </div>
           </div>
         </div>
