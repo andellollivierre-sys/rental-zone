@@ -556,8 +556,10 @@ export default function BookingForm() {
     const isAdminOrDev = attribution.isTest === true;
     const firstTouch = attribution.firstTouch || {};
     const lastTouch = (() => {
-      try { return JSON.parse(sessionStorage.getItem('trz_last_touch') || 'null') || {}; }
-      catch { return {}; }
+      try {
+        const key = isAdminOrDev ? 'trz_last_touch_test' : 'trz_last_touch';
+        return JSON.parse(sessionStorage.getItem(key) || 'null') || {};
+      } catch { return {}; }
     })();
     const { sessionId, shortCode } = getSessionData();
 
