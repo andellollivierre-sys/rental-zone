@@ -270,7 +270,7 @@ export default function BookingForm() {
 
     const notifyDiscordOnView = async () => {
       try {
-        if (!DISCORD_WEBHOOK_URL) return;
+        if (getAttributionData().isTest || !DISCORD_WEBHOOK_URL) return;
 
         // Prevent spamming Discord if the same visitor refreshes
         // the page multiple times in the same session.
@@ -561,17 +561,8 @@ export default function BookingForm() {
     const bookingTotal = selectedPkg.price + (selectedTransport.fee ?? 0);
     const balanceDue = bookingTotal;
 
-    const isAdminOrDev =
-      localStorage.getItem(
-        'dev_mode'
-      ) === 'true' ||
-      localStorage.getItem(
-        'is_admin'
-      ) === 'true' ||
-      window.location.hostname ===
-        'localhost';
-
     const attribution = getAttributionData();
+    const isAdminOrDev = attribution.isTest === true;
     const firstTouch = attribution.firstTouch || {};
     const lastTouch = (() => {
       try { return JSON.parse(sessionStorage.getItem('trz_last_touch') || 'null') || {}; }
@@ -620,55 +611,47 @@ export default function BookingForm() {
             : promotionNote;
       }
 
-      const { error } =
-        await supabase
-          .from('bookings')
-          .insert([
-            {
-              id: bookingId,
-              customer_name:
-                formData.customer_name,
-              phone: formData.phone,
-              event_date:
-                formData.event_date,
-              start_time:
-                formData.start_time,
-              end_time: endTime,
-              package_type:
-                selectedPkg.name,
-              total_price:
-                bookingTotal,
-              deposit_amount: 0,
-              balance_due:
-                balanceDue,
-              address:
-                `${formData.address.trim()}, ${selectedTransport.area}`,
-              notes: bookingNotes,
-              status: 'Pending',
-              traffic_source: trafficSource,
-              utm_medium: utmMedium,
-              utm_campaign: utmCampaign,
-              click_id: clickId,
-              device_type: deviceType,
-              first_touch_source: firstTouch.source || null,
-              first_touch_medium: firstTouch.medium || null,
-              first_touch_campaign: firstTouch.campaign || null,
-              first_touch_click_id: firstTouch.clickId || null,
-              first_touch_referrer: firstTouch.referrer || null,
-              first_touch_landing_page: firstTouch.landingPage || null,
-              last_touch_source: lastTouch.source || trafficSource,
-              last_touch_medium: lastTouch.medium || utmMedium,
-              last_touch_campaign: lastTouch.campaign || utmCampaign,
-              last_touch_click_id: lastTouch.clickId || clickId,
-              last_touch_referrer: lastTouch.referrer || null,
-              last_touch_landing_page: lastTouch.landingPage || null,
-              attribution_session_id: sessionId,
-              attribution_tracking_code: shortCode,
-              visitor_id: getVisitorId(),
-              is_test:
-                isAdminOrDev
-            }
-          ]);
+      const bookingRecord = {
+        id: bookingId,
+        customer_name: formData.customer_name,
+        phone: formData.phone,
+        event_date: formData.event_date,
+        start_time: formData.start_time,
+        end_time: endTime,
+        package_type: selectedPkg.name,
+        total_price: bookingTotal,
+        deposit_amount: 0,
+        balance_due: balanceDue,
+        address: `${formData.address.trim()}, ${selectedTransport.area}`,
+        notes: bookingNotes,
+        status: isAdminOrDev ? 'TEST' : 'Pending',
+        traffic_source: trafficSource,
+        utm_medium: utmMedium,
+        utm_campaign: utmCampaign,
+        click_id: clickId,
+        device_type: deviceType,
+        first_touch_source: firstTouch.source || null,
+        first_touch_medium: firstTouch.medium || null,
+        first_touch_campaign: firstTouch.campaign || null,
+        first_touch_click_id: firstTouch.clickId || null,
+        first_touch_referrer: firstTouch.referrer || null,
+        first_touch_landing_page: firstTouch.landingPage || null,
+        last_touch_source: lastTouch.source || trafficSource,
+        last_touch_medium: lastTouch.medium || utmMedium,
+        last_touch_campaign: lastTouch.campaign || utmCampaign,
+        last_touch_click_id: lastTouch.clickId || clickId,
+        last_touch_referrer: lastTouch.referrer || null,
+        last_touch_landing_page: lastTouch.landingPage || null,
+        attribution_session_id: sessionId,
+        attribution_tracking_code: shortCode,
+        visitor_id: getVisitorId(),
+        is_test: isAdminOrDev
+      };
+
+      // Fail closed: a test can only write to the separate test table.
+      const { error } = isAdminOrDev
+        ? await supabase.from('test_bookings').insert([bookingRecord])
+        : await supabase.from('bookings').insert([bookingRecord]);
 
       if (error) throw error;
 
@@ -705,7 +688,7 @@ export default function BookingForm() {
         );
       }
 
-      if (DISCORD_WEBHOOK_URL) {
+      if (!isAdminOrDev && DISCORD_WEBHOOK_URL) {
         const discordMessage = {
           content:
             `🚨 **NEW BOOKING SUBMITTED!** ${
@@ -751,6 +734,7 @@ export default function BookingForm() {
 
       setConfirmedBooking({
         ...formData,
+        isTest: isAdminOrDev,
         address: `${formData.address.trim()}, ${selectedTransport.area}`,
         transportArea: selectedTransport.area,
         transportZone: selectedTransport.zone,
@@ -892,7 +876,7 @@ export default function BookingForm() {
               fontSize: '22px'
             }}
           >
-            Booking Request Received!
+            {confirmedBooking.isTest ? 'TEST Booking Saved — No Real Booking Created' : 'Booking Request Received!'}
           </h2>
 
           <p
@@ -903,9 +887,9 @@ export default function BookingForm() {
                 '0 0 20px 0'
             }}
           >
-            Your order is logged as
-            Pending. We'll contact you
-            to confirm the booking.
+            {confirmedBooking.isTest
+              ? 'This test is stored separately. No customer notification was sent and no real availability or booking records were changed.'
+              : "Your order is logged as Pending. We'll contact you to confirm the booking."}
           </p>
 
           <div
@@ -1009,7 +993,7 @@ export default function BookingForm() {
             </div>
           </div>
 
-          <button
+          {!confirmedBooking.isTest && <button
             onClick={openWhatsApp}
             style={{
               width: '100%',
@@ -1031,7 +1015,7 @@ export default function BookingForm() {
             }}
           >
             💬 Open WhatsApp to Send Booking
-          </button>
+          </button>}
 
           <button
             onClick={() =>
