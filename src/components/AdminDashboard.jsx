@@ -2242,6 +2242,25 @@ export default function AdminDashboard() {
         )}
       </div>
 
+      {/* Separate QA action — keep it outside the existing dashboard tabs. */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
+        <button
+          onClick={() => setActiveTab('test')}
+          style={{
+            background: activeTab === 'test' ? '#0f172a' : '#eef2ff',
+            color: activeTab === 'test' ? 'white' : '#3730a3',
+            border: '1px solid #c7d2fe',
+            padding: '9px 15px',
+            borderRadius: '9px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            fontSize: '13px'
+          }}
+        >
+          🧪 Open Test Centre
+        </button>
+      </div>
+
       {/* ========================================================
           TAB SWITCHER
       ======================================================== */}
@@ -2350,13 +2369,6 @@ export default function AdminDashboard() {
         >
           💰 Business Finance
         </button>
-
-        <button onClick={() => setActiveTab('test')} style={{
-          background: activeTab === 'test' ? '#0f172a' : '#f1f5f9',
-          color: activeTab === 'test' ? 'white' : '#475569',
-          border: 'none', padding: '8px 16px', borderRadius: '8px',
-          fontWeight: 'bold', cursor: 'pointer', fontSize: '13px'
-        }}>🧪 Test Centre</button>
 
         <button
           onClick={() =>
