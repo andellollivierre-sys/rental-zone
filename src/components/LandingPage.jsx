@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
+import AvailabilityCheckModal from './AvailabilityCheckModal';
 import {
   trackTrzEvent,
   shouldFireSessionStarted,
@@ -72,6 +73,20 @@ export default function LandingPage() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [showBookingPopup, setShowBookingPopup] = useState(false);
   const [expandedPopupSection, setExpandedPopupSection] = useState(null);
+  const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
+
+  useEffect(() => {
+    const interceptBookingLinks = (event) => {
+      const link = event.target.closest('a[href="/#booking"]');
+      if (!link) return;
+      event.preventDefault();
+      setShowBookingPopup(false);
+      setExpandedPopupSection(null);
+      setShowAvailabilityModal(true);
+    };
+    document.addEventListener('click', interceptBookingLinks, true);
+    return () => document.removeEventListener('click', interceptBookingLinks, true);
+  }, []);
 
   // Promotional offer state
   const [promotionalOffer, setPromotionalOffer] = useState(null);
@@ -1015,15 +1030,13 @@ export default function LandingPage() {
           )}
 
           <a
-            href="/#booking"
-            onClick={() => {
-              trackButtonClick(
-                'clicked_book_now'
-              );
-
-              if (promoIsActive) {
-                handlePromotionalBookClick();
-              }
+            href="#availability-check"
+            onClick={(event) => {
+              event.preventDefault();
+              trackButtonClick('clicked_book_now');
+              if (promoIsActive) handlePromotionalBookClick();
+              setShowBookingPopup(false);
+              setShowAvailabilityModal(true);
             }}
             style={{
               display: 'block',
@@ -2391,6 +2404,14 @@ export default function LandingPage() {
             />
           </div>
         </div>
+      )}
+      {showAvailabilityModal && (
+        <AvailabilityCheckModal
+          onClose={() => setShowAvailabilityModal(false)}
+          promoIsActive={promoIsActive}
+          publicHours={publicHours}
+          publicPrice={publicPrice}
+        />
       )}
     </div>
   );

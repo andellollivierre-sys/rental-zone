@@ -6,14 +6,24 @@ import { trackTrzEvent, createPageTimer } from '../utils/trzTracker';
 const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1551792830639382571/dxVXhU-U6CJxCGdUfBypOxjy3uOPK1mjismTZgLGNP3kyGPuh0Dn3YAlgmjcFLtHcXpU';
 
 export default function BookingForm() {
-  const [formData, setFormData] = useState({
-    customer_name: '',
-    phone: '',
-    event_date: '',
-    start_time: '',
-    package_type: '3_hours',
-    address: '',
-    notes: ''
+  const [formData, setFormData] = useState(() => {
+    let selection = null;
+    try {
+      selection = JSON.parse(sessionStorage.getItem('trz_availability_selection') || 'null');
+      sessionStorage.removeItem('trz_availability_selection');
+    } catch (error) {
+      console.warn('Could not restore availability selection:', error);
+    }
+    return {
+      customer_name: '',
+      phone: '',
+      event_date: selection?.event_date || '',
+      start_time: selection?.start_time || '',
+      package_type: selection?.package_type || '3_hours',
+      address: '',
+      delivery_area: selection?.delivery_area || '',
+      notes: ''
+    };
   });
 
   const [submitting, setSubmitting] = useState(false);
@@ -24,6 +34,19 @@ export default function BookingForm() {
 
   const [promotionalOffer, setPromotionalOffer] = useState(null);
   const [loadingPromotion, setLoadingPromotion] = useState(true);
+
+  const transportZones = {
+    'Free delivery': { fee: 0, areas: ['Chaguanas', 'Cunupia', 'Charlieville', 'Endeavour', 'Freeport', 'Carapichaima', 'Couva'] },
+    'Zone 1': { fee: 100, areas: ['Tunapuna', 'St. Augustine', 'San Juan', 'Port of Spain', 'Arima'] },
+    'Zone 2': { fee: 150, areas: ['Diego Martin', 'Marabella', 'San Fernando', 'Gasparillo', 'Princes Town', 'Sangre Grande'] },
+    'Zone 3': { fee: 200, areas: ['Penal', 'Debe', 'Siparia', 'Point Fortin', 'Rio Claro'] },
+    'Custom quote': { fee: null, areas: ['Mayaro', 'Toco', 'Other / Not listed'] }
+  };
+  const selectedTransport = Object.entries(transportZones)
+    .flatMap(([zone, config]) => config.areas.map((area) => ({ area, zone, fee: config.fee })))
+    .find((item) => item.area === formData.delivery_area);
+  const transportFee = selectedTransport?.fee ?? 0;
+  const requiresTransportQuote = selectedTransport?.fee === null;
 
   const pageTimerRef = useRef(null);
   const pageExitTrackedRef = useRef(false);
@@ -515,31 +538,38 @@ export default function BookingForm() {
       )
       .eq('status', 'Confirmed');
 
-    if (
-      !checkError &&
-      conflictingBookings
-    ) {
-      const hasConflict =
-        conflictingBookings.some((b) => {
-          return (
-            formData.start_time <
-              b.end_time &&
-            endTime > b.start_time
-          );
-        });
-
-      if (hasConflict) {
-        setErrorMessage(
-          '❌ The selected time slot conflicts with an already confirmed rental. Please choose another time.'
-        );
-
-        setSubmitting(false);
-        return;
-      }
+    if (checkError || !conflictingBookings) {
+      setErrorMessage(
+        '❌ We could not verify availability. Please try again or contact us.'
+      );
+      setSubmitting(false);
+      return;
     }
 
-    // All packages are now payment-on-delivery.
-    const balanceDue = selectedPkg.price;
+    const hasConflict = conflictingBookings.some((b) => {
+      return (
+        formData.start_time.slice(0, 5) < String(b.end_time).slice(0, 5) &&
+        endTime.slice(0, 5) > String(b.start_time).slice(0, 5)
+      );
+    });
+
+    if (hasConflict) {
+      setErrorMessage(
+        '❌ The selected time slot conflicts with an already confirmed rental. Please choose another time.'
+      );
+      setSubmitting(false);
+      return;
+    }
+
+    if (!selectedTransport || !formData.address.trim()) {
+      setErrorMessage('Please select your delivery area and enter the full delivery address.');
+      setSubmitting(false);
+      return;
+    }
+
+    // Custom delivery remains a quote; fixed-zone fees are included in the total.
+    const bookingTotal = selectedPkg.price + (selectedTransport.fee ?? 0);
+    const balanceDue = bookingTotal;
 
     const isAdminOrDev =
       localStorage.getItem(
@@ -648,13 +678,13 @@ export default function BookingForm() {
               package_type:
                 selectedPkg.name,
               total_price:
-                selectedPkg.price,
+                bookingTotal,
               deposit_amount: 0,
               balance_due:
                 balanceDue,
               address:
-                formData.address,
-              notes: bookingNotes,
+                `${formData.address.trim()}, ${selectedTransport.area}`,
+              notes: [bookingNotes, `[DELIVERY: ${selectedTransport.area} | ${selectedTransport.zone} | ${selectedTransport.fee === null ? 'QUOTE REQUIRED' : `TT${selectedTransport.fee}` }]`].filter(Boolean).join('\n'),
               status: 'Pending',
               traffic_source:
                 trafficSource,
@@ -681,7 +711,7 @@ export default function BookingForm() {
           package_type:
             selectedPkg.name,
           price:
-            selectedPkg.price,
+            bookingTotal,
           hours:
             selectedPkg.hours
         }
@@ -753,7 +783,7 @@ export default function BookingForm() {
         packageName:
           selectedPkg.name,
         price:
-          selectedPkg.price,
+          bookingTotal,
         deposit: 0,
         balance:
           balanceDue,
@@ -1875,12 +1905,26 @@ export default function BookingForm() {
                 <strong>
                   TT$
                   {
-                    currentPkg.price
+                    currentPkg.price + transportFee
                   }
                 </strong>
               </span>
             </div>
           )}
+
+          <div>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#334155', marginBottom: '4px' }}>
+              Delivery Area / Community
+            </label>
+            <select name="delivery_area" value={formData.delivery_area} onChange={handleChange} required style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', background: '#fff' }}>
+              <option value="">Select your area</option>
+              {Object.entries(transportZones).map(([zone, config]) => (
+                <optgroup key={zone} label={zone + (config.fee === null ? ' — Quote required' : ` — TT${config.fee}`)}>
+                  {config.areas.map((area) => <option key={area} value={area}>{area} — {config.fee === null ? 'Quote required' : `TT${config.fee}`}</option>)}
+                </optgroup>
+              ))}
+            </select>
+          </div>
 
           <div>
             <label
