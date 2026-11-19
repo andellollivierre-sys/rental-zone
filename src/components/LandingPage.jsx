@@ -401,10 +401,6 @@ export default function LandingPage() {
             null
           );
 
-          setShowPromotionalPopup(
-            false
-          );
-
           trackTrzEvent(
             'promotional_offer_expired',
             {
@@ -428,7 +424,9 @@ export default function LandingPage() {
       clearInterval(interval);
   }, [
     promoIsActive,
-    promotionalOffer?.offer_ends_at
+    promotionalOffer?.offer_ends_at,
+    publicPrice,
+    publicHours
   ]);
 
   /*
