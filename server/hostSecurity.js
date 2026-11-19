@@ -2,7 +2,7 @@
 // Add a custom production domain here when it is connected to Vercel.
 export const ALLOWED_HOSTS = [
   'rental-zone-taupe.vercel.app',
-  /^rental-zone-[a-z0-9-]+\\.vercel\\.app$/
+  /^rental-zone-[a-z0-9-]+\.vercel\.app$/
 ];
 
 function hostIsAllowed(value) {
