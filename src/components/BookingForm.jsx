@@ -1,6 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import { trackTrzEvent, createPageTimer, getAttributionData, getSessionData, getVisitorId } from '../utils/trzTracker';
+
+function isPromotionActive(offer) {
+  if (!offer) return false;
+  if (offer.offer_active !== true) return false;
+  if (!offer.offer_ends_at) return true;
+  const expiryTime = new Date(offer.offer_ends_at).getTime();
+  return Number.isFinite(expiryTime) && expiryTime > Date.now();
+}
 
 export default function BookingForm() {
   const [formData, setFormData] = useState({
@@ -89,22 +97,6 @@ export default function BookingForm() {
   // Full production test with an active promotion from Supabase.
   // ---------------------------------------------------------------------------
 
-  const isPromotionActive = (offer) => {
-    if (!offer) return false;
-    if (offer.offer_active !== true) return false;
-
-    if (!offer.offer_ends_at) return true;
-
-    const expiryTime = new Date(
-      offer.offer_ends_at
-    ).getTime();
-
-    return (
-      Number.isFinite(expiryTime) &&
-      expiryTime > Date.now()
-    );
-  };
-
   const buildPromotionPackage = (offer) => {
     if (!isPromotionActive(offer)) return null;
 
@@ -141,7 +133,7 @@ export default function BookingForm() {
     };
   };
 
-  const fetchPromotionalOffer = async () => {
+  const fetchPromotionalOffer = useCallback(async () => {
     try {
       setLoadingPromotion(true);
 
@@ -180,7 +172,7 @@ export default function BookingForm() {
     } finally {
       setLoadingPromotion(false);
     }
-  };
+  }, []);
 
   const promotionPackage =
     buildPromotionPackage(promotionalOffer);
@@ -222,7 +214,7 @@ export default function BookingForm() {
     };
 
     initializePromotion();
-  }, []);
+  }, [fetchPromotionalOffer]);
 
   // Track booking-page view, booking-page duration, and preserve
   // the existing Discord page-view notification.
