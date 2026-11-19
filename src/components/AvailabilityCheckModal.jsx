@@ -3,9 +3,9 @@ import { supabase } from '../supabaseClient';
 import { trackTrzEvent } from '../utils/trzTracker';
 
 const PACKAGES = {
-  '2_hours': { hours: 2 },
-  '3_hours': { hours: 3 },
-  full_day: { hours: 8 }
+  '2_hours': { label: '2 Hours', hours: 2 },
+  '3_hours': { label: '3 Hours', hours: 3 },
+  full_day: { label: '8 Hours', hours: 8 }
 };
 
 const TRANSPORT_ZONES = {
@@ -16,88 +16,175 @@ const TRANSPORT_ZONES = {
   'Custom quote': { fee: null, areas: ['Mayaro', 'Toco', 'Other / Not listed'] }
 };
 
-const endTimeFor = (start, hours) => {
-  const [h, m] = start.split(':').map(Number);
-  const total = h * 60 + m + hours * 60;
+const calculateEndTime = (startTime, hours) => {
+  if (!startTime) return null;
+  const [hour, minute] = startTime.split(':').map(Number);
+  const total = hour * 60 + minute + hours * 60;
   if (total >= 1440) return null;
   return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
 };
 
-export default function AvailabilityCheckModal({ onClose, promoIsActive, publicHours, publicPrice }) {
-  const now = new Date();
-  const minDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
-  const [duration, setDuration] = useState(promoIsActive ? 'promotion' : '3_hours');
-  const [area, setArea] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState('');
-  const [available, setAvailable] = useState(false);
-  const hours = duration === 'promotion' ? Number(publicHours) : PACKAGES[duration]?.hours;
-  const end = time && Number.isFinite(hours) ? endTimeFor(time, hours) : null;
+export default function AvailabilityCheckModal({
+  onClose,
+  promoIsActive,
+  publicHours,
+  publicPrice
+}) {
+  const today = new Date();
+  const minDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const [eventDate, setEventDate] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [packageType, setPackageType] = useState(promoIsActive ? 'promotion' : '3_hours');
+  const [deliveryArea, setDeliveryArea] = useState('');
+  const [checking, setChecking] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
 
-  const check = async (e) => {
-    e.preventDefault();
-    setMessage('');
-    setAvailable(false);
-    if (!date || !time || !area) {
-      setMessage('Choose your event date, start time and delivery area.');
+  const selectedPackage = packageType === 'promotion'
+    ? { label: `${publicHours} Hours promotional offer`, hours: Number(publicHours) }
+    : PACKAGES[packageType];
+
+  const handleCheck = async (event) => {
+    event.preventDefault();
+    setError('');
+    setResult(null);
+
+    const endTime = calculateEndTime(startTime, selectedPackage?.hours);
+    if (!endTime) {
+      setError('Choose a start time that allows the full rental to finish before midnight.');
       return;
     }
-    if (!end) {
-      setMessage('Choose a start time that allows the rental to finish before midnight.');
-      return;
-    }
-    setBusy(true);
-    trackTrzEvent('availability_check_started', { event_date: date, start_time: time, rental_hours: hours });
+
+    setChecking(true);
+    trackTrzEvent('availability_check_started', {
+      event_date: eventDate,
+      start_time: startTime,
+      package_type: packageType,
+      rental_hours: selectedPackage.hours
+    });
+
     try {
-      const { data, error } = await supabase.from('bookings').select('start_time,end_time').eq('event_date', date).eq('status', 'Confirmed');
-      if (error) throw error;
-      const conflicts = (data || []).filter((b) => time < String(b.end_time).slice(0,5) && end > String(b.start_time).slice(0,5));
+      const { data, error: queryError } = await supabase
+        .from('bookings')
+        .select('start_time, end_time')
+        .eq('event_date', eventDate)
+        .eq('status', 'Confirmed');
+
+      if (queryError) throw queryError;
+
+      const conflicts = (data || []).filter((booking) => {
+        const bookedStart = String(booking.start_time).slice(0, 5);
+        const bookedEnd = String(booking.end_time).slice(0, 5);
+        return startTime < bookedEnd && endTime > bookedStart;
+      });
+
       if (conflicts.length) {
-        setMessage('That time is already booked. Choose another time or date.');
-        trackTrzEvent('availability_check_unavailable', { event_date: date, conflicting_slots: conflicts.length });
+        setResult({ available: false, conflicts });
+        trackTrzEvent('availability_check_unavailable', {
+          event_date: eventDate,
+          start_time: startTime,
+          end_time: endTime,
+          conflicting_slots: conflicts.length
+        });
         return;
       }
-      sessionStorage.setItem('trz_availability_selection', JSON.stringify({ event_date: date, start_time: time, package_type: duration, delivery_area: area, rental_hours: hours, checked_at: new Date().toISOString() }));
-      if (duration === 'promotion') sessionStorage.setItem('trz_promo_intent','true');
-      else sessionStorage.removeItem('trz_promo_intent');
-      setAvailable(true);
-      trackTrzEvent('availability_check_available', { event_date: date, start_time: time, end_time: end, rental_hours: hours });
+
+      const selection = {
+        event_date: eventDate,
+        start_time: startTime,
+        package_type: packageType,
+        delivery_area: deliveryArea,
+        rental_hours: selectedPackage.hours,
+        checked_at: new Date().toISOString()
+      };
+
+      sessionStorage.setItem('trz_availability_selection', JSON.stringify(selection));
+      if (packageType === 'promotion') {
+        sessionStorage.setItem('trz_promo_intent', 'true');
+      } else {
+        sessionStorage.removeItem('trz_promo_intent');
+      }
+
+      trackTrzEvent('availability_check_available', {
+        event_date: eventDate,
+        start_time: startTime,
+        end_time: endTime,
+        package_type: packageType,
+        rental_hours: selectedPackage.hours
+      });
+
+      window.location.hash = '#booking';
     } catch (err) {
       console.error('Availability check failed:', err);
-      setMessage('We could not verify availability. Please try again or contact us.');
+      setError('We could not confirm availability right now. Please try again in a moment or contact us on WhatsApp.');
     } finally {
-      setBusy(false);
+      setChecking(false);
     }
   };
 
-  return <div role="presentation" onClick={onClose} style={{position:'fixed',inset:0,zIndex:12000,background:'rgba(15,23,42,.75)',display:'grid',placeItems:'center',padding:14}}>
-    <section role="dialog" aria-modal="true" aria-labelledby="availability-title" onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:18,padding:22,width:'100%',maxWidth:460,maxHeight:'92vh',overflowY:'auto'}}>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><h2 id="availability-title">Check Castle Availability</h2><button type="button" onClick={onClose} aria-label="Close">×</button></div>
-      <p>Choose your event date, start time, rental duration and delivery area.</p>
-      <form onSubmit={check} style={{display:'grid',gap:12}}>
-        <label>Event date<input required type="date" min={minDate} value={date} onChange={e=>{setDate(e.target.value);setAvailable(false);}} /></label>
-        <label>Start time<input required type="time" value={time} onChange={e=>{setTime(e.target.value);setAvailable(false);}} /></label>
-        <label>Rental duration<select value={duration} onChange={e=>{setDuration(e.target.value);setAvailable(false);}}>
-          {promoIsActive && <option value="promotion">{publicHours} Hours — TT$${publicPrice} promotion</option>}
-          <option value="2_hours">2 Hours</option><option value="3_hours">3 Hours</option><option value="full_day">8 Hours</option>
-        </select></label>
-        <label>Delivery Area / Community
-          <select required value={area} onChange={e=>{setArea(e.target.value);setAvailable(false);}} style={{display:'block',width:'100%',padding:10,border:'1px solid #cbd5e1',borderRadius:8,background:'#fff'}}>
-            <option value="">Select your area</option>
-            {Object.entries(TRANSPORT_ZONES).map(([zone, config]) => (
-              <optgroup key={zone} label={zone + (config.fee === null ? ' — Quote required' : ` — TT$${config.fee}`)}>
-                {config.areas.map((name) => <option key={name} value={name}>{name} — {config.fee === null ? 'Quote required' : `TT${config.fee}`}</option>)}
-              </optgroup>
-            ))}
-          </select>
-        </label>
-        {message && <p role="alert" style={{color:'#b91c1c'}}>{message}</p>}
-        {available && <div role="status" style={{background:'#ecfdf5',padding:12,borderRadius:8,color:'#065f46'}}>This time appears available. Continue to complete your booking.</div>}
-        {!available ? <button disabled={busy} type="submit">{busy?'Checking…':'Check Availability'}</button> : <button type="button" onClick={()=>{onClose();window.location.hash='#booking';}}>Continue to Booking</button>}
-      </form>
-      <small>Availability is not reserved until your booking is confirmed.</small>
-    </section>
-  </div>;
+  return (
+    <div
+      role="presentation"
+      onClick={onClose}
+      style={{ position: 'fixed', inset: 0, zIndex: 12000, background: 'rgba(15,23,42,.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 14 }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="availability-title"
+        onClick={(event) => event.stopPropagation()}
+        style={{ width: '100%', maxWidth: 460, maxHeight: '92vh', overflowY: 'auto', background: '#fff', borderRadius: 18, padding: 22, boxShadow: '0 20px 60px rgba(0,0,0,.3)' }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+          <h2 id="availability-title" style={{ margin: 0, fontSize: 22, color: '#0f172a' }}>Check Castle Availability</h2>
+          <button type="button" onClick={onClose} aria-label="Close availability check" style={{ border: 0, background: '#f1f5f9', borderRadius: 999, width: 34, height: 34, fontSize: 22, cursor: 'pointer' }}>×</button>
+        </div>
+        <p style={{ color: '#64748b', fontSize: 14, lineHeight: 1.5 }}>Choose your event date, start time and rental length. We’ll check confirmed bookings before you continue.</p>
+
+        <form onSubmit={handleCheck} style={{ display: 'grid', gap: 13 }}>
+          <label style={{ display: 'grid', gap: 5, fontSize: 13, fontWeight: 700, color: '#334155' }}>
+            Event date
+            <input type="date" min={minDate} required value={eventDate} onChange={(e) => { setEventDate(e.target.value); setResult(null); }} style={{ padding: 12, border: '1px solid #cbd5e1', borderRadius: 9, fontSize: 16 }} />
+          </label>
+          <label style={{ display: 'grid', gap: 5, fontSize: 13, fontWeight: 700, color: '#334155' }}>
+            Preferred start time
+            <input type="time" required value={startTime} onChange={(e) => { setStartTime(e.target.value); setResult(null); }} style={{ padding: 12, border: '1px solid #cbd5e1', borderRadius: 9, fontSize: 16 }} />
+          </label>
+          <label style={{ display: 'grid', gap: 5, fontSize: 13, fontWeight: 700, color: '#334155' }}>
+            Rental duration
+            <select required value={packageType} onChange={(e) => { setPackageType(e.target.value); setResult(null); }} style={{ padding: 12, border: '1px solid #cbd5e1', borderRadius: 9, fontSize: 15, background: '#fff' }}>
+              {promoIsActive && <option value="promotion">{publicHours} Hours — Promotional offer (TT${publicPrice})</option>}
+              <option value="2_hours">2 Hours</option>
+              <option value="3_hours">3 Hours</option>
+              <option value="full_day">8 Hours</option>
+            </select>
+          </label>
+          <label style={{ display: 'grid', gap: 5, fontSize: 13, fontWeight: 700, color: '#334155' }}>
+            Delivery area
+            <select required value={deliveryArea} onChange={(e) => { setDeliveryArea(e.target.value); setResult(null); }} style={{ padding: 12, border: '1px solid #cbd5e1', borderRadius: 9, fontSize: 15, background: '#fff' }}>
+              <option value="">Choose your area</option>
+              {Object.entries(TRANSPORT_ZONES).map(([zone, config]) => (
+                <optgroup key={zone} label={zone + (config.fee === null ? ' — Quote required' : ` — TT${config.fee}`)}>
+                  {config.areas.map((area) => <option key={area} value={area}>{area} — {config.fee === null ? 'Quote required' : `TT${config.fee}`}</option>)}
+                </optgroup>
+              ))}
+            </select>
+          </label>
+
+          {result?.available === false && (
+            <div role="status" style={{ padding: 12, borderRadius: 10, background: '#fff7ed', border: '1px solid #fdba74', color: '#9a3412', fontSize: 14 }}>
+              <strong>That time is already booked.</strong>
+              <div style={{ marginTop: 6 }}>Confirmed bookings: {result.conflicts.map((slot) => `${String(slot.start_time).slice(0, 5)}–${String(slot.end_time).slice(0, 5)}`).join(', ')}. Try another start time or date.</div>
+            </div>
+          )}
+          {error && <div role="alert" style={{ padding: 11, borderRadius: 9, background: '#fef2f2', color: '#b91c1c', fontSize: 13 }}>{error}</div>}
+
+          <button type="submit" disabled={checking} style={{ border: 0, borderRadius: 10, padding: 14, background: checking ? '#94a3b8' : '#2563eb', color: '#fff', fontWeight: 800, fontSize: 15, cursor: checking ? 'wait' : 'pointer' }}>
+            {checking ? 'Checking availability…' : 'Check Availability'}
+          </button>
+        </form>
+        <p style={{ margin: '12px 0 0', color: '#64748b', fontSize: 11, lineHeight: 1.4 }}>Availability is checked against confirmed bookings. Your time is not reserved until your booking is confirmed.</p>
+      </section>
+    </div>
+  );
 }
