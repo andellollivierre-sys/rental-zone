@@ -6,14 +6,23 @@ import { trackTrzEvent, createPageTimer } from '../utils/trzTracker';
 const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1551792830639382571/dxVXhU-U6CJxCGdUfBypOxjy3uOPK1mjismTZgLGNP3kyGPuh0Dn3YAlgmjcFLtHcXpU';
 
 export default function BookingForm() {
-  const [formData, setFormData] = useState({
-    customer_name: '',
-    phone: '',
-    event_date: '',
-    start_time: '',
-    package_type: '3_hours',
-    address: '',
-    notes: ''
+  const [formData, setFormData] = useState(() => {
+    let selection = null;
+    try {
+      selection = JSON.parse(sessionStorage.getItem('trz_availability_selection') || 'null');
+      sessionStorage.removeItem('trz_availability_selection');
+    } catch (error) {
+      console.warn('Could not restore availability selection:', error);
+    }
+    return {
+      customer_name: '',
+      phone: '',
+      event_date: selection?.event_date || '',
+      start_time: selection?.start_time || '',
+      package_type: selection?.package_type === 'promotion' ? '3_hours' : (selection?.package_type || '3_hours'),
+      address: '',
+      notes: ''
+    };
   });
 
   const [submitting, setSubmitting] = useState(false);
