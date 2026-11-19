@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AvailabilityCheckModal from './AvailabilityCheckModal';
 import { supabase } from '../supabaseClient';
 import {
   trackTrzEvent,
@@ -72,6 +73,7 @@ export default function LandingPage() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [showBookingPopup, setShowBookingPopup] = useState(false);
   const [expandedPopupSection, setExpandedPopupSection] = useState(null);
+  const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
 
   // Promotional offer state
   const [promotionalOffer, setPromotionalOffer] = useState(null);
@@ -683,6 +685,13 @@ export default function LandingPage() {
       return;
     }
 
+    if (intentKey === 'availability') {
+      setExpandedPopupSection(null);
+      setShowBookingPopup(false);
+      setShowAvailabilityModal(true);
+      return;
+    }
+
     if (targetDestination) {
       setExpandedPopupSection(null);
       setShowBookingPopup(false);
@@ -870,15 +879,12 @@ export default function LandingPage() {
           </p>
 
           <a
-            href="/#booking"
-            onClick={() => {
-              trackButtonClick(
-                'clicked_book_now'
-              );
-
-              if (promoIsActive) {
-                handlePromotionalBookClick();
-              }
+            href="#availability-check"
+            onClick={(event) => {
+              event.preventDefault();
+              trackButtonClick('clicked_book_now');
+              if (promoIsActive) handlePromotionalBookClick();
+              setShowAvailabilityModal(true);
             }}
             style={{
               display: 'block',
@@ -1241,12 +1247,12 @@ export default function LandingPage() {
                 </div>
 
                 <a
-                  href="/#booking"
-                  onClick={() =>
-                    trackButtonClick(
-                      'clicked_book_now'
-                    )
-                  }
+                  href="#availability-check"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    trackButtonClick('clicked_book_now');
+                    setShowAvailabilityModal(true);
+                  }}
                   style={{
                     background:
                       '#0f172a',
@@ -1278,10 +1284,12 @@ export default function LandingPage() {
             {/* PROMO BOOKING BUTTON */}
             {promoIsActive && (
               <a
-                href="/#booking"
-                onClick={
-                  handlePromotionalBookClick
-                }
+                href="#availability-check"
+                onClick={(event) => {
+                  event.preventDefault();
+                  handlePromotionalBookClick();
+                  setShowAvailabilityModal(true);
+                }}
                 style={{
                   display:
                     'block',
@@ -1841,7 +1849,7 @@ export default function LandingPage() {
       <button
         onClick={() => {
           if (promoIsActive) handlePromotionalBookClick();
-          handleIntentSelect('availability', '/#booking');
+          handleIntentSelect('availability');
         }}
         style={{
           width: '100%',
@@ -1934,12 +1942,14 @@ export default function LandingPage() {
           </ul>
 
           <a
-            href="/#booking"
-            onClick={() => {
+            href="#availability-check"
+            onClick={(event) => {
+              event.preventDefault();
               trackButtonClick('clicked_book_now');
               if (promoIsActive) handlePromotionalBookClick();
               setExpandedPopupSection(null);
               setShowBookingPopup(false);
+              setShowAvailabilityModal(true);
             }}
             style={{
               display: 'block',
@@ -2246,6 +2256,14 @@ export default function LandingPage() {
             />
           </div>
         </div>
+      )}
+      {showAvailabilityModal && (
+        <AvailabilityCheckModal
+          onClose={() => setShowAvailabilityModal(false)}
+          promoIsActive={promoIsActive}
+          publicHours={publicHours}
+          publicPrice={publicPrice}
+        />
       )}
     </div>
   );
