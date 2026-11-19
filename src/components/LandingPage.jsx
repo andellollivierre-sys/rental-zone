@@ -285,63 +285,42 @@ export default function LandingPage() {
       return;
     }
 
-    /*
-     * PROMOTION ACTIVE
-     *
-     * Temporarily replace the normal welcome popup
-     * with the promotional popup.
-     */
-    if (promoIsActive) {
-      setShowBookingPopup(true);
-      setExpandedPopupSection(null);
+    const popupDelay = setTimeout(() => {
+      if (promoIsActive) {
+        setShowBookingPopup(true);
+        setExpandedPopupSection(null);
 
-      const promoPopupSeen =
-        sessionStorage.getItem('trz_promotional_popup_seen');
+        const promoPopupSeen =
+          sessionStorage.getItem('trz_promotional_popup_seen');
 
-      if (!promoPopupSeen) {
-        sessionStorage.setItem(
-          'trz_promotional_popup_seen',
-          'true'
-        );
+        if (!promoPopupSeen) {
+          sessionStorage.setItem('trz_promotional_popup_seen', 'true');
 
-        trackTrzEvent('promotional_popup_opened', {
-          trigger: 'promo_immediate',
-          offer_price: publicPrice,
-          offer_hours: publicHours,
-          regular_value: promotionalRegularValue,
-          savings: promotionalSavings
-        });
+          trackTrzEvent('promotional_popup_opened', {
+            trigger: 'promo_delayed',
+            offer_price: publicPrice,
+            offer_hours: publicHours,
+            regular_value: promotionalRegularValue,
+            savings: promotionalSavings
+          });
+        }
+
+        return;
       }
 
-      return;
-    }
+      const hasSeenPopup =
+        sessionStorage.getItem('seen_booking_popup');
 
-    /*
-     * NO ACTIVE PROMOTION
-     *
-     * Restore the existing welcome popup behavior.
-     */
-    const hasSeenPopup =
-      sessionStorage.getItem(
-        'seen_booking_popup'
-      );
+      if (!hasSeenPopup) {
+        setShowBookingPopup(true);
+        sessionStorage.setItem('seen_booking_popup', 'true');
+        trackTrzEvent('popup_opened', {
+          popup_type: 'initial_intent'
+        });
+      }
+    }, 5000);
 
-    if (!hasSeenPopup) {
-      setShowBookingPopup(true);
-
-      sessionStorage.setItem(
-        'seen_booking_popup',
-        'true'
-      );
-
-      trackTrzEvent(
-        'popup_opened',
-        {
-          popup_type:
-            'initial_intent'
-        }
-      );
-    }
+    return () => clearTimeout(popupDelay);
   }, [
     promoLoading,
     promoIsActive,
@@ -890,130 +869,6 @@ export default function LandingPage() {
             zero upfront risk.
           </p>
 
-          {/* ACTIVE PROMOTION HERO NOTICE */}
-          {promoIsActive && (
-            <div
-              style={{
-                background:
-                  '#fff7ed',
-                border:
-                  '1px solid #fdba74',
-                borderRadius: '14px',
-                padding:
-                  '16px',
-                margin:
-                  '0 auto 18px auto',
-                maxWidth:
-                  '380px',
-                boxShadow:
-                  '0 4px 10px rgba(234, 88, 12, 0.08)'
-              }}
-            >
-              <div
-                style={{
-                  fontSize: '11px',
-                  fontWeight: '800',
-                  color: '#c2410c',
-                  textTransform:
-                    'uppercase',
-                  letterSpacing:
-                    '0.5px',
-                  marginBottom:
-                    '5px'
-                }}
-              >
-                🔥 Limited-Time Offer
-              </div>
-
-              <div
-                style={{
-                  fontSize: '24px',
-                  fontWeight: '900',
-                  color: '#9a3412',
-                  lineHeight: '1.1'
-                }}
-              >
-                {publicHours} Hours
-                {' — '}
-                TT$
-                {formatMoney(
-                  publicPrice
-                )}
-              </div>
-
-              <div
-                style={{
-                  marginTop: '8px',
-                  fontSize: '13px',
-                  color: '#7c2d12'
-                }}
-              >
-                Regular value:{' '}
-                <strong>
-                  TT$
-                  {formatMoney(
-                    promotionalRegularValue
-                  )}
-                </strong>
-              </div>
-
-              <div
-                style={{
-                  marginTop: '3px',
-                  fontSize: '16px',
-                  fontWeight: '900',
-                  color: '#c2410c'
-                }}
-              >
-                YOU SAVE TT$
-                {formatMoney(
-                  promotionalSavings
-                )}
-              </div>
-
-              {promoExpirySeconds !==
-                null && (
-                <div
-                  style={{
-                    marginTop:
-                      '10px',
-                    padding:
-                      '7px 10px',
-                    background:
-                      '#ffedd5',
-                    borderRadius:
-                      '8px',
-                    color:
-                      '#9a3412',
-                    fontSize:
-                      '12px',
-                    fontWeight:
-                      '800'
-                  }}
-                >
-                  ⏳ Offer ends in{' '}
-                  {formatCountdown(
-                    promoExpirySeconds
-                  )}
-                </div>
-              )}
-
-              <div
-                style={{
-                  marginTop:
-                    '5px',
-                  fontSize:
-                    '11px',
-                  color:
-                    '#7c2d12'
-                }}
-              >
-                No deposit required.
-                Pay on delivery.
-              </div>
-            </div>
-          )}
-
           <a
             href="/#booking"
             onClick={() => {
@@ -1163,6 +1018,130 @@ export default function LandingPage() {
               title="Click to zoom image"
             />
           </div>
+
+          {/* ACTIVE PROMOTION HERO NOTICE */}
+          {promoIsActive && (
+            <div
+              style={{
+                background:
+                  '#fff7ed',
+                border:
+                  '1px solid #fdba74',
+                borderRadius: '14px',
+                padding:
+                  '16px',
+                margin:
+                  '0 auto 18px auto',
+                maxWidth:
+                  '380px',
+                boxShadow:
+                  '0 4px 10px rgba(234, 88, 12, 0.08)'
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '11px',
+                  fontWeight: '800',
+                  color: '#c2410c',
+                  textTransform:
+                    'uppercase',
+                  letterSpacing:
+                    '0.5px',
+                  marginBottom:
+                    '5px'
+                }}
+              >
+                🔥 Limited-Time Offer
+              </div>
+
+              <div
+                style={{
+                  fontSize: '24px',
+                  fontWeight: '900',
+                  color: '#9a3412',
+                  lineHeight: '1.1'
+                }}
+              >
+                {publicHours} Hours
+                {' — '}
+                TT$
+                {formatMoney(
+                  publicPrice
+                )}
+              </div>
+
+              <div
+                style={{
+                  marginTop: '8px',
+                  fontSize: '13px',
+                  color: '#7c2d12'
+                }}
+              >
+                Regular value:{' '}
+                <strong>
+                  TT$
+                  {formatMoney(
+                    promotionalRegularValue
+                  )}
+                </strong>
+              </div>
+
+              <div
+                style={{
+                  marginTop: '3px',
+                  fontSize: '16px',
+                  fontWeight: '900',
+                  color: '#c2410c'
+                }}
+              >
+                YOU SAVE TT$
+                {formatMoney(
+                  promotionalSavings
+                )}
+              </div>
+
+              {promoExpirySeconds !==
+                null && (
+                <div
+                  style={{
+                    marginTop:
+                      '10px',
+                    padding:
+                      '7px 10px',
+                    background:
+                      '#ffedd5',
+                    borderRadius:
+                      '8px',
+                    color:
+                      '#9a3412',
+                    fontSize:
+                      '12px',
+                    fontWeight:
+                      '800'
+                  }}
+                >
+                  ⏳ Offer ends in{' '}
+                  {formatCountdown(
+                    promoExpirySeconds
+                  )}
+                </div>
+              )}
+
+              <div
+                style={{
+                  marginTop:
+                    '5px',
+                  fontSize:
+                    '11px',
+                  color:
+                    '#7c2d12'
+                }}
+              >
+                No deposit required.
+                Pay on delivery.
+              </div>
+            </div>
+          )}
 
           <div
             style={{
