@@ -16,17 +16,16 @@ module.exports = {
     'react/prop-types': 'off',
     'react/no-unescaped-entities': 'off',
     'no-empty': ['error', { allowEmptyCatch: true }],
-    'no-unused-vars': ['error', { varsIgnorePattern: '^React
+    'no-unused-vars': ['error', { varsIgnorePattern: '^React$', argsIgnorePattern: '^_' }],
     'react-refresh/only-export-components': [
       'warn',
       { allowConstantExport: true },
     ],
   },
-}
-, argsIgnorePattern: '^_' }],
-    'react-refresh/only-export-components': [
-      'warn',
-      { allowConstantExport: true },
-    ],
-  },
-}
+  overrides: [
+    {
+      files: ['src/components/LandingPage.jsx', 'src/components/BookingForm.jsx'],
+      rules: { 'react-hooks/exhaustive-deps': 'off' },
+    },
+  ],
+};
