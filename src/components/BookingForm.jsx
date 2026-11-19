@@ -545,10 +545,11 @@ export default function BookingForm() {
     if (conflictingBookings) {
       const hasConflict =
         conflictingBookings.some((b) => {
+          const bookedStart = String(b.start_time).slice(0, 5);
+          const bookedEnd = String(b.end_time).slice(0, 5);
           return (
-            formData.start_time <
-              b.end_time &&
-            endTime > b.start_time
+            formData.start_time < bookedEnd &&
+            endTime > bookedStart
           );
         });
 
