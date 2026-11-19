@@ -921,6 +921,7 @@ export default function LandingPage() {
           />
 
         </div>
+        </div>
 
         {/* EXISTING PROMOTIONAL OFFER — retained on page below hero media */}
         {promoIsActive && (
