@@ -3,9 +3,17 @@ import { supabase } from '../supabaseClient';
 import { trackTrzEvent } from '../utils/trzTracker';
 
 const PACKAGES = {
-  '2_hours': { label: '2 Hours', hours: 2 },
-  '3_hours': { label: '3 Hours', hours: 3 },
-  full_day: { label: '8 Hours', hours: 8 }
+  '2_hours': { hours: 2 },
+  '3_hours': { hours: 3 },
+  full_day: { hours: 8 }
+};
+
+const TRANSPORT_ZONES = {
+  'Free delivery': { fee: 0, areas: ['Chaguanas', 'Cunupia', 'Charlieville', 'Endeavour', 'Freeport', 'Carapichaima', 'Couva'] },
+  'Zone 1': { fee: 100, areas: ['Tunapuna', 'St. Augustine', 'San Juan', 'Port of Spain', 'Arima'] },
+  'Zone 2': { fee: 150, areas: ['Diego Martin', 'Marabella', 'San Fernando', 'Gasparillo', 'Princes Town', 'Sangre Grande'] },
+  'Zone 3': { fee: 200, areas: ['Penal', 'Debe', 'Siparia', 'Point Fortin', 'Rio Claro'] },
+  'Custom quote': { fee: null, areas: ['Mayaro', 'Toco', 'Other / Not listed'] }
 };
 
 const endTimeFor = (start, hours) => {
@@ -26,11 +34,20 @@ export default function AvailabilityCheckModal({ onClose, promoIsActive, publicH
   const [message, setMessage] = useState('');
   const [available, setAvailable] = useState(false);
   const hours = duration === 'promotion' ? Number(publicHours) : PACKAGES[duration].hours;
-  const end = time ? endTimeFor(time, hours) : null;
+  const end = time && Number.isFinite(hours) ? endTimeFor(time, hours) : null;
 
   const check = async (e) => {
-    e.preventDefault(); setMessage(''); setAvailable(false);
-    if (!end) { setMessage('Choose a start time that allows the rental to finish before midnight.'); return; }
+    e.preventDefault();
+    setMessage('');
+    setAvailable(false);
+    if (!date || !time || !area) {
+      setMessage('Choose your event date, start time and delivery area.');
+      return;
+    }
+    if (!end) {
+      setMessage('Choose a start time that allows the rental to finish before midnight.');
+      return;
+    }
     setBusy(true);
     trackTrzEvent('availability_check_started', { event_date: date, start_time: time, rental_hours: hours });
     try {
@@ -50,7 +67,9 @@ export default function AvailabilityCheckModal({ onClose, promoIsActive, publicH
     } catch (err) {
       console.error('Availability check failed:', err);
       setMessage('We could not verify availability. Please try again or contact us.');
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   };
 
   return <div role="presentation" onClick={onClose} style={{position:'fixed',inset:0,zIndex:12000,background:'rgba(15,23,42,.75)',display:'grid',placeItems:'center',padding:14}}>
@@ -61,10 +80,19 @@ export default function AvailabilityCheckModal({ onClose, promoIsActive, publicH
         <label>Event date<input required type="date" min={minDate} value={date} onChange={e=>{setDate(e.target.value);setAvailable(false);}} /></label>
         <label>Start time<input required type="time" value={time} onChange={e=>{setTime(e.target.value);setAvailable(false);}} /></label>
         <label>Rental duration<select value={duration} onChange={e=>{setDuration(e.target.value);setAvailable(false);}}>
-          {promoIsActive && <option value="promotion">{publicHours} Hours — TT${publicPrice} promotion</option>}
+          {promoIsActive && <option value="promotion">{publicHours} Hours — TT$${publicPrice} promotion</option>}
           <option value="2_hours">2 Hours</option><option value="3_hours">3 Hours</option><option value="full_day">8 Hours</option>
         </select></label>
-        <label>Delivery area<input required value={area} onChange={e=>setArea(e.target.value)} placeholder="Town or area" /></label>
+        <label>Delivery Area / Community
+          <select required value={area} onChange={e=>{setArea(e.target.value);setAvailable(false);}} style={{display:'block',width:'100%',padding:10,border:'1px solid #cbd5e1',borderRadius:8,background:'#fff'}}>
+            <option value="">Select your area</option>
+            {Object.entries(TRANSPORT_ZONES).map(([zone, config]) => (
+              <optgroup key={zone} label={zone + (config.fee === null ? ' — Quote required' : ` — TT$${config.fee}`)}>
+                {config.areas.map((name) => <option key={name} value={name}>{name}</option>)}
+              </optgroup>
+            ))}
+          </select>
+        </label>
         {message && <p role="alert" style={{color:'#b91c1c'}}>{message}</p>}
         {available && <div role="status" style={{background:'#ecfdf5',padding:12,borderRadius:8,color:'#065f46'}}>This time appears available. Continue to complete your booking.</div>}
         {!available ? <button disabled={busy} type="submit">{busy?'Checking…':'Check Availability'}</button> : <button type="button" onClick={()=>{onClose();window.location.hash='#booking';}}>Continue to Booking</button>}
