@@ -524,7 +524,7 @@ export default function FunnelAnalytics() {
         </h3>
         <p style={{ margin: '0 0 14px', color: '#64748b', fontSize: 12 }}>
           Visitor ID is the primary repeat-browser match. IP hash is a secondary
-          network clue, not proof of a person&apos;s identity. Different people can
+          network clue, not proof of a person's identity. Different people can
           share an IP address, and one person can have different IDs across
           browsers or devices. Older events without visitor IDs are not listed.
         </p>
