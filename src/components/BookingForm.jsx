@@ -19,8 +19,8 @@ export default function BookingForm() {
       phone: '',
       event_date: selection?.event_date || '',
       start_time: selection?.start_time || '',
-      package_type: selection?.package_type === 'promotion' ? '3_hours' : (selection?.package_type || '3_hours'),
-      address: '',
+      package_type: selection?.package_type || '3_hours',
+      address: selection?.delivery_area || '',
       notes: ''
     };
   });
@@ -524,27 +524,27 @@ export default function BookingForm() {
       )
       .eq('status', 'Confirmed');
 
-    if (
-      !checkError &&
-      conflictingBookings
-    ) {
-      const hasConflict =
-        conflictingBookings.some((b) => {
-          return (
-            formData.start_time <
-              b.end_time &&
-            endTime > b.start_time
-          );
-        });
+    if (checkError || !conflictingBookings) {
+      setErrorMessage(
+        '❌ We could not verify availability. Please try again or contact us.'
+      );
+      setSubmitting(false);
+      return;
+    }
 
-      if (hasConflict) {
-        setErrorMessage(
-          '❌ The selected time slot conflicts with an already confirmed rental. Please choose another time.'
-        );
+    const hasConflict = conflictingBookings.some((b) => {
+      return (
+        formData.start_time.slice(0, 5) < String(b.end_time).slice(0, 5) &&
+        endTime.slice(0, 5) > String(b.start_time).slice(0, 5)
+      );
+    });
 
-        setSubmitting(false);
-        return;
-      }
+    if (hasConflict) {
+      setErrorMessage(
+        '❌ The selected time slot conflicts with an already confirmed rental. Please choose another time.'
+      );
+      setSubmitting(false);
+      return;
     }
 
     // All packages are now payment-on-delivery.
