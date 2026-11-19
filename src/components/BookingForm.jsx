@@ -1920,7 +1920,7 @@ export default function BookingForm() {
               <option value="">Select your area</option>
               {Object.entries(transportZones).map(([zone, config]) => (
                 <optgroup key={zone} label={zone + (config.fee === null ? ' — Quote required' : ` — TT${config.fee}`)}>
-                  {config.areas.map((area) => <option key={area} value={area}>{area}</option>)}
+                  {config.areas.map((area) => <option key={area} value={area}>{area} — {config.fee === null ? 'Quote required' : `TT${config.fee}`}</option>)}
                 </optgroup>
               ))}
             </select>
