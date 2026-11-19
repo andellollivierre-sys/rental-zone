@@ -289,7 +289,7 @@ export default function LandingPage() {
       /*
        * PROMOTION ACTIVE
        * Keep the existing promotional popup and tracking event,
-       * but wait 12 seconds after the page is ready.
+       * but wait 5 seconds after the page is ready.
        */
       if (promoIsActive) {
         setShowBookingPopup(true);
@@ -326,7 +326,7 @@ export default function LandingPage() {
           popup_type: 'initial_intent'
         });
       }
-    }, 12000);
+    }, 5000);
 
     return () => window.clearTimeout(popupDelay);
   }, [
@@ -817,19 +817,6 @@ export default function LandingPage() {
           padding: '0 16px'
         }}
       >
-        {/* TOP CASTLE MEDIA — no video asset exists in public/, so use the lightweight existing castle photo. */}
-        <div style={{ margin: '0 -16px 18px', overflow: 'hidden', borderRadius: '0 0 18px 18px', background: '#0f172a' }}>
-          <img
-            src="/1000151156.jpg"
-            alt="Spider-Man bouncy castle with slide"
-            width="1200"
-            height="800"
-            fetchPriority="high"
-            decoding="async"
-            style={{ display: 'block', width: '100%', maxHeight: '340px', objectFit: 'cover' }}
-          />
-        </div>
-
         {/* Hero Section */}
         <div
           style={{
@@ -868,134 +855,6 @@ export default function LandingPage() {
             Spider-Man Bouncy Castle with Slide, Delivered &amp; Set Up in Trinidad
           </h1>
 
-          <p
-            style={{
-              color: '#475569',
-              fontSize: '14px',
-              maxWidth: '100%',
-              margin:
-                '0 auto 20px auto',
-              lineHeight: '1.5',
-              padding: '0 10px'
-            }}
-          >
-            Safe, clean, high-energy
-            bouncy castles delivered
-            straight to your yard.
-            Secure your date with
-            zero upfront risk.
-          </p>
-
-          {/* OFFER — requested public-facing promotion */}
-          {(
-            <div
-              style={{
-                background:
-                  '#fff7ed',
-                border:
-                  '1px solid #fdba74',
-                borderRadius: '14px',
-                padding:
-                  '16px',
-                margin:
-                  '0 auto 18px auto',
-                maxWidth:
-                  '380px',
-                boxShadow:
-                  '0 4px 10px rgba(234, 88, 12, 0.08)'
-              }}
-            >
-              <div
-                style={{
-                  fontSize: '11px',
-                  fontWeight: '800',
-                  color: '#c2410c',
-                  textTransform:
-                    'uppercase',
-                  letterSpacing:
-                    '0.5px',
-                  marginBottom:
-                    '5px'
-                }}
-              >
-                🔥 Limited-Time Offer
-              </div>
-
-              <div
-                style={{
-                  fontSize: '24px',
-                  fontWeight: '900',
-                  color: '#9a3412',
-                  lineHeight: '1.1'
-                }}
-              >
-                4 Hours — TT$800
-              </div>
-
-              <div
-                style={{
-                  marginTop: '8px',
-                  fontSize: '13px',
-                  color: '#7c2d12'
-                }}
-              >
-                Regular price: <strong>TT$1,300</strong>
-              </div>
-
-              <div
-                style={{
-                  marginTop: '3px',
-                  fontSize: '16px',
-                  fontWeight: '900',
-                  color: '#c2410c'
-                }}
-              >
-                YOU SAVE TT$500
-              </div>
-
-              {promoIsActive && promoExpirySeconds !==
-                null && (
-                <div
-                  style={{
-                    marginTop:
-                      '10px',
-                    padding:
-                      '7px 10px',
-                    background:
-                      '#ffedd5',
-                    borderRadius:
-                      '8px',
-                    color:
-                      '#9a3412',
-                    fontSize:
-                      '12px',
-                    fontWeight:
-                      '800'
-                  }}
-                >
-                  ⏳ Offer ends in{' '}
-                  {formatCountdown(
-                    promoExpirySeconds
-                  )}
-                </div>
-              )}
-
-              <div
-                style={{
-                  marginTop:
-                    '5px',
-                  fontSize:
-                    '11px',
-                  color:
-                    '#7c2d12'
-                }}
-              >
-                No deposit required.
-                Pay on delivery.
-              </div>
-            </div>
-          )}
-
           <a
             href="/#booking"
             onClick={() => {
@@ -1031,6 +890,19 @@ export default function LandingPage() {
           >
             Claim Offer & Check Availability
           </a>
+
+        {/* TOP CASTLE MEDIA — no video asset exists in public/, so use the lightweight existing castle photo. */}
+        <div style={{ margin: '0 -16px 18px', overflow: 'hidden', borderRadius: '0 0 18px 18px', background: '#0f172a' }}>
+          <img
+            src="/1000151156.jpg"
+            alt="Spider-Man bouncy castle with slide"
+            width="1200"
+            height="800"
+            fetchPriority="high"
+            decoding="async"
+            style={{ display: 'block', width: '100%', maxHeight: '340px', objectFit: 'cover' }}
+          />
+        </div>
         </div>
 
         {/* QUICK FACTS */}
@@ -1045,6 +917,9 @@ export default function LandingPage() {
               {label}
             </div>
           ))}
+          <p style={{ gridColumn: '1 / -1', margin: '8px 0 0', color: '#475569', fontSize: '14px', lineHeight: 1.5, textAlign: 'center' }}>
+            Safe, clean, high-energy bouncy castles delivered straight to your yard. Secure your date with zero upfront risk.
+          </p>
         </section>
 
         {/* CUSTOMER PROOF — placeholder because no verified customer comments or clearly identified event photos exist in the repository. */}
