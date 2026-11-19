@@ -16,6 +16,7 @@ module.exports = {
     'no-unused-vars': ['error', { varsIgnorePattern: '^React$' }],
     'no-empty': ['error', { allowEmptyCatch: true }],
     'react/prop-types': 'off',
+    'react/no-unescaped-entities': 'off',
     'react-refresh/only-export-components': [
       'warn',
       { allowConstantExport: true },
