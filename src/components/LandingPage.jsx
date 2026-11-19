@@ -286,71 +286,46 @@ export default function LandingPage() {
     }
 
     const popupDelay = window.setTimeout(() => {
-    /*
-     * PROMOTION ACTIVE
-     *
-     * Temporarily replace the normal welcome popup
-     * with the promotional popup.
-     */
-    if (promoIsActive) {
-      setShowBookingPopup(true);
-      setExpandedPopupSection(null);
+      /*
+       * PROMOTION ACTIVE
+       * Keep the existing promotional popup and tracking event,
+       * but wait 12 seconds after the page is ready.
+       */
+      if (promoIsActive) {
+        setShowBookingPopup(true);
+        setExpandedPopupSection(null);
 
-      const promoPopupSeen =
-        sessionStorage.getItem('trz_promotional_popup_seen');
+        const promoPopupSeen = sessionStorage.getItem('trz_promotional_popup_seen');
 
-      if (!promoPopupSeen) {
-        sessionStorage.setItem(
-          'trz_promotional_popup_seen',
-          'true'
-        );
+        if (!promoPopupSeen) {
+          sessionStorage.setItem('trz_promotional_popup_seen', 'true');
 
-        trackTrzEvent('promotional_popup_opened', {
-          trigger: 'promo_immediate',
-          offer_price: publicPrice,
-          offer_hours: publicHours,
-          regular_value: promotionalRegularValue,
-          savings: promotionalSavings
-        });
+          trackTrzEvent('promotional_popup_opened', {
+            trigger: 'promo_immediate',
+            offer_price: publicPrice,
+            offer_hours: publicHours,
+            regular_value: promotionalRegularValue,
+            savings: promotionalSavings
+          });
+        }
+
+        return;
       }
 
-      return;
-    }
+      /*
+       * NO ACTIVE PROMOTION
+       * Keep the existing welcome popup and tracking event.
+       */
+      const hasSeenPopup = sessionStorage.getItem('seen_booking_popup');
 
-    /*
-     * NO ACTIVE PROMOTION
-     *
-     * Restore the existing welcome popup behavior.
-     */
-    const hasSeenPopup =
-      sessionStorage.getItem(
-        'seen_booking_popup'
-      );
+      if (!hasSeenPopup) {
+        setShowBookingPopup(true);
+        sessionStorage.setItem('seen_booking_popup', 'true');
 
-    if (!hasSeenPopup) {
-      setShowBookingPopup(true);
-
-      sessionStorage.setItem(
-        'seen_booking_popup',
-        'true'
-      );
-
-      trackTrzEvent(
-        'popup_opened',
-        {
-          popup_type:
-            'initial_intent'
-        }
-      );
-    }
-  }, [
-    promoLoading,
-    promoIsActive,
-    publicPrice,
-    publicHours,
-    promotionalRegularValue,
-    promotionalSavings
-    ]);
+        trackTrzEvent('popup_opened', {
+          popup_type: 'initial_intent'
+        });
+      }
     }, 12000);
 
     return () => window.clearTimeout(popupDelay);
@@ -912,7 +887,7 @@ export default function LandingPage() {
           </p>
 
           {/* OFFER — requested public-facing promotion */}
-          {true && (
+          {(
             <div
               style={{
                 background:
