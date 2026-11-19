@@ -72,9 +72,11 @@ export default function AvailabilityCheckModal({
 
       if (queryError) throw queryError;
 
-      const conflicts = (data || []).filter((booking) =>
-        startTime < booking.end_time && endTime > booking.start_time
-      );
+      const conflicts = (data || []).filter((booking) => {
+        const bookedStart = String(booking.start_time).slice(0, 5);
+        const bookedEnd = String(booking.end_time).slice(0, 5);
+        return startTime < bookedEnd && endTime > bookedStart;
+      });
 
       if (conflicts.length) {
         setResult({ available: false, conflicts });
