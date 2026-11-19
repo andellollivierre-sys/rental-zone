@@ -170,7 +170,7 @@ export default function AvailabilityCheckModal({
           {result?.available === false && (
             <div role="status" style={{ padding: 12, borderRadius: 10, background: '#fff7ed', border: '1px solid #fdba74', color: '#9a3412', fontSize: 14 }}>
               <strong>That time is already booked.</strong>
-              <div style={{ marginTop: 6 }}>Confirmed bookings: {result.conflicts.map((slot) => `${slot.start_time.slice(0, 5)}–${slot.end_time.slice(0, 5)}`).join(', ')}. Try another start time or date.</div>
+              <div style={{ marginTop: 6 }}>Confirmed bookings: {result.conflicts.map((slot) => `${String(slot.start_time).slice(0, 5)}–${String(slot.end_time).slice(0, 5)}`).join(', ')}. Try another start time or date.</div>
             </div>
           )}
           {error && <div role="alert" style={{ padding: 11, borderRadius: 9, background: '#fef2f2', color: '#b91c1c', fontSize: 13 }}>{error}</div>}
