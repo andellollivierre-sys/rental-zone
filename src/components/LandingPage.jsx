@@ -382,7 +382,7 @@ export default function LandingPage() {
             null
           );
 
-          setShowPromotionalPopup(
+          setShowBookingPopup(
             false
           );
 
