@@ -8,13 +8,13 @@ const PACKAGES = {
   full_day: { label: '8 Hours', hours: 8 }
 };
 
-const DELIVERY_AREAS = [
-  'Chaguanas', 'Cunupia', 'Charlieville', 'Endeavour', 'Freeport', 'Carapichaima', 'Couva',
-  'Tunapuna', 'St. Augustine', 'San Juan', 'Port of Spain', 'Arima',
-  'Diego Martin', 'Marabella', 'San Fernando', 'Gasparillo', 'Princes Town', 'Sangre Grande',
-  'Penal', 'Debe', 'Siparia', 'Point Fortin', 'Rio Claro',
-  'Mayaro', 'Toco', 'Other / Not listed'
-];
+const DELIVERY_ZONES = {
+  'Free delivery': { fee: 0, areas: ['Chaguanas', 'Cunupia', 'Charlieville', 'Endeavour', 'Freeport', 'Carapichaima', 'Couva'] },
+  'Zone 1': { fee: 100, areas: ['Tunapuna', 'St. Augustine', 'San Juan', 'Port of Spain', 'Arima'] },
+  'Zone 2': { fee: 150, areas: ['Diego Martin', 'Marabella', 'San Fernando', 'Gasparillo', 'Princes Town', 'Sangre Grande'] },
+  'Zone 3': { fee: 200, areas: ['Penal', 'Debe', 'Siparia', 'Point Fortin', 'Rio Claro'] },
+  'Custom quote': { fee: null, areas: ['Mayaro', 'Toco', 'Other / Not listed'] }
+};
 
 const calculateEndTime = (startTime, hours) => {
   if (!startTime) return null;
@@ -154,16 +154,25 @@ export default function AvailabilityCheckModal({
             Rental duration
             <select required value={packageType} onChange={(e) => { setPackageType(e.target.value); setResult(null); }} style={{ padding: 12, border: '1px solid #cbd5e1', borderRadius: 9, fontSize: 15, background: '#fff' }}>
               {promoIsActive && <option value="promotion">{publicHours} Hours — Promotional offer (TT${publicPrice})</option>}
-              <option value="2_hours">2 Hours</option>
-              <option value="3_hours">3 Hours</option>
-              <option value="full_day">8 Hours</option>
+              <option value="2_hours">2 Hours — TT$650</option>
+              <option value="3_hours">3 Hours — TT$900</option>
+              <option value="full_day">8 Hours — TT$1,800</option>
             </select>
           </label>
           <label style={{ display: 'grid', gap: 5, fontSize: 13, fontWeight: 700, color: '#334155' }}>
             Delivery area
             <select required value={deliveryArea} onChange={(e) => { setDeliveryArea(e.target.value); setResult(null); }} style={{ padding: 12, border: '1px solid #cbd5e1', borderRadius: 9, fontSize: 15, background: '#fff' }}>
               <option value="">Choose your area</option>
-              {DELIVERY_AREAS.map((area) => <option key={area} value={area}>{area}</option>)}
+              {Object.entries(DELIVERY_ZONES).map(([zone, config]) => (
+                <optgroup
+                  key={zone}
+                  label={zone + (config.fee === null ? ' — Custom quote' : ` — TT${config.fee}`)}
+                >
+                  {config.areas.map((area) => (
+                    <option key={area} value={area}>{area}</option>
+                  ))}
+                </optgroup>
+              ))}
             </select>
           </label>
 
