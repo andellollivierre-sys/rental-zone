@@ -33,7 +33,7 @@ export default function AvailabilityCheckModal({ onClose, promoIsActive, publicH
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [available, setAvailable] = useState(false);
-  const hours = duration === 'promotion' ? Number(publicHours) : PACKAGES[duration].hours;
+  const hours = duration === 'promotion' ? Number(publicHours) : PACKAGES[duration]?.hours;
   const end = time && Number.isFinite(hours) ? endTimeFor(time, hours) : null;
 
   const check = async (e) => {
@@ -88,7 +88,7 @@ export default function AvailabilityCheckModal({ onClose, promoIsActive, publicH
             <option value="">Select your area</option>
             {Object.entries(TRANSPORT_ZONES).map(([zone, config]) => (
               <optgroup key={zone} label={zone + (config.fee === null ? ' — Quote required' : ` — TT$${config.fee}`)}>
-                {config.areas.map((name) => <option key={name} value={name}>{name}</option>)}
+                {config.areas.map((name) => <option key={name} value={name}>{name} — {config.fee === null ? 'Quote required' : `TT${config.fee}`}</option>)}
               </optgroup>
             ))}
           </select>
