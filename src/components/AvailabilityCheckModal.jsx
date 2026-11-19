@@ -154,9 +154,9 @@ export default function AvailabilityCheckModal({
             Rental duration
             <select required value={packageType} onChange={(e) => { setPackageType(e.target.value); setResult(null); }} style={{ padding: 12, border: '1px solid #cbd5e1', borderRadius: 9, fontSize: 15, background: '#fff' }}>
               {promoIsActive && <option value="promotion">{publicHours} Hours — Promotional offer (TT${publicPrice})</option>}
-              <option value="2_hours">2 Hours</option>
-              <option value="3_hours">3 Hours</option>
-              <option value="full_day">8 Hours</option>
+              <option value="2_hours">2 Hours — TT$650</option>
+              <option value="3_hours">3 Hours — TT$900</option>
+              <option value="full_day">8 Hours — TT$1,800</option>
             </select>
           </label>
           <label style={{ display: 'grid', gap: 5, fontSize: 13, fontWeight: 700, color: '#334155' }}>
