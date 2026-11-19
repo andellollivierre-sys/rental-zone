@@ -6,15 +6,27 @@ import { trackTrzEvent, createPageTimer, getAttributionData, getSessionData, get
 const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1551792830639382571/dxVXhU-U6CJxCGdUfBypOxjy3uOPK1mjismTZgLGNP3kyGPuh0Dn3YAlgmjcFLtHcXpU';
 
 export default function BookingForm() {
-  const [formData, setFormData] = useState({
-    customer_name: '',
-    phone: '',
-    event_date: '',
-    start_time: '',
-    package_type: '3_hours',
-    address: '',
-    delivery_area: '',
-    notes: ''
+  const [formData, setFormData] = useState(() => {
+    let savedSelection = null;
+    try {
+      savedSelection = JSON.parse(
+        sessionStorage.getItem('trz_availability_selection') || 'null'
+      );
+      sessionStorage.removeItem('trz_availability_selection');
+    } catch (error) {
+      console.warn('Could not restore availability selection:', error);
+    }
+
+    return {
+      customer_name: '',
+      phone: '',
+      event_date: savedSelection?.event_date || '',
+      start_time: savedSelection?.start_time || '',
+      package_type: savedSelection?.package_type || '3_hours',
+      address: '',
+      delivery_area: savedSelection?.delivery_area || '',
+      notes: ''
+    };
   });
 
   const [submitting, setSubmitting] = useState(false);
@@ -521,10 +533,16 @@ export default function BookingForm() {
       )
       .eq('status', 'Confirmed');
 
-    if (
-      !checkError &&
-      conflictingBookings
-    ) {
+    if (checkError) {
+      console.error('Final booking availability check failed:', checkError);
+      setErrorMessage(
+        '❌ We could not verify this time slot. Your booking was not submitted. Please try again.'
+      );
+      setSubmitting(false);
+      return;
+    }
+
+    if (conflictingBookings) {
       const hasConflict =
         conflictingBookings.some((b) => {
           return (
@@ -536,7 +554,7 @@ export default function BookingForm() {
 
       if (hasConflict) {
         setErrorMessage(
-          '❌ The selected time slot conflicts with an already confirmed rental. Please choose another time.'
+          '❌ This time slot is no longer available because it conflicts with a confirmed rental. Please return to availability and choose another time.'
         );
 
         setSubmitting(false);
