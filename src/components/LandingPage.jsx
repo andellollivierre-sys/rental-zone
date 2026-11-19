@@ -401,10 +401,6 @@ export default function LandingPage() {
             null
           );
 
-          setShowPromotionalPopup(
-            false
-          );
-
           trackTrzEvent(
             'promotional_offer_expired',
             {
@@ -428,7 +424,9 @@ export default function LandingPage() {
       clearInterval(interval);
   }, [
     promoIsActive,
-    promotionalOffer?.offer_ends_at
+    promotionalOffer?.offer_ends_at,
+    publicPrice,
+    publicHours
   ]);
 
   /*
@@ -802,7 +800,7 @@ export default function LandingPage() {
     },
     {
       q: "What do I need to provide on setup day?",
-      a: "A standard household electrical outlet within 100 feet of the setup area to power the blower continuously. If power isn't close to the yard, a reliable generator is required."
+      a: "A standard household electrical outlet within 100 feet of the setup area to power the blower continuously. If power is not close to the yard, a reliable generator is required."
     },
     {
       q: "How does payment work?",

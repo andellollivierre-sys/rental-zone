@@ -82,7 +82,7 @@ Supabase promotional-offer logic
 
 Rental pricing
 
-What's Included
+What&apos;s Included
 
 Size & Space
 
@@ -988,7 +988,7 @@ export default function OurBouncer() {
         <div style={styles.sectionInner}>
 
           <h2 style={styles.sectionTitle}>
-            What's Included
+            What&apos;s Included
           </h2>
 
           <p style={styles.sectionIntro}>
