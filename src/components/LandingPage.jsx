@@ -852,8 +852,25 @@ export default function LandingPage() {
               lineHeight: '1.25'
             }}
           >
-            Spider-Man Bouncy Castle with Slide, Delivered &amp; Set Up in Trinidad
+            Bring The Ultimate Fun To Your Next Event!
           </h1>
+
+          <p
+            style={{
+              color: '#475569',
+              fontSize: '14px',
+              maxWidth: '100%',
+              margin: '0 auto 20px auto',
+              lineHeight: '1.5',
+              padding: '0 10px'
+            }}
+          >
+            Safe, clean, high-energy
+            bouncy castles delivered
+            straight to your yard.
+            Secure your date with
+            zero upfront risk.
+          </p>
 
           <a
             href="/#booking"
@@ -902,8 +919,22 @@ export default function LandingPage() {
             decoding="async"
             style={{ display: 'block', width: '100%', maxHeight: '340px', objectFit: 'cover' }}
           />
+
         </div>
-        </div>
+
+        {/* EXISTING PROMOTIONAL OFFER — retained on page below hero media */}
+        {promoIsActive && (
+          <div style={{ background: '#fff7ed', border: '1px solid #fdba74', borderRadius: '14px', padding: '16px', margin: '0 auto 24px', maxWidth: '520px', textAlign: 'center', boxShadow: '0 4px 10px rgba(234, 88, 12, 0.08)' }}>
+            <div style={{ fontSize: '11px', fontWeight: 800, color: '#c2410c', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '5px' }}>🔥 LIMITED-TIME OFFER</div>
+            <div style={{ fontSize: '24px', fontWeight: 900, color: '#9a3412', lineHeight: 1.1 }}>{publicHours} Hours — TT${formatMoney(publicPrice)}</div>
+            <div style={{ marginTop: '8px', fontSize: '13px', color: '#7c2d12' }}>Regular value: <strong>TT${formatMoney(promotionalRegularValue)}</strong></div>
+            <div style={{ marginTop: '3px', fontSize: '16px', fontWeight: 900, color: '#c2410c' }}>YOU SAVE TT${formatMoney(promotionalSavings)}</div>
+            {promoExpirySeconds !== null && (
+              <div style={{ marginTop: '10px', padding: '7px 10px', background: '#ffedd5', borderRadius: '8px', color: '#9a3412', fontSize: '12px', fontWeight: 800 }}>⏳ Offer ends in {formatCountdown(promoExpirySeconds)}</div>
+            )}
+            <div style={{ marginTop: '5px', fontSize: '11px', color: '#7c2d12' }}>No deposit required. Pay on delivery.</div>
+          </div>
+        )}
 
         {/* QUICK FACTS */}
         <section aria-label="Quick facts" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', margin: '0 0 24px' }}>
@@ -917,9 +948,6 @@ export default function LandingPage() {
               {label}
             </div>
           ))}
-          <p style={{ gridColumn: '1 / -1', margin: '8px 0 0', color: '#475569', fontSize: '14px', lineHeight: 1.5, textAlign: 'center' }}>
-            Safe, clean, high-energy bouncy castles delivered straight to your yard. Secure your date with zero upfront risk.
-          </p>
         </section>
 
         {/* CUSTOMER PROOF — placeholder because no verified customer comments or clearly identified event photos exist in the repository. */}
