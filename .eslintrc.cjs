@@ -13,14 +13,7 @@ module.exports = {
   plugins: ['react-refresh'],
   rules: {
     'react/jsx-no-target-blank': 'off',
-    'no-unused-vars': ['error', { varsIgnorePattern: '^React
-    'react-refresh/only-export-components': [
-      'warn',
-      { allowConstantExport: true },
-    ],
-  },
-}
- }],
+    'no-unused-vars': ['error', { varsIgnorePattern: '^React$' }],
     'no-empty': ['error', { allowEmptyCatch: true }],
     'react/prop-types': 'off',
     'react-refresh/only-export-components': [
