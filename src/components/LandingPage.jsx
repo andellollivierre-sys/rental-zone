@@ -2075,12 +2075,14 @@ export default function LandingPage() {
           </div>
 
           <a
-            href="/#booking"
-            onClick={() => {
+            href="#availability-check"
+            onClick={(event) => {
+              event.preventDefault();
               trackButtonClick('clicked_book_now');
               if (promoIsActive) handlePromotionalBookClick();
               setExpandedPopupSection(null);
               setShowBookingPopup(false);
+              setShowAvailabilityModal(true);
             }}
             style={{
               display: 'block',
