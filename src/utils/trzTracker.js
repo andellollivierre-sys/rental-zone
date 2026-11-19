@@ -103,7 +103,7 @@ function classifyTraffic(params, referrer) {
   if (hostname.includes('instagram.com')) return { source: 'instagram', medium: 'organic_social', campaign: null, clickId: null };
   if (hostname.includes('tiktok.com')) return { source: 'tiktok', medium: 'organic_social', campaign: null, clickId: null };
   if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) return { source: 'youtube', medium: 'organic_video', campaign: null, clickId: null };
-  if (hostname) return { source: hostname.replace(/^www\\./, ''), medium: 'referral', campaign: null, clickId: null };
+  if (hostname) return { source: hostname.replace(/^www\./, ''), medium: 'referral', campaign: null, clickId: null };
   return { source: 'direct', medium: 'none', campaign: null, clickId: null };
 }
 
