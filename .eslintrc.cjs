@@ -1,5 +1,5 @@
 module.exports = {
-  root: true,
+  root: true, // Keep the shared app lint configuration valid.
   env: { browser: true, es2020: true, node: true },
   extends: [
     'eslint:recommended',
