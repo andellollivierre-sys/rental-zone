@@ -1,5 +1,32 @@
 import { createHmac } from 'node:crypto';
 import { supabase } from '../src/supabaseClient.js';
+import { isAllowedRequestHost } from '../server/hostSecurity.js';
+
+const RATE_WINDOW_MS = 60 * 1000;
+const RATE_LIMIT = 60;
+const rateBuckets = new Map();
+
+function isRateLimited(ipHash) {
+  const now = Date.now();
+  const key = ipHash || 'unknown';
+  let bucket = rateBuckets.get(key);
+
+  if (!bucket || now - bucket.startedAt >= RATE_WINDOW_MS) {
+    bucket = { startedAt: now, count: 0 };
+    rateBuckets.set(key, bucket);
+  }
+
+  bucket.count += 1;
+
+  // Keep this in-memory guard bounded on warm serverless instances.
+  if (rateBuckets.size > 5000) {
+    for (const [bucketKey, value] of rateBuckets) {
+      if (now - value.startedAt >= RATE_WINDOW_MS) rateBuckets.delete(bucketKey);
+    }
+  }
+
+  return bucket.count > RATE_LIMIT;
+}
 
 const ALLOWED_EVENTS = new Set([
   'session_started', 'viewed_landing_page', 'promotional_popup_opened',
@@ -41,24 +68,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const host = String(req.headers.host || '').toLowerCase();
-  const origin = req.headers.origin;
-  const allowedHost =
-    host === 'rental-zone-taupe.vercel.app' ||
-    (host.startsWith('rental-zone-') && host.endsWith('.vercel.app'));
-
-  if (!allowedHost) return res.status(403).json({ error: 'Host not allowed' });
-
-  if (origin) {
-    try {
-      const originHost = new URL(origin).hostname.toLowerCase();
-      const allowedOrigin =
-        originHost === 'rental-zone-taupe.vercel.app' ||
-        (originHost.startsWith('rental-zone-') && originHost.endsWith('.vercel.app'));
-      if (!allowedOrigin) return res.status(403).json({ error: 'Origin not allowed' });
-    } catch {
-      return res.status(400).json({ error: 'Invalid origin' });
-    }
+  if (!isAllowedRequestHost(req)) {
+    return res.status(403).json({ error: 'Host or origin not allowed' });
   }
 
   const secret = process.env.TRZ_IP_HASH_SECRET;
@@ -73,6 +84,11 @@ export default async function handler(req, res) {
   const ipHash = ip
     ? createHmac('sha256', secret).update(ip).digest('hex')
     : null;
+
+  if (isRateLimited(ipHash)) {
+    res.setHeader('Retry-After', '60');
+    return res.status(429).json({ error: 'Too many tracking events' });
+  }
 
   const payload = {
     session_id: typeof body.session_id === 'string' ? body.session_id.slice(0, 100) : null,
