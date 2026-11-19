@@ -42,7 +42,7 @@ export default function AvailabilityCheckModal({ onClose, promoIsActive, publicH
         trackTrzEvent('availability_check_unavailable', { event_date: date, conflicting_slots: conflicts.length });
         return;
       }
-      sessionStorage.setItem('trz_availability_selection', JSON.stringify({ event_date: date, start_time: time, package_type: duration === 'promotion' ? '3_hours' : duration, delivery_area: area, rental_hours: hours, checked_at: new Date().toISOString() }));
+      sessionStorage.setItem('trz_availability_selection', JSON.stringify({ event_date: date, start_time: time, package_type: duration, delivery_area: area, rental_hours: hours, checked_at: new Date().toISOString() }));
       if (duration === 'promotion') sessionStorage.setItem('trz_promo_intent','true');
       else sessionStorage.removeItem('trz_promo_intent');
       setAvailable(true);
