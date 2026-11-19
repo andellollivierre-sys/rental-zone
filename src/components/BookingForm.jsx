@@ -2,9 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { trackTrzEvent, createPageTimer, getAttributionData, getSessionData, getVisitorId } from '../utils/trzTracker';
 
-// Keep your existing Discord webhook URL in this constant.
-const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1551792830639382571/dxVXhU-U6CJxCGdUfBypOxjy3uOPK1mjismTZgLGNP3kyGPuh0Dn3YAlgmjcFLtHcXpU';
-
 export default function BookingForm() {
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -270,8 +267,6 @@ export default function BookingForm() {
 
     const notifyDiscordOnView = async () => {
       try {
-        if (!DISCORD_WEBHOOK_URL) return;
-
         // Keep one page-view alert per session, but make test alerts visible.
         const isTest = getAttributionData().isTest;
         const alertKey = isTest
@@ -280,16 +275,12 @@ export default function BookingForm() {
         if (sessionStorage.getItem(alertKey)) return;
         sessionStorage.setItem(alertKey, 'true');
 
-        const discordMessage = {
-          content: isTest
-            ? '🧪 **[TEST] Booking page opened in the live website test session. No real customer booking.**'
-            : '👀 **A prospect just opened the Booking Form page!**'
-        };
-
-        await fetch(DISCORD_WEBHOOK_URL, {
+        fetch('/api/notify-booking', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(discordMessage)
+          body: JSON.stringify({ type: 'booking_page_view', isTest })
+        }).catch((err) => {
+          console.error('Discord page-view ping failed:', err);
         });
       } catch (err) {
         console.error('Discord page-view ping failed:', err);
@@ -681,46 +672,35 @@ export default function BookingForm() {
         );
       }
 
-      if (DISCORD_WEBHOOK_URL) {
-        const discordMessage = {
-          content:
-            `${isAdminOrDev ? '🧪 **[TEST — DO NOT PROCESS] TEST BOOKING SUBMITTED**' : '🚨 **NEW BOOKING SUBMITTED!**'}\n` +
-            `👤 **Client:** ${formData.customer_name}\n` +
-            `📞 **Phone:** ${formData.phone}\n` +
-            `📍 **Address:** ${formData.address}, ${selectedTransport.area}\n` +
-            `🚚 **Delivery, Setup & Collection:** ${selectedTransport.zone} - ${selectedTransport.fee === null ? 'QUOTE REQUIRED' : `TT${selectedTransport.fee}`}\n` +
-            `📅 **Date:** ${formData.event_date} (${formData.start_time} - ${endTime})\n` +
-            `📦 **Package:** ${selectedPkg.name} (TT${selectedPkg.price})\n` +
-            `💰 **Total:** TT${bookingTotal}${requiresTransportQuote ? ' (transport quote pending)' : ''}\n` +
-            `${
-              isPromotional
-                ? `🔥 **PROMOTION:** Normal value TT$${selectedPkg.regularValue} | Savings TT$${selectedPkg.savings}\n`
-                : ''
-            }` +
-            `💵 **Payment:** Due on Delivery\n` +
-            `🌐 **Source:** ${trafficSource}\n` +
-        (isAdminOrDev ? `🧪 **TEST RECORD ONLY — Booking ID: ${bookingId} — Not a customer order.**` : '')
-        };
-
-        await fetch(
-          DISCORD_WEBHOOK_URL,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type':
-                'application/json'
-            },
-            body: JSON.stringify(
-              discordMessage
-            )
-          }
-        ).catch((err) =>
-          console.error(
-            'Discord webhook ping failed:',
-            err
-          )
-        );
-      }
+      // Notification is deliberately non-blocking: the booking is already saved.
+      fetch('/api/notify-booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'booking_submitted',
+          isTest: isAdminOrDev,
+          customer_name: formData.customer_name,
+          phone: formData.phone,
+          address: formData.address,
+          delivery_area: selectedTransport.area,
+          delivery_zone: selectedTransport.zone,
+          delivery_fee: selectedTransport.fee,
+          event_date: formData.event_date,
+          start_time: formData.start_time,
+          end_time: endTime,
+          package_name: selectedPkg.name,
+          package_price: selectedPkg.price,
+          total: bookingTotal,
+          transport_quote_pending: requiresTransportQuote,
+          is_promotional: isPromotional,
+          promotion_regular_value: selectedPkg.regularValue,
+          promotion_savings: selectedPkg.savings,
+          traffic_source: trafficSource,
+          booking_id: bookingId
+        })
+      }).catch((err) => {
+        console.error('Discord webhook ping failed:', err);
+      });
 
       setConfirmedBooking({
         ...formData,
