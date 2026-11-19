@@ -82,7 +82,7 @@ Supabase promotional-offer logic
 
 Rental pricing
 
-What's Included
+What&apos;s Included
 
 Size & Space
 
