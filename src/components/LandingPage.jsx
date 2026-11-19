@@ -285,6 +285,7 @@ export default function LandingPage() {
       return;
     }
 
+    const popupDelay = window.setTimeout(() => {
     /*
      * PROMOTION ACTIVE
      *
@@ -349,6 +350,17 @@ export default function LandingPage() {
     publicHours,
     promotionalRegularValue,
     promotionalSavings
+    ]);
+    }, 12000);
+
+    return () => window.clearTimeout(popupDelay);
+  }, [
+    promoLoading,
+    promoIsActive,
+    publicPrice,
+    publicHours,
+    promotionalRegularValue,
+    promotionalSavings
   ]);
 
   /*
@@ -401,9 +413,7 @@ export default function LandingPage() {
             null
           );
 
-          setShowPromotionalPopup(
-            false
-          );
+          setShowBookingPopup(false);
 
           trackTrzEvent(
             'promotional_offer_expired',
@@ -832,6 +842,19 @@ export default function LandingPage() {
           padding: '0 16px'
         }}
       >
+        {/* TOP CASTLE MEDIA — no video asset exists in public/, so use the lightweight existing castle photo. */}
+        <div style={{ margin: '0 -16px 18px', overflow: 'hidden', borderRadius: '0 0 18px 18px', background: '#0f172a' }}>
+          <img
+            src="/1000151156.jpg"
+            alt="Spider-Man bouncy castle with slide"
+            width="1200"
+            height="800"
+            fetchPriority="high"
+            decoding="async"
+            style={{ display: 'block', width: '100%', maxHeight: '340px', objectFit: 'cover' }}
+          />
+        </div>
+
         {/* Hero Section */}
         <div
           style={{
@@ -867,9 +890,7 @@ export default function LandingPage() {
               lineHeight: '1.25'
             }}
           >
-            Bring The Ultimate Fun
-            <br />
-            To Your Next Event!
+            Spider-Man Bouncy Castle with Slide, Delivered &amp; Set Up in Trinidad
           </h1>
 
           <p
@@ -890,8 +911,8 @@ export default function LandingPage() {
             zero upfront risk.
           </p>
 
-          {/* ACTIVE PROMOTION HERO NOTICE */}
-          {promoIsActive && (
+          {/* OFFER — requested public-facing promotion */}
+          {true && (
             <div
               style={{
                 background:
@@ -933,12 +954,7 @@ export default function LandingPage() {
                   lineHeight: '1.1'
                 }}
               >
-                {publicHours} Hours
-                {' — '}
-                TT$
-                {formatMoney(
-                  publicPrice
-                )}
+                4 Hours — TT$800
               </div>
 
               <div
@@ -948,13 +964,7 @@ export default function LandingPage() {
                   color: '#7c2d12'
                 }}
               >
-                Regular value:{' '}
-                <strong>
-                  TT$
-                  {formatMoney(
-                    promotionalRegularValue
-                  )}
-                </strong>
+                Regular price: <strong>TT$1,300</strong>
               </div>
 
               <div
@@ -965,13 +975,10 @@ export default function LandingPage() {
                   color: '#c2410c'
                 }}
               >
-                YOU SAVE TT$
-                {formatMoney(
-                  promotionalSavings
-                )}
+                YOU SAVE TT$500
               </div>
 
-              {promoExpirySeconds !==
+              {promoIsActive && promoExpirySeconds !==
                 null && (
                 <div
                   style={{
@@ -1047,11 +1054,68 @@ export default function LandingPage() {
               cursor: 'pointer'
             }}
           >
-            {promoIsActive
-              ? '🔥 Claim Offer & Check Availability'
-              : 'Check Availability & Book'}
+            Claim Offer & Check Availability
           </a>
         </div>
+
+        {/* QUICK FACTS */}
+        <section aria-label="Quick facts" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', margin: '0 0 24px' }}>
+          {[
+            ['🚚', 'Delivery & setup included'],
+            ['🧼', 'Clean and sanitized'],
+            ['📐', '26 × 13 × 13 ft space']
+          ].map(([icon, label]) => (
+            <div key={label} style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '12px', padding: '12px 7px', textAlign: 'center', fontSize: '12px', fontWeight: 800, color: '#1e3a8a', lineHeight: 1.35 }}>
+              <div style={{ fontSize: '20px', marginBottom: '5px' }}>{icon}</div>
+              {label}
+            </div>
+          ))}
+        </section>
+
+        {/* CUSTOMER PROOF — placeholder because no verified customer comments or clearly identified event photos exist in the repository. */}
+        <section aria-label="Customer proof" style={{ padding: '18px', marginBottom: '24px', border: '1px dashed #94a3b8', borderRadius: '14px', background: '#f8fafc' }}>
+          <h2 style={{ margin: '0 0 8px', fontSize: '17px', color: '#0f172a' }}>Customer experiences</h2>
+          <p style={{ margin: 0, color: '#64748b', fontSize: '13px', lineHeight: 1.5 }}>
+            CUSTOMER PROOF PLACEHOLDER — verified customer photos or comments have not yet been identified in this repository. Add real customer evidence here when available.
+          </p>
+        </section>
+
+        {/* HOW IT WORKS */}
+        <section id="how-it-works" style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '20px', marginBottom: '24px' }}>
+          <h2 style={{ margin: '0 0 16px', textAlign: 'center', fontSize: '21px', fontWeight: 900 }}>How it works</h2>
+          <div style={{ display: 'grid', gap: '12px' }}>
+            {[
+              ['1', 'Choose your package', 'Select the rental duration that suits your event.'],
+              ['2', 'Check availability', 'Enter your event date, time and delivery address.'],
+              ['3', 'Send your booking request', 'We review the details and contact you through WhatsApp to confirm.'],
+              ['4', 'Delivery, setup and payment', 'We deliver and set up. No deposit is required; pay on delivery.']
+            ].map(([number, title, description]) => (
+              <div key={number} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', padding: '12px', background: '#f8fafc', borderRadius: '12px' }}>
+                <span style={{ display: 'grid', placeItems: 'center', width: '30px', height: '30px', flexShrink: 0, borderRadius: '50%', background: '#2563eb', color: '#fff', fontWeight: 900 }}>{number}</span>
+                <div><h3 style={{ margin: '2px 0 4px', fontSize: '15px' }}>{title}</h3><p style={{ margin: 0, fontSize: '13px', color: '#64748b', lineHeight: 1.45 }}>{description}</p></div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* PACKAGES & PRICES — visible on the landing page */}
+        <section id="packages" style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '20px', marginBottom: '24px' }}>
+          <h2 style={{ margin: '0 0 6px', textAlign: 'center', fontSize: '21px', fontWeight: 900 }}>Packages & prices</h2>
+          <p style={{ margin: '0 0 16px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>Choose the rental time that fits your event.</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px' }}>
+            {[
+              ['2 Hours', 'TT$650'],
+              ['3 Hours', 'TT$900'],
+              ['8 Hours', 'TT$1,800']
+            ].map(([duration, price]) => (
+              <div key={duration} style={{ border: '1px solid #cbd5e1', borderRadius: '12px', padding: '12px 5px', textAlign: 'center' }}>
+                <div style={{ color: '#64748b', fontSize: '12px', fontWeight: 700 }}>{duration}</div>
+                <div style={{ marginTop: '5px', color: '#0f172a', fontSize: '16px', fontWeight: 900 }}>{price}</div>
+              </div>
+            ))}
+          </div>
+          <p style={{ margin: '14px 0 0', textAlign: 'center', fontSize: '13px', color: '#166534', fontWeight: 800 }}>No deposit required. Pay on delivery.</p>
+        </section>
 
         {/* Featured Inventory Card */}
         <div
@@ -1540,6 +1604,23 @@ export default function LandingPage() {
           </div>
         </div>
 
+        {/* SIZE & SPACE REQUIREMENTS — visible before the FAQ */}
+        <section id="space-reqs" style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '20px', marginBottom: '24px' }}>
+          <h2 style={{ margin: '0 0 14px', textAlign: 'center', fontSize: '21px', fontWeight: 900 }}>Size & space requirements</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', marginBottom: '14px' }}>
+            {['26 ft long', '13 ft wide', '13 ft high'].map((dimension) => (
+              <div key={dimension} style={{ padding: '12px 4px', borderRadius: '10px', background: '#eff6ff', textAlign: 'center', color: '#1e3a8a', fontWeight: 900, fontSize: '12px' }}>{dimension}</div>
+            ))}
+          </div>
+          <ul style={{ margin: 0, paddingLeft: '20px', color: '#475569', fontSize: '13px', lineHeight: 1.7 }}>
+            <li>Flat, clean grass or smooth pavement.</li>
+            <li>Clear overhead space, away from low branches and wires.</li>
+            <li>Standard household outlet within 100 ft of the setup area, or a reliable generator.</li>
+            <li>Dry use only. Adult supervision is required.</li>
+            <li>Recommended capacity: up to 8 children at a time.</li>
+          </ul>
+        </section>
+
         {/* Q&A / Guidelines Section */}
         <div
           id="space-reqs"
@@ -1572,7 +1653,7 @@ export default function LandingPage() {
                 'center'
             }}
           >
-            📋 Setup Guidelines & FAQ
+            Frequently Asked Questions
           </h3>
 
           <div
@@ -1634,6 +1715,23 @@ export default function LandingPage() {
           </div>
         </div>
       </div>
+
+      {/* FINAL CTA + WHATSAPP CONTACT */}
+      <section style={{ margin: '0 16px 24px', padding: '22px 18px', borderRadius: '16px', background: '#0f172a', textAlign: 'center', color: '#ffffff' }}>
+        <h2 style={{ margin: '0 0 8px', fontSize: '21px', fontWeight: 900 }}>Ready to plan your event?</h2>
+        <p style={{ margin: '0 0 16px', color: '#cbd5e1', fontSize: '13px' }}>Check your date and send your booking request.</p>
+        <a href="/#booking" onClick={() => { trackButtonClick('clicked_book_now'); if (promoIsActive) handlePromotionalBookClick(); }} style={{ display: 'block', padding: '14px', borderRadius: '11px', background: '#2563eb', color: '#ffffff', textDecoration: 'none', fontWeight: 900 }}>Claim Offer & Check Availability</a>
+        <a href="https://wa.me/18682810670?text=Hi%20Rental%20Zone%2C%20I%20would%20like%20to%20ask%20about%20the%20bouncy%20castle." target="_blank" rel="noopener noreferrer" onClick={() => trackButtonClick('whatsapp_clicked')} style={{ display: 'block', marginTop: '12px', padding: '13px', borderRadius: '11px', background: '#dcfce7', color: '#166534', textDecoration: 'none', fontWeight: 900 }}>Chat with us on WhatsApp</a>
+      </section>
+
+      {/* STICKY MOBILE WHATSAPP BUTTON — preserves existing whatsapp_clicked event */}
+      <style>{`
+        .trz-sticky-whatsapp { display: none; }
+        @media (max-width: 768px) {
+          .trz-sticky-whatsapp { display: block; position: fixed; left: 14px; right: 14px; bottom: max(12px, env(safe-area-inset-bottom)); z-index: 999; padding: 14px 16px; border-radius: 999px; background: #16a34a; color: #ffffff; text-align: center; text-decoration: none; font-weight: 900; box-shadow: 0 8px 24px rgba(22, 163, 74, .35); }
+        }
+      `}</style>
+      <a className="trz-sticky-whatsapp" href="https://wa.me/18682810670?text=Hi%20Rental%20Zone%2C%20I%20have%20a%20question%20about%20the%20bouncy%20castle." target="_blank" rel="noopener noreferrer" onClick={() => trackButtonClick('whatsapp_clicked')}>💬 WhatsApp — Ask About Availability</a>
 
       {/* TRZ SHARE BUTTONS SECTION */}
       <section
