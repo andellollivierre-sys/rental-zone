@@ -75,6 +75,19 @@ export default function LandingPage() {
   const [expandedPopupSection, setExpandedPopupSection] = useState(null);
   const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
 
+  useEffect(() => {
+    const interceptBookingLinks = (event) => {
+      const link = event.target.closest('a[href="/#booking"]');
+      if (!link) return;
+      event.preventDefault();
+      setShowBookingPopup(false);
+      setExpandedPopupSection(null);
+      setShowAvailabilityModal(true);
+    };
+    document.addEventListener('click', interceptBookingLinks, true);
+    return () => document.removeEventListener('click', interceptBookingLinks, true);
+  }, []);
+
   // Promotional offer state
   const [promotionalOffer, setPromotionalOffer] = useState(null);
   const [promoLoading, setPromoLoading] = useState(true);
