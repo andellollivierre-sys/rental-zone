@@ -1013,35 +1013,6 @@ export default function LandingPage() {
               padding: '20px'
             }}
           >
-            <h3
-              style={{
-                fontSize: '20px',
-                fontWeight: 'bold',
-                color: '#0f172a',
-                margin:
-                  '0 0 6px 0'
-              }}
-            >
-              🕷️ Spider-Man Bouncy Castle
-            </h3>
-
-            <p
-              style={{
-                color: '#64748b',
-                fontSize: '13px',
-                margin:
-                  '0 0 16px 0',
-                lineHeight: '1.4'
-              }}
-            >
-              Combination + Slide •
-              26x13x13ft • Up to 8
-              Kids. High-durability
-              vinyl, fully cleaned and
-              sanitized before every
-              setup.
-            </p>
-
             {/* PROMOTIONAL PRICE DISPLAY */}
             {promoIsActive ? (
               <div
@@ -1317,22 +1288,35 @@ export default function LandingPage() {
               >
                 Safe, clean, high-energy bouncy castles delivered straight to your yard. Secure your date with zero upfront risk.
               </p>
-              <p
+              <h3
                 style={{
-                  color: '#475569',
-                  fontSize: '14px',
-                  maxWidth: '100%',
-                  margin: '10px auto 0',
-                  lineHeight: '1.5',
-                  padding: '0 10px'
+                  fontSize: '20px',
+                  fontWeight: 'bold',
+                  color: '#0f172a',
+                  margin:
+                    '0 0 6px 0'
                 }}
               >
-                <strong>Spider-Man Bouncy Castle</strong>
-                <br />
-                Combination + Slide • 26x13x13ft • Up to 8 Kids.
-                <br />
-                High-durability vinyl, fully cleaned and sanitized before every setup.
+                🕷️ Spider-Man Bouncy Castle
+              </h3>
+
+              <p
+                style={{
+                  color: '#64748b',
+                  fontSize: '13px',
+                  margin:
+                    '0 0 16px 0',
+                  lineHeight: '1.4'
+                }}
+              >
+                Combination + Slide •
+                26x13x13ft • Up to 8
+                Kids. High-durability
+                vinyl, fully cleaned and
+                sanitized before every
+                setup.
               </p>
+
               </>
             )}
           </div>
