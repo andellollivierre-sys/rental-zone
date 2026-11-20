@@ -1266,6 +1266,7 @@ export default function LandingPage() {
 
             {/* PROMO BOOKING BUTTON */}
             {promoIsActive && (
+              <>
               <a
                 href="#availability-check"
                 onClick={(event) => {
@@ -1316,6 +1317,7 @@ export default function LandingPage() {
               >
                 Safe, clean, high-energy bouncy castles delivered straight to your yard. Secure your date with zero upfront risk.
               </p>
+              </>
             )}
           </div>
         </div>
