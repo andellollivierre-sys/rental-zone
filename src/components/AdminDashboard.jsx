@@ -11,8 +11,9 @@ const fetchAllRows = async (table, columns = '*', orderBy = 'created_at', ascend
   const pageSize = 1000;
   const rows = [];
   let from = 0;
+  let hasMore = true;
 
-  while (true) {
+  while (hasMore) {
     const { data, error } = await supabase
       .from(table)
       .select(columns)
@@ -25,8 +26,11 @@ const fetchAllRows = async (table, columns = '*', orderBy = 'created_at', ascend
     const page = data || [];
     rows.push(...page);
 
-    if (page.length < pageSize) break;
-    from += pageSize;
+    if (page.length < pageSize) {
+      hasMore = false;
+    } else {
+      from += pageSize;
+    }
   }
 
   return rows;
