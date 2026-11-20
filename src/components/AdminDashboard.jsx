@@ -17,6 +17,7 @@ const fetchAllRows = async (table, columns = '*', orderBy = 'created_at', ascend
       .from(table)
       .select(columns)
       .order(orderBy, { ascending })
+      .order('id', { ascending: true })
       .range(from, from + pageSize - 1);
 
     if (error) throw error;
