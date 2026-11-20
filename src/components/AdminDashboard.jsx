@@ -5,6 +5,37 @@ import TestCentre from './admin/TestCentre';
 
 const ADMIN_EMAIL = 'andell.ollivierre@gmail.com';
 
+// Fetch every matching row in bounded pages; Supabase otherwise caps a
+// response at the project's configured maximum (commonly 1,000 rows).
+const fetchAllRows = async (table, columns = '*', orderBy = 'created_at', ascending = true) => {
+  const pageSize = 1000;
+  const rows = [];
+  let from = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    const { data, error } = await supabase
+      .from(table)
+      .select(columns)
+      .order(orderBy, { ascending })
+      .order('id', { ascending: true })
+      .range(from, from + pageSize - 1);
+
+    if (error) throw error;
+
+    const page = data || [];
+    rows.push(...page);
+
+    if (page.length < pageSize) {
+      hasMore = false;
+    } else {
+      from += pageSize;
+    }
+  }
+
+  return rows;
+};
+
 export default function AdminDashboard() {
   // ============================================================
   // THE RENTAL ZONE TT — ADMIN DASHBOARD
@@ -85,6 +116,7 @@ export default function AdminDashboard() {
   // Dashboard & Analytics states
   const [bookings, setBookings] = useState([]);
   const [visitors, setVisitors] = useState([]);
+  const [visitorEvents, setVisitorEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionMessage, setActionMessage] = useState('');
   const [activeTab, setActiveTab] = useState('bookings');
@@ -579,38 +611,26 @@ export default function AdminDashboard() {
 
     try {
       const [
-        bookingsRes,
-        visitorsRes
+        allBookings,
+        allPageVisits,
+        allVisitorEvents
       ] = await Promise.all([
-        supabase
-          .from('bookings')
-          .select('*')
-          .order('event_date', {
-            ascending: true
-          }),
-
-        supabase
-          .from('page_visits')
-          .select('*')
-          .order('visited_at', {
-            ascending: false
-          })
+        fetchAllRows('bookings', '*', 'event_date', true),
+        fetchAllRows('page_visits', '*', 'visited_at', false),
+        fetchAllRows('visitor_events', 'visitor_id, is_test', 'created_at', true)
       ]);
 
-      if (bookingsRes.error) {
-        throw bookingsRes.error;
-      }
-
-      if (visitorsRes.error) {
-        throw visitorsRes.error;
-      }
-
+      // Keep test records out of every dashboard metric and booking list.
       setBookings(
-        bookingsRes.data || []
+        allBookings.filter((booking) => !booking.is_test)
       );
 
       setVisitors(
-        visitorsRes.data || []
+        allPageVisits.filter((visit) => !visit.is_test)
+      );
+
+      setVisitorEvents(
+        allVisitorEvents.filter((event) => !event.is_test && event.visitor_id)
       );
     } catch (err) {
       console.error(
@@ -1049,15 +1069,22 @@ export default function AdminDashboard() {
 
   const liveVisitors =
     visitors.filter(
-      (v) => !v.is_test
+      (visit) => !visit.is_test
     );
 
   const liveBookings =
     bookings.filter(
-      (b) => !b.is_test
+      (booking) => !booking.is_test
     );
 
   const totalVisitorsCount =
+    new Set(
+      visitorEvents
+        .filter((event) => !event.is_test && event.visitor_id)
+        .map((event) => event.visitor_id)
+    ).size;
+
+  const totalVisitsCount =
     liveVisitors.length;
 
   const totalBookingsCount =
@@ -1240,17 +1267,14 @@ export default function AdminDashboard() {
 
   const deviceBreakdown = {};
 
-  liveBookings.forEach(
-    (b) => {
-      const dev =
-        b.device_type ||
-        'Unknown';
+  liveVisitors.forEach((visit) => {
+    const device = String(visit.device_type || 'unknown')
+      .trim()
+      .toLowerCase() || 'unknown';
 
-      deviceBreakdown[dev] =
-        (deviceBreakdown[dev] || 0) +
-        1;
-    }
-  );
+    deviceBreakdown[device] =
+      (deviceBreakdown[device] || 0) + 1;
+  });
 
   // ============================================================
   // FILTER AND SORT BOOKINGS
@@ -2473,6 +2497,38 @@ export default function AdminDashboard() {
                 {
                   totalVisitorsCount
                 }
+              </span>
+            </div>
+
+            <div
+              style={{
+                background: 'white',
+                padding: '16px',
+                borderRadius: '12px',
+                border: '1px solid #e2e8f0'
+              }}
+            >
+              <span
+                style={{
+                  display: 'block',
+                  fontSize: '11px',
+                  fontWeight: 'bold',
+                  color: '#64748b',
+                  textTransform: 'uppercase',
+                  marginBottom: '4px'
+                }}
+              >
+                Total Visits
+              </span>
+
+              <span
+                style={{
+                  fontSize: '24px',
+                  fontWeight: '800',
+                  color: '#0f172a'
+                }}
+              >
+                {totalVisitsCount}
               </span>
             </div>
 
