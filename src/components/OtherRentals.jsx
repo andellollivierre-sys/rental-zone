@@ -1,7 +1,7 @@
 import React from 'react';
 
-const whatsapp = (message) =>
-  `https://wa.me/18682810670?text=${encodeURIComponent(message)}`;
+const whatsapp = (message, partner = 'general') =>
+  `https://wa.me/18682810670?text=${encodeURIComponent(message)}&utm_source=other-rentals&utm_content=${encodeURIComponent(partner)}`;
 
 const featuredGroups = [
   {
@@ -45,27 +45,6 @@ const featuredGroups = [
   }
 ];
 
-const additionalServices = [
-  {
-    title: 'Decorations & Styling',
-    description: 'Backdrops, balloon displays, centrepieces and themed details.',
-    image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=900&q=85',
-    alt: 'Colourful celebration decorations'
-  },
-  {
-    title: 'Photography & Videography',
-    description: 'Capture the important moments from your special occasion.',
-    image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=900&q=85',
-    alt: 'Camera ready for event photography'
-  },
-  {
-    title: 'Event Planning & Coordination',
-    description: 'Planning support to help bring the details of your occasion together.',
-    image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=900&q=85',
-    alt: 'Event planner coordinating a celebration'
-  }
-];
-
 export default function OtherRentals() {
   return (
     <div className="other-rentals-page">
@@ -97,13 +76,6 @@ export default function OtherRentals() {
         .or-item-list strong { display: block; font-size: 13px; }
         .or-item-list small { display: block; margin-top: 3px; color: #64748b; font-size: 11px; line-height: 1.45; }
         .or-quote { width: 100%; box-sizing: border-box; }
-        .or-additional-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 13px; }
-        .or-small-card { overflow: hidden; border: 1px solid #e2e8f0; border-radius: 14px; background: white; }
-        .or-small-card img { display: block; width: 100%; height: 115px; object-fit: cover; background: #e2e8f0; }
-        .or-small-card div { padding: 12px; }
-        .or-small-card h3 { margin: 0 0 6px; font-size: 14px; line-height: 1.25; }
-        .or-small-card p { margin: 0; color: #64748b; font-size: 11px; line-height: 1.5; }
-        .or-note { margin: 22px 20px 0; padding: 13px 15px; border: 1px solid #bfdbfe; border-radius: 11px; background: #eff6ff; color: #1e40af; font-size: 12px; line-height: 1.55; }
         .or-bottom-cta { margin: 34px 20px 0; padding: 27px 20px; border-radius: 18px; background: #0f172a; color: white; text-align: center; }
         .or-bottom-cta h2 { margin: 0 0 8px; font-size: 24px; }
         .or-bottom-cta p { max-width: 490px; margin: 0 auto 18px; color: #cbd5e1; font-size: 13px; line-height: 1.6; }
@@ -113,11 +85,7 @@ export default function OtherRentals() {
           .or-feature-grid { grid-template-columns: 1fr; }
           .or-feature-image { height: 205px; }
           .or-feature-body > p { min-height: 0; }
-          .or-additional-grid { grid-template-columns: 1fr; }
-          .or-small-card { display: grid; grid-template-columns: 112px minmax(0,1fr); }
-          .or-small-card img { height: 100%; min-height: 112px; }
-          .or-small-card div { align-self: center; }
-        }
+                }
       `}</style>
 
       <header className="or-hero">
@@ -125,7 +93,7 @@ export default function OtherRentals() {
         <h1>More Than Rentals.<br />Everything for Your Event.</h1>
         <p>Explore Andrew Noel’s event planning, DJ and rental services, alongside Sophie’s Catering Services — Cooked with Love. Find more of what you need for your event in one place.</p>
         <div className="or-hero-actions">
-          <a className="or-button or-button-primary" href={whatsapp('Hi The Rental Zone, I would like information about your Other Rentals and event services.')}>Enquire About Services</a>
+          <a className="or-button or-button-primary" href={whatsapp('Hi The Rental Zone, I would like information about your Other Rentals and event services.', 'general')}>Enquire About Services</a>
           <a className="or-button or-button-secondary" href="#other-rental-categories">Explore Services</a>
         </div>
       </header>
@@ -152,40 +120,17 @@ export default function OtherRentals() {
                     </li>
                   ))}
                 </ul>
-                <a className="or-button or-button-primary or-quote" href={whatsapp(`Hi The Rental Zone, please send me information and a quote for ${group.title}.`)}>Request a Quote</a>
+                <a className="or-button or-button-primary or-quote" href={whatsapp(`Hi The Rental Zone, please send me information and a quote for ${group.title}.`, group.id)}>Request a Quote</a>
               </div>
             </article>
           ))}
         </div>
       </section>
-
-      <section className="or-section">
-        <div className="or-section-heading">
-          <span>MORE EVENT POSSIBILITIES</span>
-          <h2>Build Your Event Your Way</h2>
-          <p>Additional event categories can be added as the partner's services and inventory are confirmed.</p>
-        </div>
-        <div className="or-additional-grid">
-          {additionalServices.map((service) => (
-            <article className="or-small-card" key={service.title}>
-              <img src={service.image} alt={service.alt} loading="lazy" />
-              <div>
-                <h3>{service.title}</h3>
-                <p>{service.description}</p>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <div className="or-note">
-        <strong>Partner showcase concept:</strong> Showcase preview: Images are illustrative placeholders. Confirmed product photos, itemized prices, packages, delivery/setup fees and availability will be added once supplied by the provider.
-      </div>
 
       <section className="or-bottom-cta">
         <h2>Looking for Something Specific?</h2>
         <p>Tell us what you're planning and what you need. We'll help direct your enquiry to the right service provider.</p>
-        <a className="or-button" href={whatsapp('Hi The Rental Zone, I am planning an event and would like to ask about your other rental and event services.')}>Contact Us on WhatsApp</a>
+        <a className="or-button" href={whatsapp('Hi The Rental Zone, I am planning an event and would like to ask about your other rental and event services.', 'general')}>Contact Us on WhatsApp</a>
       </section>
     </div>
   );
