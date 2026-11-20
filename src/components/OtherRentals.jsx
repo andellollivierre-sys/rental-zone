@@ -1,6 +1,6 @@
 import React from 'react';
 
-const whatsapp = (message, partner = 'general') =>
+const PARTNER_PHOTO_PATHS = {\n  catering: null, // Add the real partner photo path when supplied\n  rentals: null, // Add the real partner photo path when supplied\n  dj: null // Add the real partner photo path when supplied\n};\n\nconst whatsapp = (message, partner = 'general') =>
   `https://wa.me/18682810670?text=${encodeURIComponent(message)}&utm_source=other-rentals&utm_content=${encodeURIComponent(partner)}`;
 
 const featuredGroups = [
@@ -18,7 +18,7 @@ const featuredGroups = [
     ]
   },
   {
-    id: 'equipment',
+    id: 'rentals',
     eyebrow: 'ANDREW NOEL · EVENT RENTALS',
     title: 'Events & Equipment Rentals',
     description: 'The practical essentials to help transform a venue, yard or outdoor space into an event-ready setting.',
@@ -66,7 +66,7 @@ export default function OtherRentals() {
         .or-section-heading p { margin: 0; color: #64748b; line-height: 1.6; font-size: 14px; }
         .or-feature-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 18px; }
         .or-feature-card { overflow: hidden; border: 1px solid #e2e8f0; border-radius: 17px; background: white; box-shadow: 0 8px 24px rgba(15,23,42,.055); }
-        .or-feature-image { width: 100%; height: 190px; object-fit: cover; display: block; background: #e2e8f0; }
+        .or-partner-header { height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px; color: white; text-align: center; }\n        .or-partner-header-icon { font-size: 27px; line-height: 1; }\n        .or-partner-header-name { font-size: 14px; font-weight: 850; letter-spacing: .02em; }\n        .or-partner-photo { width: 100%; height: 150px; object-fit: cover; display: block; }\n        .or-brand-catering { background: linear-gradient(135deg,#7c2d12,#c2410c); }\n        .or-brand-rentals { background: linear-gradient(135deg,#1e3a8a,#2563eb); }\n        .or-brand-dj { background: linear-gradient(135deg,#312e81,#7c3aed); }
         .or-feature-body { padding: 18px; }
         .or-eyebrow { color: #2563eb; font-size: 10px; font-weight: 900; letter-spacing: .12em; }
         .or-feature-body h3 { margin: 6px 0 8px; font-size: 21px; letter-spacing: -.02em; }
@@ -83,7 +83,7 @@ export default function OtherRentals() {
         @media (max-width: 620px) {
           .or-hero { padding: 42px 18px 36px; }
           .or-feature-grid { grid-template-columns: 1fr; }
-          .or-feature-image { height: 205px; }
+          .or-partner-header, .or-partner-photo { height: 165px; }
           .or-feature-body > p { min-height: 0; }
                 }
       `}</style>
@@ -107,7 +107,7 @@ export default function OtherRentals() {
         <div className="or-feature-grid">
           {featuredGroups.map((group) => (
             <article className="or-feature-card" key={group.id}>
-              <img className="or-feature-image" src={group.image} alt={group.alt} loading="lazy" />
+              {group.photoPath ? (\n                <img className="or-partner-photo" src={group.photoPath} alt={`${group.partner} partner-provided work`} loading="lazy" />\n              ) : (\n                <div className={`or-partner-header ${group.headerClass}`} aria-label={`${group.partner} service listing`}>\n                  <span className="or-partner-header-icon" aria-hidden="true">{group.icon}</span>\n                  <span className="or-partner-header-name">{group.partner}</span>\n                </div>\n              )}
               <div className="or-feature-body">
                 <span className="or-eyebrow">{group.eyebrow}</span>
                 <h3>{group.title}</h3>
@@ -120,7 +120,7 @@ export default function OtherRentals() {
                     </li>
                   ))}
                 </ul>
-                <a className="or-button or-button-primary or-quote" href={whatsapp(`Hi The Rental Zone, please send me information and a quote for ${group.title}.`, group.id)}>Request a Quote</a>
+                <a className="or-button or-button-primary or-quote" href={whatsapp(`Hi, I'd like a quote for ${group.id === 'dj' ? 'DJ services' : group.id === 'catering' ? 'catering services' : 'event rentals'}.`, group.id)}>Request a Quote</a>
               </div>
             </article>
           ))}
