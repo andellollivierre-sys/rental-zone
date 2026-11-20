@@ -1462,7 +1462,196 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Photo Gallery Grid */}
+        {/* PARTNER SERVICES PREVIEW — SAMPLE LISTINGS */}
+      <section
+        aria-labelledby="partner-services-heading"
+        style={{
+          margin: '8px 16px 30px',
+          padding: '24px 18px',
+          borderRadius: '20px',
+          background: 'linear-gradient(145deg, #0f172a 0%, #172554 100%)',
+          color: '#f8fafc',
+          boxShadow: '0 12px 28px rgba(15, 23, 42, 0.14)'
+        }}
+      >
+        <div style={{ textAlign: 'center', marginBottom: '22px' }}>
+          <span style={{
+            display: 'inline-block',
+            padding: '6px 11px',
+            borderRadius: '999px',
+            background: 'rgba(56, 189, 248, 0.14)',
+            color: '#7dd3fc',
+            fontSize: '10px',
+            fontWeight: 900,
+            letterSpacing: '1px',
+            textTransform: 'uppercase'
+          }}>
+            More for your special occasion
+          </span>
+          <h2 id="partner-services-heading" style={{
+            margin: '12px 0 8px',
+            color: '#ffffff',
+            fontSize: '25px',
+            lineHeight: 1.2,
+            fontWeight: 900
+          }}>
+            More Rentals &amp; Event Services
+          </h2>
+          <p style={{
+            margin: '0 auto',
+            maxWidth: '520px',
+            color: '#cbd5e1',
+            fontSize: '13px',
+            lineHeight: 1.65
+          }}>
+            Planning an event? Explore more services from our growing network of local event partners.
+          </p>
+        </div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: '14px'
+        }}>
+          <article style={{
+            padding: '19px',
+            borderRadius: '15px',
+            background: '#ffffff',
+            color: '#0f172a',
+            border: '1px solid #e2e8f0'
+          }}>
+            <div aria-hidden="true" style={{
+              width: '48px',
+              height: '48px',
+              display: 'grid',
+              placeItems: 'center',
+              borderRadius: '13px',
+              background: '#fff7ed',
+              fontSize: '27px',
+              marginBottom: '13px'
+            }}>
+              🍽️
+            </div>
+            <div style={{
+              color: '#c2410c',
+              fontSize: '10px',
+              fontWeight: 900,
+              letterSpacing: '.8px',
+              textTransform: 'uppercase'
+            }}>
+              Partner category 01
+            </div>
+            <h3 style={{
+              margin: '6px 0 8px',
+              fontSize: '19px',
+              fontWeight: 900
+            }}>
+              Catering Services
+            </h3>
+            <p style={{
+              margin: '0 0 15px',
+              color: '#475569',
+              fontSize: '13px',
+              lineHeight: 1.6
+            }}>
+              Make feeding your guests easier with catering options for parties, family gatherings and special events.
+            </p>
+            <a
+              href="https://wa.me/18682810670?text=Hi%20The%20Rental%20Zone%2C%20I%27m%20interested%20in%20your%20catering%20partner%20services."
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'block',
+                padding: '11px 12px',
+                borderRadius: '9px',
+                background: '#c2410c',
+                color: '#ffffff',
+                textAlign: 'center',
+                textDecoration: 'none',
+                fontSize: '13px',
+                fontWeight: 800
+              }}
+            >
+              Enquire About Catering
+            </a>
+          </article>
+
+          <article style={{
+            padding: '19px',
+            borderRadius: '15px',
+            background: '#ffffff',
+            color: '#0f172a',
+            border: '1px solid #e2e8f0'
+          }}>
+            <div aria-hidden="true" style={{
+              width: '48px',
+              height: '48px',
+              display: 'grid',
+              placeItems: 'center',
+              borderRadius: '13px',
+              background: '#eff6ff',
+              fontSize: '27px',
+              marginBottom: '13px'
+            }}>
+              🎪
+            </div>
+            <div style={{
+              color: '#1d4ed8',
+              fontSize: '10px',
+              fontWeight: 900,
+              letterSpacing: '.8px',
+              textTransform: 'uppercase'
+            }}>
+              Partner category 02
+            </div>
+            <h3 style={{
+              margin: '6px 0 8px',
+              fontSize: '19px',
+              fontWeight: 900
+            }}>
+              Events &amp; Equipment Rentals
+            </h3>
+            <p style={{
+              margin: '0 0 15px',
+              color: '#475569',
+              fontSize: '13px',
+              lineHeight: 1.6
+            }}>
+              Find event essentials such as tables, chairs and other equipment to help bring your occasion together.
+            </p>
+            <a
+              href="https://wa.me/18682810670?text=Hi%20The%20Rental%20Zone%2C%20I%27m%20interested%20in%20event%20equipment%20and%20rental%20services."
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'block',
+                padding: '11px 12px',
+                borderRadius: '9px',
+                background: '#1d4ed8',
+                color: '#ffffff',
+                textAlign: 'center',
+                textDecoration: 'none',
+                fontSize: '13px',
+                fontWeight: 800
+              }}
+            >
+              Enquire About Event Rentals
+            </a>
+          </article>
+        </div>
+
+        <p style={{
+          margin: '16px 0 0',
+          color: '#94a3b8',
+          fontSize: '11px',
+          lineHeight: 1.5,
+          textAlign: 'center'
+        }}>
+          Partner listings are being introduced. Service details and availability will be confirmed directly with the provider.
+        </p>
+      </section>
+
+      {/* Photo Gallery Grid */}
         <div
           style={{
             marginBottom: '30px'
