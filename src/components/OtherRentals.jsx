@@ -6,7 +6,7 @@ const whatsapp = (message) =>
 const featuredGroups = [
   {
     id: 'catering',
-    eyebrow: 'FOOD & HOSPITALITY',
+    eyebrow: 'SOPHIE’S CATERING · COOKED WITH LOVE',
     title: 'Catering Services',
     description: 'Make hosting easier with food and refreshments for celebrations, family gatherings and corporate events.',
     image: 'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=1200&q=85',
@@ -19,7 +19,7 @@ const featuredGroups = [
   },
   {
     id: 'equipment',
-    eyebrow: 'EVENT SETUP',
+    eyebrow: 'ANDREW NOEL · EVENT RENTALS',
     title: 'Events & Equipment Rentals',
     description: 'The practical essentials to help transform a venue, yard or outdoor space into an event-ready setting.',
     image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1200&q=85',
@@ -28,6 +28,19 @@ const featuredGroups = [
       { name: 'Tables & Chairs', detail: 'Guest seating and table arrangements in different styles.' },
       { name: 'Tents & Canopies', detail: 'Covered space options for outdoor occasions.' },
       { name: 'Linens & Table Settings', detail: 'Finishing touches for a coordinated event setup.' }
+    ]
+  },
+  {
+    id: 'dj',
+    eyebrow: 'ANDREW NOEL · DJ SERVICES',
+    title: 'DJ & Event Entertainment',
+    description: 'Bring the celebration to life with DJ services for parties, family celebrations and special events.',
+    image: 'https://images.unsplash.com/photo-1571266028243-d220c9c3b5e9?auto=format&fit=crop&w=1200&q=85',
+    alt: 'DJ performing at an event with professional DJ equipment',
+    items: [
+      { name: 'DJ Bookings', detail: 'Music and entertainment for your event.' },
+      { name: 'Music Selection', detail: 'Discuss the music and atmosphere you want for your occasion.' },
+      { name: 'Event Schedule', detail: 'Coordinate performance timing around your programme.' }
     ]
   }
 ];
@@ -46,10 +59,10 @@ const additionalServices = [
     alt: 'Camera ready for event photography'
   },
   {
-    title: 'DJs, Sound & Entertainment',
-    description: 'Music, sound equipment and entertainment options for your guests.',
-    image: 'https://images.unsplash.com/photo-1571266028243-d220c9c3b5e9?auto=format&fit=crop&w=900&q=85',
-    alt: 'DJ equipment at an event'
+    title: 'Event Planning & Coordination',
+    description: 'Planning support to help bring the details of your occasion together.',
+    image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=900&q=85',
+    alt: 'Event planner coordinating a celebration'
   }
 ];
 
@@ -72,7 +85,7 @@ export default function OtherRentals() {
         .or-section-heading span { color: #2563eb; font-size: 11px; font-weight: 900; letter-spacing: .12em; }
         .or-section-heading h2 { margin: 7px 0 7px; font-size: 27px; letter-spacing: -.025em; }
         .or-section-heading p { margin: 0; color: #64748b; line-height: 1.6; font-size: 14px; }
-        .or-feature-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; }
+        .or-feature-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 18px; }
         .or-feature-card { overflow: hidden; border: 1px solid #e2e8f0; border-radius: 17px; background: white; box-shadow: 0 8px 24px rgba(15,23,42,.055); }
         .or-feature-image { width: 100%; height: 190px; object-fit: cover; display: block; background: #e2e8f0; }
         .or-feature-body { padding: 18px; }
@@ -110,7 +123,7 @@ export default function OtherRentals() {
       <header className="or-hero">
         <span className="or-kicker">MORE WAYS TO MAKE YOUR EVENT SPECIAL</span>
         <h1>More Than Rentals.<br />Everything for Your Event.</h1>
-        <p>Explore event services and essentials from local providers. From catering to tables, chairs and event setup, find more of what you need in one place.</p>
+        <p>Explore Andrew Noel’s event planning, DJ and rental services, alongside Sophie’s Catering Services — Cooked with Love. Find more of what you need for your event in one place.</p>
         <div className="or-hero-actions">
           <a className="or-button or-button-primary" href={whatsapp('Hi The Rental Zone, I would like information about your Other Rentals and event services.')}>Enquire About Services</a>
           <a className="or-button or-button-secondary" href="#other-rental-categories">Explore Services</a>
@@ -121,7 +134,7 @@ export default function OtherRentals() {
         <div className="or-section-heading">
           <span>EXPLORE THE COLLECTION</span>
           <h2>Services & Event Essentials</h2>
-          <p>Browse sample offerings below. Each category can be tailored to the products, packages and availability of the participating business.</p>
+          <p>Explore the services and sample offerings below. Product photos, packages and availability can be confirmed directly with the provider.</p>
         </div>
         <div className="or-feature-grid">
           {featuredGroups.map((group) => (
@@ -150,7 +163,7 @@ export default function OtherRentals() {
         <div className="or-section-heading">
           <span>MORE EVENT POSSIBILITIES</span>
           <h2>Build Your Event Your Way</h2>
-          <p>These are sample showcase categories. We can replace or expand them to match each partner's actual products and services.</p>
+          <p>Additional event categories can be added as the partner's services and inventory are confirmed.</p>
         </div>
         <div className="or-additional-grid">
           {additionalServices.map((service) => (
@@ -166,7 +179,7 @@ export default function OtherRentals() {
       </section>
 
       <div className="or-note">
-        <strong>Partner showcase concept:</strong> Images are illustrative placeholders, not confirmed partner inventory. Product names, photos, packages, pricing and availability can be updated once the business details are supplied.
+        <strong>Partner showcase concept:</strong> Showcase preview: Images are illustrative placeholders. Confirmed product photos, itemized prices, packages, delivery/setup fees and availability will be added once supplied by the provider.
       </div>
 
       <section className="or-bottom-cta">
