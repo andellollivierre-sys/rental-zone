@@ -1317,6 +1317,22 @@ export default function LandingPage() {
               >
                 Safe, clean, high-energy bouncy castles delivered straight to your yard. Secure your date with zero upfront risk.
               </p>
+              <p
+                style={{
+                  color: '#475569',
+                  fontSize: '14px',
+                  maxWidth: '100%',
+                  margin: '10px auto 0',
+                  lineHeight: '1.5',
+                  padding: '0 10px'
+                }}
+              >
+                <strong>Spider-Man Bouncy Castle</strong>
+                <br />
+                Combination + Slide • 26x13x13ft • Up to 8 Kids.
+                <br />
+                High-durability vinyl, fully cleaned and sanitized before every setup.
+              </p>
               </>
             )}
           </div>
