@@ -895,18 +895,6 @@ export default function LandingPage() {
               : 'Check Availability & Book'}
           </a>
 
-          <p
-            style={{
-              color: '#475569',
-              fontSize: '14px',
-              maxWidth: '100%',
-              margin: '14px auto 0',
-              lineHeight: '1.5',
-              padding: '0 10px'
-            }}
-          >
-            Safe, clean, high-energy bouncy castles delivered straight to your yard. Secure your date with zero upfront risk.
-          </p>
         </div>
 
         {/* Featured Inventory Card */}
@@ -1316,6 +1304,18 @@ export default function LandingPage() {
               >
                 🔥 Get This Promotional Offer
               </a>
+              <p
+                style={{
+                  color: '#475569',
+                  fontSize: '14px',
+                  maxWidth: '100%',
+                  margin: '14px auto 0',
+                  lineHeight: '1.5',
+                  padding: '0 10px'
+                }}
+              >
+                Safe, clean, high-energy bouncy castles delivered straight to your yard. Secure your date with zero upfront risk.
+              </p>
             )}
           </div>
         </div>
