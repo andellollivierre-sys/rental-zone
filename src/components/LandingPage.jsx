@@ -860,24 +860,6 @@ export default function LandingPage() {
             To Your Next Event!
           </h1>
 
-          <p
-            style={{
-              color: '#475569',
-              fontSize: '14px',
-              maxWidth: '100%',
-              margin:
-                '0 auto 20px auto',
-              lineHeight: '1.5',
-              padding: '0 10px'
-            }}
-          >
-            Safe, clean, high-energy
-            bouncy castles delivered
-            straight to your yard.
-            Secure your date with
-            zero upfront risk.
-          </p>
-
           <a
             href="#availability-check"
             onClick={(event) => {
@@ -912,6 +894,19 @@ export default function LandingPage() {
               ? '🔥 Claim Offer & Check Availability'
               : 'Check Availability & Book'}
           </a>
+
+          <p
+            style={{
+              color: '#475569',
+              fontSize: '14px',
+              maxWidth: '100%',
+              margin: '14px auto 0',
+              lineHeight: '1.5',
+              padding: '0 10px'
+            }}
+          >
+            Safe, clean, high-energy bouncy castles delivered straight to your yard. Secure your date with zero upfront risk.
+          </p>
         </div>
 
         {/* Featured Inventory Card */}
