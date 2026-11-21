@@ -242,6 +242,7 @@ export async function trackTrzEvent(eventName, additionalData = {}) {
       device: attr.device,
       popup_type: additionalData.popup_type || null,
       booking_id: additionalData.booking_id || null,
+      event_data: additionalData,
       is_test: attr.isTest
     };
 
