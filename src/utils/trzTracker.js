@@ -242,6 +242,21 @@ export async function trackTrzEvent(eventName, additionalData = {}) {
       device: attr.device,
       popup_type: additionalData.popup_type || null,
       booking_id: additionalData.booking_id || null,
+      event_data: {
+        ...additionalData,
+        attribution: {
+          first_touch: attr.firstTouch,
+          last_touch: (() => {
+            try {
+              return JSON.parse(sessionStorage.getItem(
+                attr.isTest ? 'trz_last_touch_test' : 'trz_last_touch'
+              ) || 'null');
+            } catch {
+              return null;
+            }
+          })()
+        }
+      },
       is_test: attr.isTest
     };
 

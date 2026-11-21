@@ -65,10 +65,7 @@ export default function AvailabilityCheckModal({
 
     try {
       const { data, error: queryError } = await supabase
-        .from('bookings')
-        .select('start_time, end_time')
-        .eq('event_date', eventDate)
-        .eq('status', 'Confirmed');
+        .rpc('get_public_booking_slots', { p_event_date: eventDate });
 
       if (queryError) throw queryError;
 
@@ -116,6 +113,7 @@ export default function AvailabilityCheckModal({
       window.location.hash = '#booking';
     } catch (err) {
       console.error('Availability check failed:', err);
+      trackTrzEvent('availability_check_failed', { event_date: eventDate, start_time: startTime, package_type: packageType, error_message: String(err?.message || 'unknown').slice(0, 180) });
       setError('We could not confirm availability right now. Please try again in a moment or contact us on WhatsApp.');
     } finally {
       setChecking(false);
