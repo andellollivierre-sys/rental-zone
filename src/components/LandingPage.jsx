@@ -934,9 +934,11 @@ export default function LandingPage() {
             {isVideoSlide ? (
               <video
                 src="/rental_zone_spider_music.mp4"
+                autoPlay
+                muted
                 controls
                 playsInline
-                preload="metadata"
+                preload="auto"
                 style={{
                   width: '100%',
                   height: '100%',
