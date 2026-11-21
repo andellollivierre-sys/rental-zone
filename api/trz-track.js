@@ -14,6 +14,7 @@ const ALLOWED_EVENTS = new Set([
   'our_bouncer_book_click', 'our_bouncer_bottom_book_click',
   'our_bouncer_full_day_click', 'our_bouncer_special_click',
   'promo_booking_expired', 'promo_booking_submitted', 'promotional_offer_expired',
+  'availability_check_started', 'availability_check_available', 'availability_check_unavailable', 'availability_check_failed',
   'click_featured_image_zoom', 'clicked_book_now',
   'share_copy_link_clicked', 'share_copy_link_completed',
   'share_facebook_clicked', 'share_native_clicked',
@@ -95,6 +96,7 @@ export default async function handler(req, res) {
     popup_type: typeof body.popup_type === 'string' ? body.popup_type.slice(0, 100) : null,
     booking_id: typeof body.booking_id === 'string' ? body.booking_id : null,
     is_test: body.is_test === true,
+    event_data: body.event_data && typeof body.event_data === 'object' && !Array.isArray(body.event_data) ? body.event_data : {},
     ip_hash: ipHash
   };
 

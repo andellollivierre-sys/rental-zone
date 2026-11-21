@@ -398,15 +398,9 @@ export default function BookingForm() {
       setCheckingAvailability(true);
 
       const { data, error } = await supabase
-        .from('bookings')
-        .select(
-          'start_time, end_time, package_type'
-        )
-        .eq(
-          'event_date',
-          formData.event_date
-        )
-        .eq('status', 'Confirmed');
+        .rpc('get_public_booking_slots', {
+          p_event_date: formData.event_date
+        });
 
       if (!error && data) {
         setBookedSlots(data);
@@ -525,13 +519,9 @@ export default function BookingForm() {
       data: conflictingBookings,
       error: checkError
     } = await supabase
-      .from('bookings')
-      .select('*')
-      .eq(
-        'event_date',
-        formData.event_date
-      )
-      .eq('status', 'Confirmed');
+      .rpc('get_public_booking_slots', {
+        p_event_date: formData.event_date
+      });
 
     if (checkError) {
       console.error('Final booking availability check failed:', checkError);

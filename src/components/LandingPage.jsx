@@ -71,6 +71,7 @@ import {
 
 export default function LandingPage() {
   const [selectedImage, setSelectedImage] = useState(null);
+  const [activeSlide, setActiveSlide] = useState(0);
   const [showBookingPopup, setShowBookingPopup] = useState(false);
   const [expandedPopupSection, setExpandedPopupSection] = useState(null);
   const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
@@ -783,6 +784,17 @@ export default function LandingPage() {
   const featuredImage =
     '/featured image.jpg';
 
+  const carouselImages = [featuredImage, ...galleryImages];
+  const activeCarouselImage = carouselImages[activeSlide] || featuredImage;
+
+  const changeSlide = (direction) => {
+    const nextIndex = (activeSlide + direction + carouselImages.length) % carouselImages.length;
+    setActiveSlide(nextIndex);
+    if (nextIndex > 0) {
+      trackButtonClick(`click_gallery_image_${nextIndex}`);
+    }
+  };
+
   const faqs = [
     {
       q: "What are the space and clearance requirements?",
@@ -860,24 +872,6 @@ export default function LandingPage() {
             To Your Next Event!
           </h1>
 
-          <p
-            style={{
-              color: '#475569',
-              fontSize: '14px',
-              maxWidth: '100%',
-              margin:
-                '0 auto 20px auto',
-              lineHeight: '1.5',
-              padding: '0 10px'
-            }}
-          >
-            Safe, clean, high-energy
-            bouncy castles delivered
-            straight to your yard.
-            Secure your date with
-            zero upfront risk.
-          </p>
-
           <a
             href="#availability-check"
             onClick={(event) => {
@@ -912,377 +906,205 @@ export default function LandingPage() {
               ? '🔥 Claim Offer & Check Availability'
               : 'Check Availability & Book'}
           </a>
+
         </div>
 
-        {/* Featured Inventory Card */}
+        {/* Featured Inventory + Mobile-First Offer */}
         <div
           id="pricing"
           style={{
             background: 'white',
             borderRadius: '16px',
-            border:
-              '1px solid #e2e8f0',
+            border: '1px solid #e2e8f0',
             overflow: 'hidden',
-            boxShadow:
-              '0 4px 12px rgba(0, 0, 0, 0.05)',
-            marginBottom: '30px'
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+            marginBottom: '22px'
           }}
         >
           <div
             style={{
-              height: '240px',
-              background:
-                '#1e293b',
-              display: 'flex',
-              alignItems:
-                'center',
-              justifyContent:
-                'center',
-              position:
-                'relative',
+              height: '210px',
+              background: '#1e293b',
+              position: 'relative',
               overflow: 'hidden'
             }}
           >
-            <div
-              style={{
-                position:
-                  'absolute',
-                top: '12px',
-                left: '12px',
-                zIndex: '10'
-              }}
-            >
-              <span
-                style={{
-                  background:
-                    '#2563eb',
-                  color: 'white',
-                  fontSize: '11px',
-                  padding:
-                    '5px 10px',
-                  borderRadius:
-                    '6px',
-                  fontWeight:
-                    'bold'
-                }}
-              >
-                Featured Inventory
-              </span>
-            </div>
-
-            {promoIsActive && (
-              <div
-                style={{
-                  position:
-                    'absolute',
-                  top: '12px',
-                  right: '12px',
-                  zIndex: '10'
-                }}
-              >
-                <span
-                  style={{
-                    background:
-                      '#ea580c',
-                    color: 'white',
-                    fontSize: '11px',
-                    padding:
-                      '6px 10px',
-                    borderRadius:
-                      '6px',
-                    fontWeight:
-                      '800',
-                    boxShadow:
-                      '0 3px 8px rgba(0,0,0,0.25)'
-                  }}
-                >
-                  🔥 PROMO
-                </span>
-              </div>
-            )}
-
             <img
-              src={featuredImage}
-              alt="Spider-Man Bouncy Castle"
+              src={activeCarouselImage}
+              alt={`Spider-Man Bouncy Castle view ${activeSlide + 1}`}
               style={{
                 width: '100%',
                 height: '100%',
-                objectFit:
-                  'cover',
-                cursor:
-                  'pointer'
+                objectFit: 'cover',
+                cursor: 'pointer'
               }}
               onClick={() => {
-                trackButtonClick(
-                  'click_featured_image_zoom'
-                );
-
-                setSelectedImage(
-                  featuredImage
-                );
+                trackButtonClick('click_featured_image_zoom');
+                setSelectedImage(activeCarouselImage);
               }}
-              title="Click to zoom image"
+              title="Tap to enlarge image"
             />
+            <span style={{
+              position: 'absolute',
+              top: 10,
+              left: 10,
+              background: '#0f172a',
+              color: 'white',
+              padding: '5px 9px',
+              borderRadius: 6,
+              fontSize: 11,
+              fontWeight: 800
+            }}>
+              SPIDER-MAN COMBO
+            </span>
+            {promoIsActive && (
+              <span style={{
+                position: 'absolute',
+                top: 10,
+                right: 10,
+                background: '#ea580c',
+                color: 'white',
+                padding: '6px 9px',
+                borderRadius: 6,
+                fontSize: 11,
+                fontWeight: 800
+              }}>
+                🔥 PROMO
+              </span>
+            )}
+            <button
+              type="button"
+              aria-label="Previous photo"
+              onClick={() => changeSlide(-1)}
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: 34,
+                height: 34,
+                border: 0,
+                borderRadius: '50%',
+                background: 'rgba(15,23,42,.78)',
+                color: 'white',
+                fontSize: 22,
+                cursor: 'pointer'
+              }}
+            >‹</button>
+            <button
+              type="button"
+              aria-label="Next photo"
+              onClick={() => changeSlide(1)}
+              style={{
+                position: 'absolute',
+                right: 10,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: 34,
+                height: 34,
+                border: 0,
+                borderRadius: '50%',
+                background: 'rgba(15,23,42,.78)',
+                color: 'white',
+                fontSize: 22,
+                cursor: 'pointer'
+              }}
+            >›</button>
+            <div style={{
+              position: 'absolute',
+              bottom: 9,
+              left: 0,
+              right: 0,
+              display: 'flex',
+              justifyContent: 'center',
+              gap: 5
+            }}>
+              {carouselImages.map((_, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  aria-label={`Show photo ${index + 1}`}
+                  onClick={() => {
+                    setActiveSlide(index);
+                    if (index > 0) trackButtonClick(`click_gallery_image_${index}`);
+                  }}
+                  style={{
+                    width: activeSlide === index ? 17 : 7,
+                    height: 7,
+                    padding: 0,
+                    border: 0,
+                    borderRadius: 10,
+                    background: activeSlide === index ? 'white' : 'rgba(255,255,255,.6)',
+                    cursor: 'pointer'
+                  }}
+                />
+              ))}
+            </div>
           </div>
 
-          <div
-            style={{
-              padding: '20px'
-            }}
-          >
-            <h3
-              style={{
-                fontSize: '20px',
-                fontWeight: 'bold',
-                color: '#0f172a',
-                margin:
-                  '0 0 6px 0'
-              }}
-            >
-              🕷️ Spider-Man Bouncy Castle
-            </h3>
-
-            <p
-              style={{
-                color: '#64748b',
-                fontSize: '13px',
-                margin:
-                  '0 0 16px 0',
-                lineHeight: '1.4'
-              }}
-            >
-              Combination + Slide •
-              26x13x13ft • Up to 8
-              Kids. High-durability
-              vinyl, fully cleaned and
-              sanitized before every
-              setup.
-            </p>
-
-            {/* PROMOTIONAL PRICE DISPLAY */}
+          <div style={{ padding: '12px 14px 16px' }}>
             {promoIsActive ? (
-              <div
-                style={{
-                  background:
-                    '#fff7ed',
-                  border:
-                    '1px solid #fed7aa',
-                  borderRadius:
-                    '12px',
-                  padding:
-                    '14px',
-                  marginBottom:
-                    '14px'
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: '11px',
-                    color: '#c2410c',
-                    fontWeight:
-                      '800',
-                    textTransform:
-                      'uppercase',
-                    marginBottom:
-                      '4px'
-                  }}
-                >
-                  Limited-Time Promotion
-                </div>
-
-                <div
-                  style={{
-                    display:
-                      'flex',
-                    alignItems:
-                      'baseline',
-                    gap: '8px',
-                    flexWrap:
-                      'wrap'
-                  }}
-                >
-                  <span
-                    style={{
-                      color:
-                        '#9a3412',
-                      fontWeight:
-                        '900',
-                      fontSize:
-                        '24px'
-                    }}
-                  >
-                    TT$
-                    {formatMoney(
-                      publicPrice
-                    )}
-                  </span>
-
-                  <span
-                    style={{
-                      color:
-                        '#64748b',
-                      fontSize:
-                        '12px',
-                      fontWeight:
-                        '600'
-                    }}
-                  >
-                    for{' '}
-                    {publicHours}{' '}
-                    hours
+              <div style={{
+                background: '#fff7ed',
+                border: '1px solid #fed7aa',
+                borderRadius: 12,
+                padding: '10px 12px',
+                marginBottom: 10
+              }}>
+                <div style={{
+                  color: '#c2410c',
+                  fontSize: 11,
+                  fontWeight: 800,
+                  textTransform: 'uppercase',
+                  marginBottom: 2
+                }}>Limited-Time Promotion</div>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'baseline',
+                  flexWrap: 'wrap',
+                  gap: 8
+                }}>
+                  <strong style={{
+                    color: '#9a3412',
+                    fontSize: 27,
+                    lineHeight: 1.1
+                  }}>TT${formatMoney(publicPrice)}</strong>
+                  <span style={{ color: '#64748b', fontSize: 13, fontWeight: 700 }}>
+                    for {publicHours} hours
                   </span>
                 </div>
-
-                <div
-                  style={{
-                    color:
-                      '#7c2d12',
-                    fontSize:
-                      '12px',
-                    marginTop:
-                      '6px'
-                  }}
-                >
-                  Regular value:{' '}
-                  <strong>
-                    TT$
-                    {formatMoney(
-                      promotionalRegularValue
-                    )}
-                  </strong>
+                <div style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  gap: '4px 12px',
+                  marginTop: 5,
+                  fontSize: 12
+                }}>
+                  <span style={{ color: '#7c2d12' }}>Regular: <strong>TT${formatMoney(promotionalRegularValue)}</strong></span>
+                  <strong style={{ color: '#c2410c' }}>Save TT${formatMoney(promotionalSavings)}</strong>
                 </div>
-
-                <div
-                  style={{
-                    color:
-                      '#c2410c',
-                    fontSize:
-                      '14px',
-                    fontWeight:
-                      '900',
-                    marginTop:
-                      '3px'
-                  }}
-                >
-                  Save TT$
-                  {formatMoney(
-                    promotionalSavings
-                  )}
-                </div>
-
-                <div
-                  style={{
-                    color:
-                      '#7c2d12',
-                    fontSize:
-                      '11px',
-                    marginTop:
-                      '5px'
-                  }}
-                >
-                  No deposit required.
-                  Pay on delivery.
+                <div style={{ color: '#7c2d12', fontSize: 11, marginTop: 4 }}>
+                  No deposit. Pay on delivery.
                 </div>
               </div>
             ) : (
-              <div
-                style={{
-                  display:
-                    'flex',
-                  justifyContent:
-                    'space-between',
-                  alignItems:
-                    'center',
-                  paddingTop:
-                    '14px',
-                  borderTop:
-                    '1px solid #f1f5f9'
-                }}
-              >
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '5px 2px 10px'
+              }}>
                 <div>
-                  <span
-                    style={{
-                      display:
-                        'block',
-                      fontSize:
-                        '11px',
-                      color:
-                        '#64748b',
-                      textTransform:
-                        'uppercase',
-                      fontWeight:
-                        'bold'
-                    }}
-                  >
-                    Starting at
-                  </span>
-
-                  <span
-                    style={{
-                      color:
-                        '#2563eb',
-                      fontWeight:
-                        'bold',
-                      fontSize:
-                        '17px'
-                    }}
-                  >
-                    TT$650
-                  </span>
-
-                  <span
-                    style={{
-                      display:
-                        'block',
-                      fontSize:
-                        '11px',
-                      color:
-                        '#64748b',
-                      marginTop:
-                        '2px'
-                    }}
-                  >
-                    2 Hours
-                  </span>
+                  <div style={{ color: '#64748b', fontSize: 11, fontWeight: 700, textTransform: 'uppercase' }}>Starting at</div>
+                  <strong style={{ color: '#2563eb', fontSize: 22 }}>TT$650</strong>
+                  <span style={{ color: '#64748b', fontSize: 12 }}> · 2 hours</span>
                 </div>
-
-                <a
-                  href="#availability-check"
-                  onClick={(event) => {
-                    event.preventDefault();
-                    trackButtonClick('clicked_book_now');
-                    setShowAvailabilityModal(true);
-                  }}
-                  style={{
-                    background:
-                      '#0f172a',
-                    color:
-                      'white',
-                    fontSize:
-                      '13px',
-                    fontWeight:
-                      'bold',
-                    padding:
-                      '10px 18px',
-                    borderRadius:
-                      '8px',
-                    border:
-                      'none',
-                    cursor:
-                      'pointer',
-                    textDecoration:
-                      'none',
-                    display:
-                      'inline-block'
-                  }}
-                >
-                  Select & Book
-                </a>
+                <span style={{ color: '#64748b', fontSize: 11 }}>No deposit required</span>
               </div>
             )}
 
-            {/* PROMO BOOKING BUTTON */}
-            {promoIsActive && (
+            {promoIsActive ? (
               <a
                 href="#availability-check"
                 onClick={(event) => {
@@ -1291,115 +1113,85 @@ export default function LandingPage() {
                   setShowAvailabilityModal(true);
                 }}
                 style={{
-                  display:
-                    'block',
-                  width:
-                    '100%',
-                  background:
-                    '#0f172a',
-                  color:
-                    'white',
-                  fontSize:
-                    '13px',
-                  fontWeight:
-                    'bold',
-                  padding:
-                    '11px 0',
-                  borderRadius:
-                    '8px',
-                  border:
-                    'none',
-                  cursor:
-                    'pointer',
-                  textDecoration:
-                    'none',
-                  textAlign:
-                    'center',
-                  boxSizing:
-                    'border-box'
+                  display: 'block',
+                  width: '100%',
+                  background: '#0f172a',
+                  color: 'white',
+                  fontSize: 14,
+                  fontWeight: 800,
+                  padding: '13px 10px',
+                  borderRadius: 9,
+                  textDecoration: 'none',
+                  textAlign: 'center',
+                  boxSizing: 'border-box'
                 }}
-              >
-                🔥 Get This Promotional Offer
-              </a>
+              >🔥 Get This Promotional Offer</a>
+            ) : (
+              <a
+                href="#availability-check"
+                onClick={(event) => {
+                  event.preventDefault();
+                  trackButtonClick('clicked_book_now');
+                  setShowAvailabilityModal(true);
+                }}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  background: '#0f172a',
+                  color: 'white',
+                  fontSize: 14,
+                  fontWeight: 800,
+                  padding: '13px 10px',
+                  borderRadius: 9,
+                  textDecoration: 'none',
+                  textAlign: 'center',
+                  boxSizing: 'border-box'
+                }}
+              >Check Availability & Book</a>
             )}
-          </div>
-        </div>
 
-        {/* Photo Gallery Grid */}
-        <div
-          style={{
-            marginBottom: '30px'
-          }}
-        >
-          <h3
-            style={{
-              fontSize: '16px',
-              fontWeight:
-                'bold',
-              color:
-                '#0f172a',
-              marginBottom:
-                '12px',
-              textAlign:
-                'center'
-            }}
-          >
-            📸 Event & Unit Gallery
-          </h3>
-
-          <div
-            style={{
-              display:
-                'grid',
-              gridTemplateColumns:
-                'repeat(2, 1fr)',
-              gap: '10px'
-            }}
-          >
-            {galleryImages.map(
-              (imgUrl, index) => (
-                <div
-                  key={index}
-                  style={{
-                    height:
-                      '140px',
-                    borderRadius:
-                      '12px',
-                    overflow:
-                      'hidden',
-                    border:
-                      '1px solid #e2e8f0',
-                    background:
-                      '#f8fafc',
-                    cursor:
-                      'pointer'
-                  }}
-                  onClick={() => {
-                    trackButtonClick(
-                      `click_gallery_image_${index + 1}`
-                    );
-
-                    setSelectedImage(
-                      imgUrl
-                    );
-                  }}
-                >
-                  <img
-                    src={imgUrl}
-                    alt={`Rental Zone Gallery ${index + 1}`}
-                    style={{
-                      width:
-                        '100%',
-                      height:
-                        '100%',
-                      objectFit:
-                        'cover'
-                    }}
-                    title="Click to zoom image"
-                  />
-                </div>
-              )
-            )}
+            <div style={{
+              marginTop: 12,
+              padding: '11px 12px',
+              borderRadius: 10,
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0'
+            }}>
+              <h3 style={{
+                margin: '0 0 5px',
+                color: '#0f172a',
+                fontSize: 17,
+                fontWeight: 800
+              }}>🕷️ Spider-Man Bouncy Castle</h3>
+              <p style={{
+                margin: '0 0 9px',
+                color: '#475569',
+                fontSize: 13,
+                lineHeight: 1.45
+              }}>A high-energy combo bouncer with a climbing wall and slide — ready for backyard fun.</p>
+              <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: 6,
+                marginBottom: 8
+              }}>
+                <span style={{ background: '#e0f2fe', color: '#075985', borderRadius: 6, padding: '5px 8px', fontSize: 11, fontWeight: 700 }}>26 × 13 × 13 ft</span>
+                <span style={{ background: '#e0f2fe', color: '#075985', borderRadius: 6, padding: '5px 8px', fontSize: 11, fontWeight: 700 }}>Up to 8 kids</span>
+                <span style={{ background: '#e0f2fe', color: '#075985', borderRadius: 6, padding: '5px 8px', fontSize: 11, fontWeight: 700 }}>Combo + slide</span>
+              </div>
+              <div style={{
+                color: '#475569',
+                fontSize: 12,
+                lineHeight: 1.45
+              }}>Heavy-duty vinyl, fully cleaned and sanitized before every setup.</div>
+            </div>
+            <p style={{
+              color: '#64748b',
+              fontSize: 12,
+              lineHeight: 1.4,
+              margin: '9px 2px 0',
+              textAlign: 'center'
+            }}>Safe, clean, high-energy fun delivered straight to your yard. Secure your date with zero upfront risk.</p>
           </div>
         </div>
 
@@ -1719,22 +1511,6 @@ export default function LandingPage() {
           📲 More Sharing Options
         </button>
 
-        <a
-          href="https://whatsapp.com/channel/0029VbD6ZFR1noz9SInOsu2L"
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => trackButtonClick('whatsapp_channel_clicked')}
-          style={{
-            display: 'block',
-            marginTop: '14px',
-            color: '#15803d',
-            fontSize: '14px',
-            fontWeight: 800,
-            textDecoration: 'none'
-          }}
-        >
-          📣 Follow our WhatsApp Community
-        </a>
       </section>
 
       {/* EXISTING INTENT SELECTION POPUP MODAL */}
