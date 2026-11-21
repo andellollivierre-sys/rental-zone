@@ -1486,30 +1486,56 @@ export default function LandingPage() {
 
           <div
             style={{
-              display:
-                'grid',
-              gridTemplateColumns:
-                'repeat(2, 1fr)',
-              gap: '10px'
+              display: 'flex',
+              gap: '10px',
+              overflowX: 'auto',
+              scrollSnapType: 'x mandatory',
+              WebkitOverflowScrolling: 'touch',
+              paddingBottom: '6px'
             }}
           >
+            <div
+              key="gallery-video"
+              style={{
+                flex: '0 0 82%',
+                maxWidth: '420px',
+                height: '220px',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                border: '1px solid #e2e8f0',
+                background: '#0f172a',
+                scrollSnapAlign: 'start'
+              }}
+              onClick={() => trackButtonClick('click_gallery_video')}
+            >
+              <video
+                src="/rental_zone_spider_music.mp4"
+                controls
+                playsInline
+                preload="metadata"
+                aria-label="Spider-Man Combo Bouncer video"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  display: 'block'
+                }}
+              />
+            </div>
             {galleryImages.map(
               (imgUrl, index) => (
                 <div
                   key={index}
                   style={{
-                    height:
-                      '140px',
-                    borderRadius:
-                      '12px',
-                    overflow:
-                      'hidden',
-                    border:
-                      '1px solid #e2e8f0',
-                    background:
-                      '#f8fafc',
-                    cursor:
-                      'pointer'
+                    flex: '0 0 82%',
+                    maxWidth: '420px',
+                    height: '220px',
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    border: '1px solid #e2e8f0',
+                    background: '#f8fafc',
+                    cursor: 'pointer',
+                    scrollSnapAlign: 'start'
                   }}
                   onClick={() => {
                     trackButtonClick(
@@ -1525,12 +1551,9 @@ export default function LandingPage() {
                     src={imgUrl}
                     alt={`Rental Zone Gallery ${index + 1}`}
                     style={{
-                      width:
-                        '100%',
-                      height:
-                        '100%',
-                      objectFit:
-                        'cover'
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
                     }}
                     title="Click to zoom image"
                   />
