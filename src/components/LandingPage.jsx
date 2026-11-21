@@ -785,13 +785,15 @@ export default function LandingPage() {
     '/featured image.jpg';
 
   const carouselImages = [featuredImage, ...galleryImages];
-  const activeCarouselImage = carouselImages[activeSlide] || featuredImage;
+  const activeCarouselImage = activeSlide === 0 ? null : carouselImages[activeSlide - 1] || featuredImage;
+  const isVideoSlide = activeSlide === 0;
+  const totalCarouselSlides = carouselImages.length + 1;
 
   const changeSlide = (direction) => {
-    const nextIndex = (activeSlide + direction + carouselImages.length) % carouselImages.length;
+    const nextIndex = (activeSlide + direction + totalCarouselSlides) % totalCarouselSlides;
     setActiveSlide(nextIndex);
-    if (nextIndex > 0) {
-      trackButtonClick(`click_gallery_image_${nextIndex}`);
+    if (nextIndex > 1) {
+      trackButtonClick(`click_gallery_image_${nextIndex - 1}`);
     }
   };
 
@@ -929,21 +931,37 @@ export default function LandingPage() {
               overflow: 'hidden'
             }}
           >
-            <img
-              src={activeCarouselImage}
-              alt={`Spider-Man Bouncy Castle view ${activeSlide + 1}`}
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                cursor: 'pointer'
-              }}
-              onClick={() => {
-                trackButtonClick('click_featured_image_zoom');
-                setSelectedImage(activeCarouselImage);
-              }}
-              title="Tap to enlarge image"
-            />
+            {isVideoSlide ? (
+              <video
+                src="/rental_zone_spider_music.mp4"
+                controls
+                playsInline
+                preload="metadata"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  background: '#000'
+                }}
+                aria-label="The Rental Zone Spider-Man bouncy castle video"
+              />
+            ) : (
+              <img
+                src={activeCarouselImage}
+                alt={`Spider-Man Bouncy Castle view ${activeSlide}`}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  cursor: 'pointer'
+                }}
+                onClick={() => {
+                  trackButtonClick('click_featured_image_zoom');
+                  setSelectedImage(activeCarouselImage);
+                }}
+                title="Tap to enlarge image"
+              />
+            )}
             <span style={{
               position: 'absolute',
               top: 10,
