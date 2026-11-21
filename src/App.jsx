@@ -6,6 +6,7 @@ import OurBouncer from './components/OurBouncer';
 import HowItWorks from './components/HowItWorks';
 import FAQ from './components/FAQ';
 import Contact from './components/Contact';
+import EventServices from './components/EventServices';
 
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState(
@@ -54,6 +55,7 @@ export default function App() {
     { href: '#home', label: 'Home' },
     { href: '#booking', label: 'Booking' },
     { href: '#our-bouncer', label: 'Our Bouncer' },
+    { href: '#event-services', label: 'More Rentals & Services' },
     { href: '#how-it-works', label: 'How It Works' },
     { href: '#faq', label: 'FAQ' },
     { href: '#contact', label: 'Contact' },
@@ -262,7 +264,9 @@ export default function App() {
           paddingBottom: '40px',
         }}
       >
-        {currentRoute === '#admin' ? (
+        {currentRoute === '#event-services' ? (
+          <EventServices />
+        ) : currentRoute === '#admin' ? (
           <AdminDashboard />
         ) : currentRoute === '#booking' ? (
           <BookingForm />
