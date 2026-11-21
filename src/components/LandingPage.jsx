@@ -1506,60 +1506,36 @@ export default function LandingPage() {
 
       </section>
 
-      {/* BOTTOM WHATSAPP CONTACT CTA — temporary test */}
-      <section
-        aria-labelledby="trz-whatsapp-contact-heading"
+      {/* FLOATING WHATSAPP CONTACT BUTTON — temporary test */}
+      <a
+        href="https://wa.me/18682810670?text=Hi%20Rental%20Zone%2C%20I%20have%20a%20question%20about%20booking%20the%20bouncy%20castle."
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Chat with Rental Zone on WhatsApp"
+        title="Chat with us on WhatsApp"
+        onClick={() => trackButtonClick('whatsapp_clicked')}
         style={{
-          margin: '0 16px 30px',
-          padding: '22px 18px',
-          border: '1px solid #bbf7d0',
-          borderRadius: '16px',
-          background: 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)',
-          textAlign: 'center',
-          boxShadow: '0 4px 14px rgba(22, 101, 52, 0.06)'
+          position: 'fixed',
+          right: '16px',
+          bottom: '20px',
+          zIndex: 9000,
+          width: '56px',
+          height: '56px',
+          borderRadius: '50%',
+          background: '#25D366',
+          color: '#ffffff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textDecoration: 'none',
+          boxShadow: '0 4px 14px rgba(0, 0, 0, 0.28)',
+          border: '2px solid #ffffff',
+          fontSize: '27px',
+          lineHeight: 1
         }}
       >
-        <div style={{ fontSize: 26, marginBottom: 6 }} aria-hidden="true">💬</div>
-        <h3
-          id="trz-whatsapp-contact-heading"
-          style={{ margin: '0 0 7px', color: '#0f172a', fontSize: '19px', fontWeight: 800 }}
-        >
-          Still Have a Question?
-        </h3>
-        <p style={{ margin: '0 auto 16px', maxWidth: 420, color: '#475569', fontSize: '14px', lineHeight: 1.55 }}>
-          Ask us about availability, setup space, or your event. We’re happy to help.
-        </p>
-        <a
-          href="https://wa.me/18682810670?text=Hi%20Rental%20Zone%2C%20I%20have%20a%20question%20about%20booking%20the%20bouncy%20castle."
-          target="_blank"
-          rel="noreferrer"
-          onClick={() => trackButtonClick('whatsapp_clicked')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 9,
-            width: '100%',
-            maxWidth: 360,
-            boxSizing: 'border-box',
-            margin: '0 auto',
-            padding: '14px 18px',
-            border: '1px solid #16a34a',
-            borderRadius: '12px',
-            background: '#16a34a',
-            color: '#ffffff',
-            fontSize: '15px',
-            fontWeight: 800,
-            textDecoration: 'none',
-            boxShadow: '0 4px 10px rgba(22, 163, 74, 0.2)'
-          }}
-        >
-          <span aria-hidden="true">☏</span> Chat with us on WhatsApp
-        </a>
-        <p style={{ margin: '10px 0 0', color: '#64748b', fontSize: '11px' }}>
-          Prefer to book directly? Use the Check Availability & Book option above.
-        </p>
-      </section>
+        <span aria-hidden="true">☏</span>
+      </a>
 
       {/* EXISTING INTENT SELECTION POPUP MODAL */}
       {showBookingPopup && (
