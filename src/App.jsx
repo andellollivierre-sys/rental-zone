@@ -6,6 +6,7 @@ import OurBouncer from './components/OurBouncer';
 import HowItWorks from './components/HowItWorks';
 import FAQ from './components/FAQ';
 import Contact from './components/Contact';
+import EventServices from './components/EventServices';
 import WhatsAppChannelBar from './components/WhatsAppChannelBar';
 
 export default function App() {
@@ -58,6 +59,7 @@ export default function App() {
     { href: '#how-it-works', label: 'How It Works' },
     { href: '#faq', label: 'FAQ' },
     { href: '#contact', label: 'Contact' },
+    { href: '#event-services', label: 'Event Services' },
     { href: '#admin', label: 'Admin' },
   ];
 
@@ -264,7 +266,9 @@ export default function App() {
           paddingBottom: '40px',
         }}
       >
-        {currentRoute === '#admin' ? (
+        {currentRoute === '#event-services' ? (
+          <EventServices />
+        ) : currentRoute === '#admin' ? (
           <AdminDashboard />
         ) : currentRoute === '#booking' ? (
           <BookingForm />
