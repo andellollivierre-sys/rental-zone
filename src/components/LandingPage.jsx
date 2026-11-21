@@ -265,73 +265,44 @@ export default function LandingPage() {
   }, []);
 
   /*
-   * ============================================================
-   * POPUP CONTROL
-   * ============================================================
-   *
-   * This replaces the old desktop exit-intent/mobile-delay
-   * promotional popup behavior.
-   *
-   * PROMO ACTIVE:
-   * - Suppress the normal welcome popup.
-   * - Open the promotional popup immediately.
-   *
-   * PROMO INACTIVE:
-   * - Show the normal welcome popup once per session.
-   *
-   * Waiting for promoLoading to finish is important.
-   * It prevents the normal popup from appearing for a moment
-   * before Supabase tells us that a promotion is active.
+   * Show the welcome / promotional popup only after the
+   * introductory gallery video has finished playing.
    */
-  useEffect(() => {
-    if (promoLoading) {
+  const handleIntroVideoEnded = () => {
+    if (promoLoading) return;
+
+    if (promoIsActive) {
+      setShowBookingPopup(true);
+      setExpandedPopupSection(null);
+
+      const promoPopupSeen =
+        sessionStorage.getItem('trz_promotional_popup_seen');
+
+      if (!promoPopupSeen) {
+        sessionStorage.setItem('trz_promotional_popup_seen', 'true');
+        trackTrzEvent('promotional_popup_opened', {
+          trigger: 'video_ended',
+          offer_price: publicPrice,
+          offer_hours: publicHours,
+          regular_value: promotionalRegularValue,
+          savings: promotionalSavings
+        });
+      }
       return;
     }
 
-    const popupDelay = setTimeout(() => {
-      if (promoIsActive) {
-        setShowBookingPopup(true);
-        setExpandedPopupSection(null);
+    const hasSeenPopup =
+      sessionStorage.getItem('seen_booking_popup');
 
-        const promoPopupSeen =
-          sessionStorage.getItem('trz_promotional_popup_seen');
-
-        if (!promoPopupSeen) {
-          sessionStorage.setItem('trz_promotional_popup_seen', 'true');
-
-          trackTrzEvent('promotional_popup_opened', {
-            trigger: 'promo_delayed',
-            offer_price: publicPrice,
-            offer_hours: publicHours,
-            regular_value: promotionalRegularValue,
-            savings: promotionalSavings
-          });
-        }
-
-        return;
-      }
-
-      const hasSeenPopup =
-        sessionStorage.getItem('seen_booking_popup');
-
-      if (!hasSeenPopup) {
-        setShowBookingPopup(true);
-        sessionStorage.setItem('seen_booking_popup', 'true');
-        trackTrzEvent('popup_opened', {
-          popup_type: 'initial_intent'
-        });
-      }
-    }, 5000);
-
-    return () => clearTimeout(popupDelay);
-  }, [
-    promoLoading,
-    promoIsActive,
-    publicPrice,
-    publicHours,
-    promotionalRegularValue,
-    promotionalSavings
-  ]);
+    if (!hasSeenPopup) {
+      setShowBookingPopup(true);
+      sessionStorage.setItem('seen_booking_popup', 'true');
+      trackTrzEvent('popup_opened', {
+        popup_type: 'initial_intent',
+        trigger: 'video_ended'
+      });
+    }
+  };
 
   /*
    * Maintain the actual promotion expiry countdown.
@@ -398,7 +369,6 @@ export default function LandingPage() {
           );
         }
       };
-
     updateExpiryCountdown();
 
     const interval = setInterval(
@@ -797,8 +767,7 @@ export default function LandingPage() {
     }
   };
 
-  const faqs = [
-    {
+  const faqs = [    {
       q: "What are the space and clearance requirements?",
       a: "The Spider-Man unit measures 26ft long x 13ft wide x 13ft high. You need a flat, clean surface (grass or smooth pavement) with clear overhead space free of low tree branches or wires."
     },
@@ -937,6 +906,7 @@ export default function LandingPage() {
                 autoPlay
                 muted
                 controls
+                onEnded={handleIntroVideoEnded}
                 playsInline
                 preload="auto"
                 style={{
@@ -1197,8 +1167,7 @@ export default function LandingPage() {
               }}>
                 <span style={{ background: '#e0f2fe', color: '#075985', borderRadius: 6, padding: '5px 8px', fontSize: 11, fontWeight: 700 }}>26 × 13 × 13 ft</span>
                 <span style={{ background: '#e0f2fe', color: '#075985', borderRadius: 6, padding: '5px 8px', fontSize: 11, fontWeight: 700 }}>Up to 8 kids</span>
-                <span style={{ background: '#e0f2fe', color: '#075985', borderRadius: 6, padding: '5px 8px', fontSize: 11, fontWeight: 700 }}>Combo + slide</span>
-              </div>
+                <span style={{ background: '#e0f2fe', color: '#075985', borderRadius: 6, padding: '5px 8px', fontSize: 11, fontWeight: 700 }}>Combo + slide</span>              </div>
               <div style={{
                 color: '#475569',
                 fontSize: 12,
@@ -1597,8 +1566,7 @@ export default function LandingPage() {
           borderRadius: 14,
           padding: 14,
           marginBottom: 16,
-          textAlign: 'center'
-        }}>
+          textAlign: 'center'        }}>
           <div style={{fontSize: 12, fontWeight: 800, color: '#c2410c'}}>
             🔥 LIMITED-TIME OFFER
           </div>
