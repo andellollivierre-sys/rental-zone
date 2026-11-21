@@ -6,6 +6,7 @@ import OurBouncer from './components/OurBouncer';
 import HowItWorks from './components/HowItWorks';
 import FAQ from './components/FAQ';
 import Contact from './components/Contact';
+import PartnerProposalPreview from './components/PartnerProposalPreview';
 
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState(
@@ -63,6 +64,7 @@ export default function App() {
   const isActive = (href) =>
     currentRoute === href || (href === '#home' && currentRoute === '');
   const isHomePage = currentRoute === '#home' || currentRoute === '';
+  const isPartnerPreview = currentRoute === '#partner-preview';
 
   return (
     <div
@@ -107,6 +109,7 @@ export default function App() {
       {/* Responsive sticky navigation */}
       <nav
         style={{
+          display: isPartnerPreview ? 'none' : 'block',
           position: 'sticky',
           top: 0,
           zIndex: 50,
@@ -245,7 +248,7 @@ export default function App() {
         )}
       </nav>
 
-      {testMode && (
+      {testMode && !isPartnerPreview && (
         <div style={{ position: 'sticky', top: 56, zIndex: 49, background: '#7c2d12', color: '#fff7ed', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', fontSize: '13px', fontWeight: 700 }}>
           <span>🧪 TEST SESSION — activity and booking submissions are isolated from live records.</span>
           <button onClick={endTestSession} style={{ background: '#fff7ed', color: '#7c2d12', border: 0, borderRadius: 6, padding: '7px 10px', fontWeight: 800, whiteSpace: 'nowrap' }}>End Test</button>
@@ -256,7 +259,7 @@ export default function App() {
       <main
         style={{
           width: '100%',
-          maxWidth: '800px',
+          maxWidth: isPartnerPreview ? '1120px' : '800px',
           margin: '0 auto',
           flex: '1',
           paddingBottom: '40px',
@@ -274,6 +277,8 @@ export default function App() {
           <FAQ />
         ) : currentRoute === '#contact' ? (
           <Contact />
+        ) : currentRoute === '#partner-preview' ? (
+          <PartnerProposalPreview />
         ) : (
           <LandingPage />
         )}
@@ -289,7 +294,7 @@ export default function App() {
           fontSize: '13px',
           fontFamily: 'system-ui, sans-serif',
           borderTop: '1px solid #1e293b',
-          display: 'flex',
+          display: isPartnerPreview ? 'none' : 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           gap: '8px',
