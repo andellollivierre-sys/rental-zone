@@ -1188,6 +1188,105 @@ export default function LandingPage() {
           </div>
         </div>
 
+
+        {/* MORE RENTALS & EVENT SERVICES — visual discovery cards */}
+        <section
+          id="more-rentals"
+          style={{
+            margin: '8px 0 24px',
+            padding: '20px 14px',
+            background: '#eff6ff',
+            border: '1px solid #dbeafe',
+            borderRadius: 18
+          }}
+        >
+          <div style={{ textAlign: 'center', marginBottom: 16 }}>
+            <span style={{ color: '#1d4ed8', fontSize: 11, fontWeight: 900, letterSpacing: 1, textTransform: 'uppercase' }}>
+              More from The Rental Zone
+            </span>
+            <h2 style={{ margin: '6px 0', color: '#0f172a', fontSize: 23, lineHeight: 1.2, fontWeight: 900 }}>
+              More to rent. More ways to make it happen.
+            </h2>
+            <p style={{ margin: '0 auto', maxWidth: 480, color: '#475569', fontSize: 13, lineHeight: 1.55 }}>
+              Browse equipment rentals and event services. Tap a picture to ask about availability.
+            </p>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
+            gap: 12
+          }}>
+            <article style={{ overflow: 'hidden', borderRadius: 14, background: '#fff', border: '1px solid #dbeafe', boxShadow: '0 5px 16px rgba(15,23,42,.07)' }}>
+              <img
+                src="https://cdn.pixabay.com/photo/2019/11/15/13/22/isolated-4628420_1280.jpg"
+                alt="Portable petrol generator — illustrative product photo"
+                loading="lazy"
+                style={{ width: '100%', height: 142, objectFit: 'contain', background: '#f8fafc', display: 'block' }}
+              />
+              <div style={{ padding: '12px 13px 14px' }}>
+                <span style={{ color: '#2563eb', fontSize: 10, fontWeight: 900, letterSpacing: .8, textTransform: 'uppercase' }}>Equipment rental</span>
+                <h3 style={{ margin: '5px 0', color: '#0f172a', fontSize: 18, fontWeight: 900 }}>Generator Rental</h3>
+                <p style={{ margin: '0 0 12px', color: '#64748b', fontSize: 12, lineHeight: 1.5 }}>Portable power for events, home backup and work needs.</p>
+                <a
+                  href="https://wa.me/18682810670?text=Hi%20The%20Rental%20Zone%2C%20I%20would%20like%20to%20enquire%20about%20generator%20rental.%20Please%20confirm%20availability%20and%20price."
+                  onClick={() => trackButtonClick('click_generator_rental_enquiry')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ display: 'block', padding: '11px 10px', borderRadius: 9, background: '#0f172a', color: '#fff', textDecoration: 'none', textAlign: 'center', fontSize: 12, fontWeight: 850 }}
+                >Enquire about generator →</a>
+              </div>
+            </article>
+
+            <article style={{ overflow: 'hidden', borderRadius: 14, background: '#fff', border: '1px solid #dbeafe', boxShadow: '0 5px 16px rgba(15,23,42,.07)' }}>
+              <img
+                src="https://images.unsplash.com/photo-1683647115932-b33455fe6a3e?auto=format&fit=crop&w=1200&q=80"
+                alt="Pressure washer cleaning a vehicle — illustrative photo"
+                loading="lazy"
+                style={{ width: '100%', height: 142, objectFit: 'cover', display: 'block' }}
+              />
+              <div style={{ padding: '12px 13px 14px' }}>
+                <span style={{ color: '#2563eb', fontSize: 10, fontWeight: 900, letterSpacing: .8, textTransform: 'uppercase' }}>Equipment rental</span>
+                <h3 style={{ margin: '5px 0', color: '#0f172a', fontSize: 18, fontWeight: 900 }}>Pressure Washer Rental</h3>
+                <p style={{ margin: '0 0 12px', color: '#64748b', fontSize: 12, lineHeight: 1.5 }}>For driveways, patios, vehicles and outdoor clean-ups.</p>
+                <a
+                  href="https://wa.me/18682810670?text=Hi%20The%20Rental%20Zone%2C%20I%20would%20like%20to%20enquire%20about%20pressure%20washer%20rental.%20Please%20confirm%20availability%20and%20price."
+                  onClick={() => trackButtonClick('click_pressure_washer_enquiry')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ display: 'block', padding: '11px 10px', borderRadius: 9, background: '#0f172a', color: '#fff', textDecoration: 'none', textAlign: 'center', fontSize: 12, fontWeight: 850 }}
+                >Enquire about pressure washer →</a>
+              </div>
+            </article>
+          </div>
+
+          <a
+            href="#event-services"
+            onClick={() => trackButtonClick('click_more_event_services')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+              marginTop: 13,
+              padding: '14px',
+              borderRadius: 13,
+              background: '#172554',
+              color: '#fff',
+              textDecoration: 'none'
+            }}
+          >
+            <span>
+              <strong style={{ display: 'block', fontSize: 15 }}>Planning an event?</strong>
+              <span style={{ display: 'block', marginTop: 3, color: '#bfdbfe', fontSize: 12 }}>Explore DJs, catering and other event rentals.</span>
+            </span>
+            <span aria-hidden="true" style={{ fontSize: 24, fontWeight: 800 }}>→</span>
+          </a>
+          <p style={{ margin: '10px 2px 0', color: '#64748b', fontSize: 10, lineHeight: 1.45, textAlign: 'center' }}>
+            Product photos are illustrative previews. Confirm the exact equipment, pricing and availability with The Rental Zone before booking.
+          </p>
+        </section>
+
         {/* Q&A / Guidelines Section */}
         <div
           id="space-reqs"
