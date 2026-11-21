@@ -269,8 +269,9 @@ export default function LandingPage() {
    * introductory gallery video has finished playing.
    */
   const handleIntroVideoEnded = () => {
-    // Popup temporarily paused for the WhatsApp-contact test. Original popup code and tracking remain intact.
-    return;
+    // Temporary test switch: keep popup implementation and tracking intact, but do not open it.
+    const popupTemporarilyPaused = true;
+    if (popupTemporarilyPaused) return;
 
     if (promoLoading) return;
 
