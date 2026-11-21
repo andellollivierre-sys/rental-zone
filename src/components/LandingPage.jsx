@@ -1517,7 +1517,7 @@ export default function LandingPage() {
         style={{
           position: 'fixed',
           right: '16px',
-          bottom: '76px',
+          bottom: '92px',
           zIndex: 9000,
           width: '56px',
           height: '56px',
