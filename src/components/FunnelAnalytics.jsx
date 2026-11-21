@@ -575,6 +575,26 @@ export default function FunnelAnalytics() {
 
       <section style={panelStyle}>
         <h3 style={{ margin: '0 0 12px', fontSize: 16 }}>
+          Recent visitor actions
+        </h3>
+        <p style={{ margin: '0 0 12px', color: '#64748b', fontSize: 12 }}>
+          Latest non-test events, including the captured click, package, availability and attribution details.
+        </p>
+        <DataTable
+          headers={['Time', 'Session', 'Event', 'Page', 'Details']}
+          rows={events.slice(0, 100).map((event) => [
+            formatSeen(event.created_at),
+            event.session_id || '—',
+            event.event,
+            event.page || '—',
+            JSON.stringify(event.event_data || {}).slice(0, 500) || '—',
+          ])}
+          emptyMessage="No visitor actions recorded."
+        />
+      </section>
+
+      <section style={panelStyle}>
+        <h3 style={{ margin: '0 0 12px', fontSize: 16 }}>
           All recorded event types
         </h3>
         <DataTable
