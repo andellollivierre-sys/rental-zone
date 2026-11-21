@@ -1493,6 +1493,30 @@ export default function LandingPage() {
               gap: '10px'
             }}
           >
+            <div
+              key="gallery-video"
+              style={{
+                height: '140px',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                border: '1px solid #e2e8f0',
+                background: '#f8fafc'
+              }}
+            >
+              <video
+                src="/rental_zone_spider_music.mp4"
+                controls
+                playsInline
+                preload="metadata"
+                aria-label="The Rental Zone Spider-Man bouncy castle video"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block'
+                }}
+              />
+            </div>
             {galleryImages.map(
               (imgUrl, index) => (
                 <div
