@@ -1511,22 +1511,6 @@ export default function LandingPage() {
           📲 More Sharing Options
         </button>
 
-        <a
-          href="https://whatsapp.com/channel/0029VbD6ZFR1noz9SInOsu2L"
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => trackButtonClick('whatsapp_channel_clicked')}
-          style={{
-            display: 'block',
-            marginTop: '14px',
-            color: '#15803d',
-            fontSize: '14px',
-            fontWeight: 800,
-            textDecoration: 'none'
-          }}
-        >
-          📣 Follow our WhatsApp Community
-        </a>
       </section>
 
       {/* EXISTING INTENT SELECTION POPUP MODAL */}
