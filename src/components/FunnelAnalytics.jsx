@@ -145,21 +145,28 @@ export default function FunnelAnalytics() {
     setBookingWarning('');
 
     try {
-      const [eventResult, bookingResult] = await Promise.all([
-        supabase
-          .from('visitor_events')
-          .select(
-            'session_id,visitor_id,ip_hash,event,page,source,utm_source,utm_medium,utm_campaign,referrer,device,is_test,created_at'
-          )
-          .eq('is_test', false)
-          .order('created_at', { ascending: false }),
+      const fetchAllRows = async (table, columns, filters = []) => {
+        const pageSize = 1000;
+        const allRows = [];
+        for (let offset = 0; ; offset += pageSize) {
+          let query = supabase.from(table).select(columns).order('created_at', { ascending: false });
+          for (const applyFilter of filters) query = applyFilter(query);
+          const { data, error: queryError } = await query.range(offset, offset + pageSize - 1);
+          if (queryError) throw queryError;
+          allRows.push(...(data || []));
+          if (!data || data.length < pageSize) break;
+        }
+        return allRows;
+      };
 
-        supabase.from('bookings').select('*'),
+      const [allEvents, bookingResult] = await Promise.all([
+        fetchAllRows('visitor_events',
+          'session_id,visitor_id,ip_hash,event,page,source,utm_source,utm_medium,utm_campaign,utm_content,utm_term,click_id,referrer,device,popup_type,booking_id,event_data,is_test,created_at',
+          [(query) => query.eq('is_test', false)]),
+        supabase.from('bookings').select('*').order('created_at', { ascending: false })
       ]);
 
-      if (eventResult.error) throw eventResult.error;
-
-      setEvents(eventResult.data || []);
+      setEvents(allEvents);
 
       if (bookingResult.error) {
         setBookings([]);
@@ -167,9 +174,7 @@ export default function FunnelAnalytics() {
           `Booking records could not be loaded: ${bookingResult.error.message}`
         );
       } else {
-        setBookings(
-          (bookingResult.data || []).filter((booking) => !booking.is_test)
-        );
+        setBookings((bookingResult.data || []).filter((booking) => !booking.is_test));
       }
     } catch (err) {
       setError(err?.message || 'Unable to load analytics data.');
