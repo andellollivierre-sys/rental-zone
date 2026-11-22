@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 
-const LIVE_SITE = 'https://rental-zone-taupe.vercel.app';
+const TEST_SITE = 'https://rental-zone-3x6mluei4-anoli.vercel.app';
 
 export default function TestCentre({ session }) {
   const [tests, setTests] = useState([]);
@@ -35,7 +35,7 @@ export default function TestCentre({ session }) {
   useEffect(() => { loadTests(); }, [loadTests]);
 
   const openTest = (hash = '#home') => {
-    const url = new URL(LIVE_SITE);
+    const url = new URL(TEST_SITE);
     url.searchParams.set('test', 'true');
     url.hash = hash;
     window.open(url.toString(), '_blank', 'noopener,noreferrer');
@@ -46,10 +46,10 @@ export default function TestCentre({ session }) {
       <div style={{ background: '#0f172a', color: 'white', borderRadius: 14, padding: 20 }}>
         <div style={{ color: '#a5b4fc', fontSize: 12, fontWeight: 800, letterSpacing: 1 }}>OWNER QA WORKSPACE</div>
         <h2 style={{ margin: '8px 0', fontSize: 22 }}>🧪 Live Website Test Centre</h2>
-        <p style={{ color: '#cbd5e1', fontSize: 13, lineHeight: 1.6, margin: '0 0 16px' }}>Test the actual production website while remaining signed in as admin. The public pages render in customer mode. Test bookings, notifications and tracking are visibly labelled and reported separately.</p>
+        <p style={{ color: '#cbd5e1', fontSize: 13, lineHeight: 1.6, margin: '0 0 16px' }}>Test the preview build as a customer while remaining signed in as admin. Test bookings, notifications and tracking are visibly labelled and reported separately. Production is not changed.</p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-          <button onClick={() => openTest('#home')} style={{ background: '#4f46e5', color: 'white', border: 0, borderRadius: 8, padding: '11px 14px', fontWeight: 800, cursor: 'pointer' }}>Open Live Website Test ↗</button>
-          <button onClick={() => openTest('#booking')} style={{ background: '#059669', color: 'white', border: 0, borderRadius: 8, padding: '11px 14px', fontWeight: 800, cursor: 'pointer' }}>Run Booking Test ↗</button>
+          <button onClick={() => openTest('#home')} style={{ background: '#4f46e5', color: 'white', border: 0, borderRadius: 8, padding: '11px 14px', fontWeight: 800, cursor: 'pointer' }}>Open Website Preview ↗</button>
+          <button onClick={() => openTest('#booking')} style={{ background: '#059669', color: 'white', border: 0, borderRadius: 8, padding: '11px 14px', fontWeight: 800, cursor: 'pointer' }}>Test Checkout + Add-ons ↗</button>
         </div>
       </div>
       <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 12, padding: 14, color: '#9a3412', fontSize: 13, lineHeight: 1.6 }}>
