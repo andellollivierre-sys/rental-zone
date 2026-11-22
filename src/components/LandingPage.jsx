@@ -1229,12 +1229,12 @@ export default function LandingPage() {
                 <h3 style={{ margin: '5px 0', color: '#0f172a', fontSize: 18, fontWeight: 900 }}>Generator Rental</h3>
                 <p style={{ margin: '0 0 12px', color: '#64748b', fontSize: 12, lineHeight: 1.5 }}>Portable power for events, home backup and work needs.</p>
                 <a
-                  href="https://wa.me/18682810670?text=Hi%20The%20Rental%20Zone%2C%20I%20would%20like%20to%20enquire%20about%20generator%20rental.%20Please%20confirm%20availability%20at%20TT%24400%20per%20day."
+                  href="#event-services"
                   onClick={() => trackButtonClick('click_generator_rental_enquiry')}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ display: 'block', padding: '11px 10px', borderRadius: 9, background: '#0f172a', color: '#fff', textDecoration: 'none', textAlign: 'center', fontSize: 12, fontWeight: 850 }}
-                >Enquire about generator →</a>
+                >View price & rental details →</a>
               </div>
             </article>
 
@@ -1250,12 +1250,12 @@ export default function LandingPage() {
                 <h3 style={{ margin: '5px 0', color: '#0f172a', fontSize: 18, fontWeight: 900 }}>Pressure Washer Rental</h3>
                 <p style={{ margin: '0 0 12px', color: '#64748b', fontSize: 12, lineHeight: 1.5 }}>For driveways, patios, vehicles and outdoor clean-ups.</p>
                 <a
-                  href="https://wa.me/18682810670?text=Hi%20The%20Rental%20Zone%2C%20I%20would%20like%20to%20enquire%20about%20pressure%20washer%20rental.%20Please%20confirm%20availability%20at%20TT%24300%20per%20day."
+                  href="#event-services"
                   onClick={() => trackButtonClick('click_pressure_washer_enquiry')}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ display: 'block', padding: '11px 10px', borderRadius: 9, background: '#0f172a', color: '#fff', textDecoration: 'none', textAlign: 'center', fontSize: 12, fontWeight: 850 }}
-                >Enquire about pressure washer →</a>
+                >View price & rental details →</a>
               </div>
             </article>
           </div>
