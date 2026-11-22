@@ -1219,8 +1219,8 @@ export default function LandingPage() {
           }}>
             <article style={{ overflow: 'hidden', borderRadius: 14, background: '#fff', border: '1px solid #dbeafe', boxShadow: '0 5px 16px rgba(15,23,42,.07)' }}>
               <img
-                src="https://cdn.pixabay.com/photo/2019/11/15/13/22/isolated-4628420_1280.jpg"
-                alt="Portable petrol generator — illustrative product photo"
+                src="https://res-de.togroup.com/stc/home_product/emtop/userfiles/1/images/photo/20241011190136894/EGGRD2822.jpg"
+                alt="EMTOP 3000W gasoline generator"
                 loading="lazy"
                 style={{ width: '100%', height: 142, objectFit: 'contain', background: '#f8fafc', display: 'block' }}
               />
@@ -1229,7 +1229,7 @@ export default function LandingPage() {
                 <h3 style={{ margin: '5px 0', color: '#0f172a', fontSize: 18, fontWeight: 900 }}>Generator Rental</h3>
                 <p style={{ margin: '0 0 12px', color: '#64748b', fontSize: 12, lineHeight: 1.5 }}>Portable power for events, home backup and work needs.</p>
                 <a
-                  href="https://wa.me/18682810670?text=Hi%20The%20Rental%20Zone%2C%20I%20would%20like%20to%20enquire%20about%20generator%20rental.%20Please%20confirm%20availability%20and%20price."
+                  href="https://wa.me/18682810670?text=Hi%20The%20Rental%20Zone%2C%20I%20would%20like%20to%20enquire%20about%20generator%20rental.%20Please%20confirm%20availability%20at%20TT%24400%20per%20day."
                   onClick={() => trackButtonClick('click_generator_rental_enquiry')}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -1240,8 +1240,8 @@ export default function LandingPage() {
 
             <article style={{ overflow: 'hidden', borderRadius: 14, background: '#fff', border: '1px solid #dbeafe', boxShadow: '0 5px 16px rgba(15,23,42,.07)' }}>
               <img
-                src="https://images.unsplash.com/photo-1683647115932-b33455fe6a3e?auto=format&fit=crop&w=1200&q=80"
-                alt="Pressure washer cleaning a vehicle — illustrative photo"
+                src="https://cdn.shopify.com/s/files/1/0552/4527/5285/t/3/assets/pf-09695c9a--PWF2701SH100010003.png?v=1625771210"
+                alt="A-iPower 2700 PSI pressure washer"
                 loading="lazy"
                 style={{ width: '100%', height: 142, objectFit: 'cover', display: 'block' }}
               />
@@ -1250,7 +1250,7 @@ export default function LandingPage() {
                 <h3 style={{ margin: '5px 0', color: '#0f172a', fontSize: 18, fontWeight: 900 }}>Pressure Washer Rental</h3>
                 <p style={{ margin: '0 0 12px', color: '#64748b', fontSize: 12, lineHeight: 1.5 }}>For driveways, patios, vehicles and outdoor clean-ups.</p>
                 <a
-                  href="https://wa.me/18682810670?text=Hi%20The%20Rental%20Zone%2C%20I%20would%20like%20to%20enquire%20about%20pressure%20washer%20rental.%20Please%20confirm%20availability%20and%20price."
+                  href="https://wa.me/18682810670?text=Hi%20The%20Rental%20Zone%2C%20I%20would%20like%20to%20enquire%20about%20pressure%20washer%20rental.%20Please%20confirm%20availability%20at%20TT%24300%20per%20day."
                   onClick={() => trackButtonClick('click_pressure_washer_enquiry')}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -1283,7 +1283,7 @@ export default function LandingPage() {
             <span aria-hidden="true" style={{ fontSize: 24, fontWeight: 800 }}>→</span>
           </a>
           <p style={{ margin: '10px 2px 0', color: '#64748b', fontSize: 10, lineHeight: 1.45, textAlign: 'center' }}>
-            Product photos are illustrative previews. Confirm the exact equipment, pricing and availability with The Rental Zone before booking.
+            Photos show the equipment offered. Confirm availability with The Rental Zone before booking.
           </p>
         </section>
 
