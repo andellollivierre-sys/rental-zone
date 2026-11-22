@@ -1222,7 +1222,7 @@ export default function LandingPage() {
                 src="https://res-de.togroup.com/stc/home_product/emtop/userfiles/1/images/photo/20241011190136894/EGGRD2822.jpg"
                 alt="EMTOP 3000W gasoline generator"
                 loading="lazy"
-                style={{ width: '100%', height: 142, objectFit: 'contain', background: '#f8fafc', display: 'block' }}
+                style={{ width: '100%', height: 180, objectFit: 'contain', background: '#f8fafc', display: 'block', padding: 8, boxSizing: 'border-box' }}
               />
               <div style={{ padding: '12px 13px 14px' }}>
                 <span style={{ color: '#2563eb', fontSize: 10, fontWeight: 900, letterSpacing: .8, textTransform: 'uppercase' }}>Equipment rental</span>
@@ -1243,7 +1243,7 @@ export default function LandingPage() {
                 src="https://cdn.shopify.com/s/files/1/0552/4527/5285/t/3/assets/pf-09695c9a--PWF2701SH100010003.png?v=1625771210"
                 alt="A-iPower 2700 PSI pressure washer"
                 loading="lazy"
-                style={{ width: '100%', height: 142, objectFit: 'cover', display: 'block' }}
+                style={{ width: '100%', height: 180, objectFit: 'contain', background: '#f8fafc', display: 'block', padding: 8, boxSizing: 'border-box' }}
               />
               <div style={{ padding: '12px 13px 14px' }}>
                 <span style={{ color: '#2563eb', fontSize: 10, fontWeight: 900, letterSpacing: .8, textTransform: 'uppercase' }}>Equipment rental</span>
