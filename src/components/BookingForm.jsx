@@ -762,6 +762,7 @@ export default function BookingForm() {
         ...formData,
         isTest: isAdminOrDev,
         selectedAddOns: chosenAddOns,
+        notes: chosenAddOns.length ? `Optional add-on requests: ${chosenAddOns.join(', ')}. Availability and final pricing to be confirmed.\\n${formData.notes || ''}` : formData.notes,
         address: `${formData.address.trim()}, ${selectedTransport.area}`,
         transportArea: selectedTransport.area,
         transportZone: selectedTransport.zone,
