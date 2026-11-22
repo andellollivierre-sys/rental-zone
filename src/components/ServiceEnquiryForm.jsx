@@ -66,7 +66,7 @@ export default function ServiceEnquiryForm({ initialService = 'catering' }) {
         catering_style: form.catering_style || null,
         dietary_requirements: form.dietary_requirements.trim() || null,
         budget: form.budget ? Number(form.budget) : null,
-        delivery_required: form.delivery_required,
+        delivery_required: form.service_key === 'pressure-washer' ? false : form.delivery_required,
         traffic_source: params.get('utm_source') || params.get('traffic_source') || 'direct',
         utm_medium: params.get('utm_medium') || null,
         utm_campaign: params.get('utm_campaign') || null,
