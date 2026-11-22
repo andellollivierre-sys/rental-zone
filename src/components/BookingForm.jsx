@@ -37,6 +37,8 @@ export default function BookingForm() {
 
   const [promotionalOffer, setPromotionalOffer] = useState(null);
   const [loadingPromotion, setLoadingPromotion] = useState(true);
+  const [showAddOnModal, setShowAddOnModal] = useState(false);
+  const [selectedAddOns, setSelectedAddOns] = useState([]);
 
   // Fixed delivery zones from Chaguanas; locations outside the listed range require a custom quote.
   const transportZones = {
@@ -449,8 +451,8 @@ export default function BookingForm() {
     )}:${String(endM).padStart(2, '0')}`;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e, checkoutDecision = null) => {
+    e?.preventDefault();
 
     trackBookingStarted();
 
@@ -567,7 +569,17 @@ export default function BookingForm() {
       setErrorMessage('Please select your delivery area and enter the full delivery address.'); setSubmitting(false); return;
     }
     if (!selectedTransport) { setErrorMessage('Please select a valid delivery area.'); setSubmitting(false); return; }
-    // All packages are now payment-on-delivery.
+    // Pause before final submission so customers can optionally add services.
+    // Skipping this step never blocks the original bouncy castle booking.
+    if (checkoutDecision === null) {
+      setSubmitting(false);
+      setShowAddOnModal(true);
+      return;
+    }
+
+    const chosenAddOns = checkoutDecision;
+    // All packages are now payment-on-delivery. Add-ons are requests, not
+    // confirmed charges; the team confirms availability and final pricing.
     const bookingTotal = selectedPkg.price + (selectedTransport.fee ?? 0);
     const balanceDue = bookingTotal;
 
@@ -606,6 +618,10 @@ export default function BookingForm() {
         : `[TRANSPORT: ${selectedTransport.area} | ${selectedTransport.zone} | TT${selectedTransport.fee} delivery + setup + collection]`;
       let bookingNotes = formData.notes || '';
       bookingNotes = bookingNotes.trim() ? `${transportNote}\n${bookingNotes.trim()}` : transportNote;
+      if (chosenAddOns.length) {
+        const addOnNote = `[OPTIONAL ADD-ON REQUESTS: ${chosenAddOns.join(', ')} | Availability and final pricing to be confirmed]`;
+        bookingNotes = `${addOnNote}\n${bookingNotes}`;
+      }
 
       if (isPromotional) {
         const regularValue =
@@ -711,6 +727,7 @@ export default function BookingForm() {
             `📅 **Date:** ${formData.event_date} (${formData.start_time} - ${endTime})\n` +
             `📦 **Package:** ${selectedPkg.name} (TT${selectedPkg.price})\n` +
             `💰 **Total:** TT${bookingTotal}${requiresTransportQuote ? ' (transport quote pending)' : ''}\n` +
+            (chosenAddOns.length ? `➕ **Optional add-on requests:** ${chosenAddOns.join(', ')} (availability and final pricing to be confirmed)\n` : '') +
             `${
               isPromotional
                 ? `🔥 **PROMOTION:** Normal value TT$${selectedPkg.regularValue} | Savings TT$${selectedPkg.savings}\n`
@@ -744,6 +761,7 @@ export default function BookingForm() {
       setConfirmedBooking({
         ...formData,
         isTest: isAdminOrDev,
+        selectedAddOns: chosenAddOns,
         address: `${formData.address.trim()}, ${selectedTransport.area}`,
         transportArea: selectedTransport.area,
         transportZone: selectedTransport.zone,
@@ -2059,6 +2077,38 @@ export default function BookingForm() {
           </div>
         </form>
       </div>
+
+      {showAddOnModal && (
+        <div role="dialog" aria-modal="true" aria-labelledby="trz-addon-title" style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(15,23,42,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+          <div style={{ width: '100%', maxWidth: 480, maxHeight: '90vh', overflowY: 'auto', background: '#fff', borderRadius: 18, padding: 22, boxShadow: '0 24px 70px rgba(0,0,0,0.28)' }}>
+            <div style={{ color: '#2563eb', fontSize: 11, fontWeight: 800, letterSpacing: 1 }}>OPTIONAL EXTRAS</div>
+            <h2 id="trz-addon-title" style={{ margin: '6px 0 8px', color: '#0f172a', fontSize: 23 }}>Complete your event</h2>
+            <p style={{ color: '#475569', fontSize: 14, lineHeight: 1.5, margin: '0 0 16px' }}>Would you like to add anything to your event? Your bouncy castle booking is already selected and will continue either way.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+              {[
+                { name: 'Pressure washer rental', detail: 'TT$300 / day · delivery and collection' },
+                { name: 'Generator rental', detail: 'TT$400 / day · availability to be confirmed' },
+                { name: 'Catering', detail: 'Request a quote' },
+                { name: 'DJ & Sound', detail: 'Request a quote' },
+                { name: 'Tents, Tables & Chairs', detail: 'Request a quote' },
+                { name: 'Event Décor', detail: 'Request a quote' },
+                { name: 'Plan My Event', detail: 'Request a quote' }
+              ].map((item) => (
+                <label key={item.name} style={{ display: 'flex', alignItems: 'center', gap: 11, border: selectedAddOns.includes(item.name) ? '2px solid #2563eb' : '1px solid #e2e8f0', background: selectedAddOns.includes(item.name) ? '#eff6ff' : '#fff', borderRadius: 11, padding: '11px 12px', cursor: 'pointer' }}>
+                  <input type="checkbox" checked={selectedAddOns.includes(item.name)} onChange={(event) => setSelectedAddOns((current) => event.target.checked ? [...current, item.name] : current.filter((name) => name !== item.name))} style={{ width: 18, height: 18, accentColor: '#2563eb', flexShrink: 0 }} />
+                  <span style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    <strong style={{ color: '#0f172a', fontSize: 14 }}>{item.name}</strong>
+                    <span style={{ color: '#64748b', fontSize: 12 }}>{item.detail}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
+            <p style={{ color: '#64748b', fontSize: 11, lineHeight: 1.45, margin: '13px 0' }}>Extras are requests only. We will confirm availability and any additional cost with you. They do not change your bouncy castle price or booking.</p>
+            <button type="button" disabled={submitting} onClick={() => { setShowAddOnModal(false); handleSubmit(null, selectedAddOns); }} style={{ width: '100%', background: '#16a34a', color: '#fff', border: 0, borderRadius: 9, padding: 13, fontWeight: 800, fontSize: 15, cursor: 'pointer' }}>{submitting ? 'Processing…' : selectedAddOns.length ? 'Continue with selected extras' : 'Continue without extras'}</button>
+            <button type="button" onClick={() => setShowAddOnModal(false)} style={{ width: '100%', background: 'transparent', color: '#64748b', border: 0, padding: 11, marginTop: 4, cursor: 'pointer', fontSize: 13 }}>Back to booking</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
