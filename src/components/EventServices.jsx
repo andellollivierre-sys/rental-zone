@@ -26,8 +26,8 @@ const items = [
     description: 'Rent a pressure washer for your cleaning project.',
     note: 'TT$300 per day',
     detail: 'Customer collects and returns the equipment.',
-    message: "Hi, I'm enquiring about renting the pressure washer at TT$300 per day. Is it available?",
-    action: 'WhatsApp to enquire',
+    message: "Hi, I'd like to rent the pressure washer at TT$300 per day. Is it available, and when can I collect it?",
+    action: 'Check availability & arrange rental',
     kind: 'whatsapp'
   },
   {
@@ -38,9 +38,9 @@ const items = [
     alt: 'Portable generator equipment',
     description: 'We can check with our supplier and arrange a generator for your needs.',
     note: 'TT$400 per day',
-    detail: 'Availability, delivery and final price are confirmed before booking.',
-    message: "Hi, I'm enquiring about a generator rental at TT$400 per day. Can you check availability?",
-    action: 'WhatsApp to enquire',
+    detail: 'We arrange availability and delivery through our supplier.',
+    message: "Hi, I'd like to arrange a generator rental at TT$400 per day. Can you check availability and delivery?",
+    action: 'Check availability & arrange rental',
     kind: 'whatsapp'
   },
   {
