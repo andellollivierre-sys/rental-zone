@@ -21,7 +21,7 @@ const items = [
     key: 'pressure-washer',
     title: 'Pressure Washer Rental',
     tag: 'Our equipment',
-    image: 'https://cdn.shopify.com/s/files/1/0552/4527/5285/t/3/assets/pf-09695c9a--PWF2701SH100010003.png?v=1625771210',
+    image: 'https://a-ipower.com/cdn/shop/products/PWF2701SH_R_3QTR_L_2000_2000.png?v=1630521306',
     alt: 'Pressure washing equipment',
     description: 'Rent a pressure washer for your cleaning project.',
     note: 'TT$300 per day',
