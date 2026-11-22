@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import FunnelAnalytics from './FunnelAnalytics';
 import TestCentre from './admin/TestCentre';
+import AdminServiceEnquiries from './admin/AdminServiceEnquiries';
 
 const ADMIN_EMAIL = 'andell.ollivierre@gmail.com';
 
@@ -2308,6 +2309,22 @@ export default function AdminDashboard() {
         </button>
 
         <button
+          onClick={() => setActiveTab('service-enquiries')}
+          style={{
+            background: activeTab === 'service-enquiries' ? '#0f172a' : '#f1f5f9',
+            color: activeTab === 'service-enquiries' ? 'white' : '#475569',
+            border: 'none',
+            padding: '8px 16px',
+            borderRadius: '8px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            fontSize: '13px'
+          }}
+        >
+          🧾 Service Enquiries
+        </button>
+
+        <button
           onClick={() =>
             setActiveTab(
               'analytics'
@@ -2409,6 +2426,8 @@ export default function AdminDashboard() {
 
       {activeTab === 'test' ? (
         <TestCentre session={session} />
+      ) : activeTab === 'service-enquiries' ? (
+        <AdminServiceEnquiries />
       ) : activeTab ===
       'analytics' ? (
         <div
