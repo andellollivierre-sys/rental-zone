@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 
-const TEST_SITE = 'https://rental-zone-3x6mluei4-anoli.vercel.app';
+const TEST_SITE = 'https://rental-zone-git-preview-checkout-addon-test-anoli.vercel.app';
 
 export default function TestCentre({ session }) {
   const [tests, setTests] = useState([]);
