@@ -140,7 +140,7 @@ export default function EventServices() {
       <div style={styles.grid}>
         {items.map((item) => (
           <article key={item.key} style={styles.card}>
-            <img src={item.image} alt={item.alt} loading="lazy" style={{ width: '100%', height: 155, objectFit: 'cover', display: 'block', background: '#e2e8f0' }} />
+            <img src={item.image} alt={item.alt} loading="lazy" style={{ width: '100%', height: 180, objectFit: (item.key === 'pressure-washer' || item.key === 'generator') ? 'contain' : 'cover', display: 'block', background: (item.key === 'pressure-washer' || item.key === 'generator') ? '#f8fafc' : '#e2e8f0', padding: (item.key === 'pressure-washer' || item.key === 'generator') ? 8 : 0, boxSizing: 'border-box' }} />
             <div style={{ padding: 14, display: 'flex', flexDirection: 'column', flex: 1 }}>
               <span style={{ color: '#2563eb', fontSize: 10, fontWeight: 900, letterSpacing: .8, textTransform: 'uppercase' }}>{item.tag}</span>
               <h3 style={{ margin: '6px 0 7px', fontSize: 18, fontWeight: 900 }}>{item.title}</h3>
