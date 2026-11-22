@@ -1240,7 +1240,7 @@ export default function LandingPage() {
 
             <article style={{ overflow: 'hidden', borderRadius: 14, background: '#fff', border: '1px solid #dbeafe', boxShadow: '0 5px 16px rgba(15,23,42,.07)' }}>
               <img
-                src="https://cdn.shopify.com/s/files/1/0552/4527/5285/t/3/assets/pf-09695c9a--PWF2701SH100010003.png?v=1625771210"
+                src="https://a-ipower.com/cdn/shop/products/PWF2701SH_R_3QTR_L_2000_2000.png?v=1630521306"
                 alt="A-iPower 2700 PSI pressure washer"
                 loading="lazy"
                 style={{ width: '100%', height: 180, objectFit: 'contain', background: '#f8fafc', display: 'block', padding: 8, boxSizing: 'border-box' }}
