@@ -759,9 +759,9 @@ export default function LandingPage() {
     '/featured image.jpg';
 
   const carouselImages = [featuredImage, ...galleryImages];
-  const activeCarouselImage = activeSlide === 0 ? null : carouselImages[activeSlide - 1] || featuredImage;
-  const isVideoSlide = activeSlide === 0;
-  const totalCarouselSlides = carouselImages.length + 1;
+  const activeCarouselImage = carouselImages[activeSlide] || featuredImage;
+  const isVideoSlide = false;
+  const totalCarouselSlides = carouselImages.length;
 
   const changeSlide = (direction) => {
     const nextIndex = (activeSlide + direction + totalCarouselSlides) % totalCarouselSlides;
@@ -791,6 +791,21 @@ export default function LandingPage() {
 
   return (
     <div className="trz-v3-home">
+      <section className="v3-video-stage" aria-label="The Rental Zone featured video">
+        <div className="v3-video-frame">
+          <video
+            src="/rental_zone_spider_music.mp4"
+            autoPlay
+            muted
+            controls
+            playsInline
+            preload="metadata"
+            onEnded={handleIntroVideoEnded}
+            aria-label="The Rental Zone Spider-Man bouncy castle featured video"
+          />
+        </div>
+        <div className="v3-video-label"><span>THE RENTAL ZONE TT</span><span>FEATURED VIDEO</span></div>
+      </section>
       <section className="v3-hero"><div className="v3-hero-copy"><span className="v3-kicker">THE RENTAL ZONE TT · TRINIDAD</span><h1>Make room<br/>for <em>good times.</em></h1><p>Big party energy. Useful equipment. Event extras. Find what you need and send one straightforward enquiry.</p><div className="v3-actions"><button type="button" onClick={() => { trackButtonClick('clicked_book_now'); if (promoIsActive) handlePromotionalBookClick(); setShowAvailabilityModal(true); }}>Check your date <b>↗</b></button><a href="#v3-rentals">Explore rentals ↓</a></div><div className="v3-proof"><span>01 <b>Choose what you need</b></span><span>02 <b>Send your details</b></span><span>03 <b>Confirm directly</b></span></div></div>
       <div className="v3-hero-image">{isVideoSlide ? <video src="/rental_zone_spider_music.mp4" autoPlay muted controls onEnded={handleIntroVideoEnded} playsInline preload="metadata" aria-label="The Rental Zone Spider-Man bouncy castle video" /> : <img src={activeCarouselImage || featuredImage} alt="Spider-Man Combo Bouncy Castle" onClick={() => { trackButtonClick('click_featured_image_zoom'); setSelectedImage(activeCarouselImage || featuredImage); }} />}<button className="v3-gallery-prev" type="button" aria-label="Previous photo" onClick={() => changeSlide(-1)}>‹</button><button className="v3-gallery-next" type="button" aria-label="Next photo" onClick={() => changeSlide(1)}>›</button><div className="v3-image-tag">FEATURED PARTY RENTAL</div><div className="v3-image-caption"><strong>Spider-Man Combo Bouncer</strong><span>Bounce · Climb · Slide</span></div><div className="v3-dots">{Array.from({length: totalCarouselSlides}).map((_,i)=><button key={i} aria-label="Show photo" className={activeSlide===i?'active':''} onClick={()=>setActiveSlide(i)} />)}</div></div><div className="v3-stamp"><span>MAKE THE DAY</span><strong>A BIG<br/>DEAL.</strong></div></section>
       <section className="v3-strip"><div><b>01</b><span>Party rentals</span></div><div><b>02</b><span>Equipment hire</span></div><div><b>03</b><span>Event services</span></div><div><b>TT</b><span>Trinidad enquiries</span></div></section>
