@@ -218,6 +218,45 @@ export function createPageTimer() {
   };
 }
 
+// Send only meaningful funnel actions to Meta as standard events.
+// Keep this optional and non-blocking: the site's own TRZ tracking remains authoritative.
+function trackMetaStandardEvent(eventName, additionalData = {}) {
+  if (typeof window === 'undefined' || typeof window.fbq !== 'function') return;
+
+  const eventMap = {
+    our_bouncer_view: {
+      name: 'ViewContent',
+      data: { content_name: 'Spider-Man Combo Bouncer', content_category: 'Bouncer rental', content_type: 'product' }
+    },
+    booking_started: {
+      name: 'InitiateCheckout',
+      data: { content_name: 'Spider-Man Combo Bouncer', content_category: 'Bouncer rental', content_type: 'product' }
+    },
+    booking_submitted: {
+      name: 'Lead',
+      data: {
+        content_name: 'Spider-Man Combo Bouncer booking request',
+        content_category: 'Bouncer rental',
+        content_type: 'product',
+        currency: 'TTD',
+        ...(Number.isFinite(Number(additionalData.price)) ? { value: Number(additionalData.price) } : {})
+      }
+    },
+    whatsapp_clicked: {
+      name: 'Contact',
+      data: { content_name: additionalData.service_name || 'The Rental Zone', content_category: 'WhatsApp enquiry' }
+    }
+  };
+
+  const event = eventMap[eventName];
+  if (!event) return;
+  try {
+    window.fbq('track', event.name, event.data);
+  } catch (err) {
+    console.warn('[META PIXEL] Event could not be sent:', event.name, err);
+  }
+}
+
 // Core non-blocking event tracker sending data exclusively to public.visitor_events
 export async function trackTrzEvent(eventName, additionalData = {}) {
   try {
@@ -244,6 +283,9 @@ export async function trackTrzEvent(eventName, additionalData = {}) {
       booking_id: additionalData.booking_id || null,
       is_test: attr.isTest
     };
+
+    // Mirror selected funnel events to Meta without blocking the customer flow.
+    trackMetaStandardEvent(eventName, additionalData);
 
     // Restore required debug log format
     console.log(`[TRZ TRACK]\n${shortCode}\n${eventName}\n${payload.page}\n${payload.source}\n${payload.device}`);
