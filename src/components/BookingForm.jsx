@@ -508,34 +508,38 @@ export default function BookingForm() {
       error: checkError
     } = await supabase
       .from('bookings')
-      .select('*')
+      .select('start_time, end_time')
       .eq(
         'event_date',
         formData.event_date
       )
       .eq('status', 'Confirmed');
 
-    if (
-      !checkError &&
-      conflictingBookings
-    ) {
-      const hasConflict =
-        conflictingBookings.some((b) => {
-          return (
-            formData.start_time <
-              b.end_time &&
-            endTime > b.start_time
-          );
-        });
+    // Fail closed: never accept a booking when availability
+    // could not be checked against confirmed rentals.
+    if (checkError) {
+      console.error('Availability check failed:', checkError);
+      setErrorMessage(
+        '❌ We could not verify availability right now. Please try again or contact us on WhatsApp.'
+      );
+      setSubmitting(false);
+      return;
+    }
 
-      if (hasConflict) {
-        setErrorMessage(
-          '❌ The selected time slot conflicts with an already confirmed rental. Please choose another time.'
+    const hasConflict =
+      (conflictingBookings || []).some((b) => {
+        return (
+          formData.start_time < b.end_time &&
+          endTime > b.start_time
         );
+      });
 
-        setSubmitting(false);
-        return;
-      }
+    if (hasConflict) {
+      setErrorMessage(
+        '❌ The selected time slot conflicts with an already confirmed rental. Please choose another time.'
+      );
+      setSubmitting(false);
+      return;
     }
 
     // All packages are now payment-on-delivery.
