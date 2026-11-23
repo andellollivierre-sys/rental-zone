@@ -12,6 +12,7 @@ export default function AdminServiceEnquiries() {
   const [savingId,setSavingId] = useState(null);
   const [message,setMessage] = useState('');
   const [filter,setFilter] = useState('All');
+  const [serviceFilter,setServiceFilter] = useState('All services');
   const [drafts,setDrafts] = useState({});
 
   const load = useCallback(async () => {
@@ -48,6 +49,9 @@ export default function AdminServiceEnquiries() {
   const visible = rows.filter(row => filter === 'All' || row.status === filter);
   const countNew = rows.filter(row => row.status === 'New').length;
   const countQuote = rows.filter(row => ['Supplier quote requested','Supplier quote received','Customer quote sent'].includes(row.status)).length;
+  const countEquipment = rows.filter(row => ['pressure-washer','generator'].includes(row.service_key)).length;
+  const countWasher = rows.filter(row => row.service_key === 'pressure-washer').length;
+  const countGenerator = rows.filter(row => row.service_key === 'generator').length;
 
   return <section style={{color:'#0f172a'}}>
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:10,flexWrap:'wrap',marginBottom:15}}>
@@ -55,10 +59,12 @@ export default function AdminServiceEnquiries() {
       <button onClick={load} style={{border:0,borderRadius:9,padding:'10px 13px',background:'#0f172a',color:'#fff',fontWeight:800}}>↻ Refresh</button>
     </div>
     <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:10,marginBottom:15}}>
-      {[['Total enquiries',rows.length],['New enquiries',countNew],['In quotation process',countQuote]].map(([title,value])=><div key={title} style={{padding:14,borderRadius:12,border:'1px solid #e2e8f0',background:'#fff'}}><div style={{fontSize:10,color:'#64748b',fontWeight:900,textTransform:'uppercase'}}>{title}</div><div style={{fontSize:25,fontWeight:950,marginTop:4}}>{value}</div></div>)}
+      {[['Total enquiries',rows.length],['New enquiries',countNew],['In quotation process',countQuote],['Equipment requests',countEquipment],['Pressure washer',countWasher],['Generator',countGenerator]].map(([title,value])=><div key={title} style={{padding:14,borderRadius:12,border:'1px solid #e2e8f0',background:'#fff'}}><div style={{fontSize:10,color:'#64748b',fontWeight:900,textTransform:'uppercase'}}>{title}</div><div style={{fontSize:25,fontWeight:950,marginTop:4}}>{value}</div></div>)}
     </div>
     <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:14,flexWrap:'wrap'}}>
-      <label style={{fontSize:11,fontWeight:900}}>Filter status</label>
+      <label style={{fontSize:11,fontWeight:900}}>Service</label>
+      <select value={serviceFilter} onChange={e=>setServiceFilter(e.target.value)} style={{...field,width:'auto',minWidth:180}}><option>All services</option><option>Pressure Washer Rental</option><option>Generator Rental</option></select>
+      <label style={{fontSize:11,fontWeight:900}}>Status</label>
       <select value={filter} onChange={e=>setFilter(e.target.value)} style={{...field,width:'auto',minWidth:180}}><option>All</option>{STATUSES.map(s=><option key={s}>{s}</option>)}</select>
       <span style={{fontSize:11,color:'#64748b'}}>{visible.length} shown · newest first</span>
     </div>
@@ -72,7 +78,7 @@ export default function AdminServiceEnquiries() {
             <div style={{fontSize:10,color:'#64748b',textAlign:'right'}}>{new Date(row.created_at).toLocaleString('en-TT')}<div style={{marginTop:4,fontWeight:800}}>{row.traffic_source || 'direct'}{row.utm_campaign ? ' / '+row.utm_campaign : ''}</div></div>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(145px,1fr))',gap:8,background:'#f8fafc',padding:10,borderRadius:9,marginBottom:10}}>
-            <div><span style={label}>Event date</span><b style={{fontSize:12}}>{row.event_date || 'Not provided'}</b></div>
+            <div><span style={label}>Rental / event date</span><b style={{fontSize:12}}>{row.event_date || 'Not provided'}</b></div>
             <div><span style={label}>Time</span><b style={{fontSize:12}}>{row.event_start_time || 'Not provided'}</b></div>
             <div><span style={label}>Location</span><b style={{fontSize:12}}>{row.event_location}</b></div>
             <div><span style={label}>Guests</span><b style={{fontSize:12}}>{row.guest_count || 'Not provided'}</b></div>
