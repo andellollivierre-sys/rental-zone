@@ -40,7 +40,7 @@ export default function SimpleLandingPage() {
     </section>
     <section className="simple-price" aria-label="Rental pricing">
       <p className="simple-eyebrow">STRAIGHTFORWARD PRICING</p>
-      {promoActive && <div className="simple-promo"><span>Current special</span><strong>{hours} hours · TT$\{money(price)}</strong></div>}
+      {promoActive && <div className="simple-promo"><span>Current special</span><strong>{hours} hours · TT${money(price)}</strong></div>}
       <div className="simple-packages">
         <div><span>2 hours</span><strong>TT$650</strong></div>
         <div><span>3 hours</span><strong>TT$900</strong></div>
