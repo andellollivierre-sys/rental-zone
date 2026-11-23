@@ -25,10 +25,10 @@ const items = [
     alt: 'Pressure washing equipment',
     description: 'Rent a pressure washer for your cleaning project.',
     note: 'TT$300 per day',
-    detail: 'Customer collects and returns the equipment.',
-    message: "Hi, I'd like to rent the pressure washer at TT$300 per day. Is it available, and when can I collect it?",
-    action: 'Check availability & arrange rental',
-    kind: 'whatsapp'
+    detail: 'Submit your preferred date, rental duration and collection or delivery details.',
+    href: '#pressure-washer-booking',
+    action: 'Request pressure washer',
+    kind: 'internal'
   },
   {
     key: 'generator',
@@ -38,10 +38,10 @@ const items = [
     alt: 'Portable generator equipment',
     description: 'We can check with our supplier and arrange a generator for your needs.',
     note: 'TT$400 per day',
-    detail: 'We arrange availability and delivery through our supplier.',
-    message: "Hi, I'd like to arrange a generator rental at TT$400 per day. Can you check availability and delivery?",
-    action: 'Check availability & arrange rental',
-    kind: 'whatsapp'
+    detail: 'Submit your date, duration, power requirements and delivery location.',
+    href: '#generator-booking',
+    action: 'Request generator',
+    kind: 'internal'
   },
   {
     key: 'catering',
@@ -134,7 +134,7 @@ export default function EventServices() {
 
       <h2 style={{ margin: '25px 0 5px', fontSize: 22, fontWeight: 900 }}>Explore rentals & services</h2>
       <p style={{ margin: 0, color: '#64748b', fontSize: 13, lineHeight: 1.55 }}>
-        The bouncy castle keeps its existing page and booking process. For other services, WhatsApp us directly.
+        The bouncy castle keeps its existing page and booking process. The pressure washer and generator each have a separate rental request form.
       </p>
 
       <div style={styles.grid}>
