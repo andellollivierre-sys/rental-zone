@@ -1229,10 +1229,8 @@ export default function LandingPage() {
                 <h3 style={{ margin: '5px 0', color: '#0f172a', fontSize: 18, fontWeight: 900 }}>Generator Rental</h3>
                 <p style={{ margin: '0 0 12px', color: '#64748b', fontSize: 12, lineHeight: 1.5 }}>Portable power for events, home backup and work needs.</p>
                 <a
-                  href="#event-services"
-                  onClick={() => trackButtonClick('click_generator_rental_enquiry')}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="#event-services?product=generator"
+                  onClick={() => trackButtonClick('click_generator_rental_enquiry')
                   style={{ display: 'block', padding: '11px 10px', borderRadius: 9, background: '#0f172a', color: '#fff', textDecoration: 'none', textAlign: 'center', fontSize: 12, fontWeight: 850 }}
                 >View price & rental details →</a>
               </div>
@@ -1250,10 +1248,8 @@ export default function LandingPage() {
                 <h3 style={{ margin: '5px 0', color: '#0f172a', fontSize: 18, fontWeight: 900 }}>Pressure Washer Rental</h3>
                 <p style={{ margin: '0 0 12px', color: '#64748b', fontSize: 12, lineHeight: 1.5 }}>For driveways, patios, vehicles and outdoor clean-ups.</p>
                 <a
-                  href="#event-services"
-                  onClick={() => trackButtonClick('click_pressure_washer_enquiry')}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="#event-services?product=pressure-washer"
+                  onClick={() => trackButtonClick('click_pressure_washer_enquiry')
                   style={{ display: 'block', padding: '11px 10px', borderRadius: 9, background: '#0f172a', color: '#fff', textDecoration: 'none', textAlign: 'center', fontSize: 12, fontWeight: 850 }}
                 >View price & rental details →</a>
               </div>
@@ -1261,7 +1257,7 @@ export default function LandingPage() {
           </div>
 
           <a
-            href="#event-services"
+            href="#event-services?product=event-package"
             onClick={() => trackButtonClick('click_more_event_services')}
             style={{
               display: 'flex',
