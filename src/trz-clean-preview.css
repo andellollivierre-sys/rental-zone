@@ -1,0 +1,44 @@
+/* The Rental Zone TT — restrained navy and blue visual refresh.
+   Presentation only: existing React routes, copy, prices, links and data flows stay intact. */
+:root {
+  color-scheme: light;
+  --trz-navy: #10233f;
+  --trz-blue: #2563eb;
+  --trz-blue-dark: #1d4ed8;
+  --trz-ink: #172338;
+  --trz-muted: #64748b;
+  --trz-line: #e2e8f0;
+  --trz-surface: #ffffff;
+  --trz-page: #f5f7fb;
+}
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--trz-page); color: var(--trz-ink); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+#root > div { background: var(--trz-page) !important; }
+nav {
+  background: var(--trz-navy) !important;
+  padding: 12px clamp(14px, 3vw, 30px) !important;
+  box-shadow: 0 3px 16px rgba(16,35,63,.14) !important;
+}
+nav a { transition: color .18s ease, opacity .18s ease; }
+nav a:hover { color: #bfdbfe !important; }
+nav button { border-color: #52647d !important; }
+main { max-width: 960px !important; padding: 0 14px 38px !important; box-sizing: border-box; }
+main > div { box-sizing: border-box; }
+main h1, main h2, main h3 { letter-spacing: -.025em; }
+main a { transition: background-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+main a[href^="#availability"], main a[href="#booking"] { background-color: var(--trz-blue) !important; box-shadow: 0 5px 14px rgba(37,99,235,.18) !important; }
+main a[href^="#availability"]:hover, main a[href="#booking"]:hover { background-color: var(--trz-blue-dark) !important; }
+#pricing, #more-rentals, main article {
+  border-color: var(--trz-line) !important;
+  box-shadow: 0 8px 24px rgba(16,35,63,.055) !important;
+}
+#more-rentals { background: #eef4ff !important; border-color: #d9e5fb !important; }
+#more-rentals article { border-color: var(--trz-line) !important; }
+main button { cursor: pointer; }
+footer { background: var(--trz-navy) !important; }
+@media (max-width: 640px) {
+  nav { padding: 9px 14px !important; }
+  main { padding-left: 10px !important; padding-right: 10px !important; }
+  #pricing { border-radius: 14px !important; }
+  #more-rentals { padding: 17px 11px !important; }
+}
