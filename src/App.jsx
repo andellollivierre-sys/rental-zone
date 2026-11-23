@@ -31,7 +31,6 @@ export default function App() {
     { href: '#how-it-works', label: 'How It Works' },
     { href: '#faq', label: 'FAQ' },
     { href: '#contact', label: 'Contact' },
-    { href: '#admin', label: 'Admin' },
   ];
 
   const isActive = (href) =>
@@ -110,14 +109,14 @@ export default function App() {
             }}
           >
             <img
-              src="https://lh3.googleusercontent.com/d/1zK7oIDhE4G-hDWsoq9C527Y-EcXWiQRV"
+              src="/logo-full.png"
               alt="The Rental Zone Logo"
               style={{
                 width: '36px',
                 height: '36px',
                 minWidth: '36px',
-                borderRadius: '50%',
-                objectFit: 'cover',
+                borderRadius: '6px',
+                objectFit: 'contain',
               }}
             />
 
