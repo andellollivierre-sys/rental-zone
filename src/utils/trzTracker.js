@@ -224,6 +224,21 @@ function trackMetaStandardEvent(eventName, additionalData = {}) {
   if (typeof window === 'undefined' || typeof window.fbq !== 'function') return;
 
   const eventMap = {
+    availability_check_started: {
+      name: 'CheckAvailability',
+      custom: true,
+      data: { content_name: 'Spider-Man Combo Bouncer availability', content_category: 'Bouncer rental', content_type: 'product' }
+    },
+    availability_check_available: {
+      name: 'AvailabilityResult',
+      custom: true,
+      data: { content_name: 'Spider-Man Combo Bouncer availability', content_category: 'Bouncer rental', availability: 'available' }
+    },
+    availability_check_unavailable: {
+      name: 'AvailabilityResult',
+      custom: true,
+      data: { content_name: 'Spider-Man Combo Bouncer availability', content_category: 'Bouncer rental', availability: 'unavailable' }
+    },
     our_bouncer_view: {
       name: 'ViewContent',
       data: { content_name: 'Spider-Man Combo Bouncer', content_category: 'Bouncer rental', content_type: 'product' }
@@ -251,7 +266,7 @@ function trackMetaStandardEvent(eventName, additionalData = {}) {
   const event = eventMap[eventName];
   if (!event) return;
   try {
-    window.fbq('track', event.name, event.data);
+    window.fbq(event.custom ? 'trackCustom' : 'track', event.name, event.data);
   } catch (err) {
     console.warn('[META PIXEL] Event could not be sent:', event.name, err);
   }
