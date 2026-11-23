@@ -790,862 +790,153 @@ export default function LandingPage() {
   ];
 
   return (
-    <div
-      style={{
-        width: '100%',
-        padding: '16px 0',
-        fontFamily:
-          'system-ui, sans-serif',
-        color: '#0f172a',
-        boxSizing: 'border-box',
-        maxWidth: '800px',
-        margin: '0 auto'
-      }}
-    >
-      <div
-        style={{
-          padding: '0 16px'
-        }}
-      >
-        {/* Hero Section */}
-        <div
-          style={{
-            textAlign: 'center',
-            padding:
-              '12px 10px 32px 10px'
-          }}
-        >
-          <span
-            style={{
-              background: '#e0f2fe',
-              color: '#0369a1',
-              padding: '5px 12px',
-              borderRadius: '20px',
-              fontSize: '11px',
-              fontWeight: 'bold',
-              textTransform:
-                'uppercase',
-              letterSpacing:
-                '0.5px'
-            }}
-          >
-            Premier Party Rentals in Trinidad
-          </span>
-
-          <h1
-            style={{
-              fontSize: '28px',
-              fontWeight: '800',
-              marginTop: '14px',
-              marginBottom: '12px',
-              color: '#0f172a',
-              lineHeight: '1.25'
-            }}
-          >
-            Bring The Ultimate Fun
-            <br />
-            To Your Next Event!
-          </h1>
-
-          <a
-            href="#availability-check"
-            onClick={(event) => {
-              event.preventDefault();
-              trackButtonClick('clicked_book_now');
-              if (promoIsActive) handlePromotionalBookClick();
-              setShowAvailabilityModal(true);
-            }}
-            style={{
-              display: 'block',
-              width: '100%',
-              maxWidth: '320px',
-              margin: '0 auto',
-              background:
-                '#2563eb',
-              color: 'white',
-              fontWeight: 'bold',
-              padding: '14px 0',
-              borderRadius: '12px',
-              border: 'none',
-              textDecoration:
-                'none',
-              boxShadow:
-                '0 4px 12px rgba(37, 99, 235, 0.3)',
-              fontSize: '15px',
-              textAlign:
-                'center',
-              cursor: 'pointer'
-            }}
-          >
-            {promoIsActive
-              ? '🔥 Claim Offer & Check Availability'
-              : 'Check Availability & Book'}
-          </a>
-
-        </div>
-
-        {/* Featured Inventory + Mobile-First Offer */}
-        <div
-          id="pricing"
-          style={{
-            background: 'white',
-            borderRadius: '16px',
-            border: '1px solid #e2e8f0',
-            overflow: 'hidden',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-            marginBottom: '22px'
-          }}
-        >
-          <div
-            style={{
-              height: '210px',
-              background: '#1e293b',
-              position: 'relative',
-              overflow: 'hidden'
-            }}
-          >
-            {isVideoSlide ? (
-              <video
-                src="/rental_zone_spider_music.mp4"
-                autoPlay
-                muted
-                controls
-                onEnded={handleIntroVideoEnded}
-                playsInline
-                preload="auto"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                  background: '#000'
-                }}
-                aria-label="The Rental Zone Spider-Man bouncy castle video"
-              />
-            ) : (
-              <img
-                src={activeCarouselImage}
-                alt={`Spider-Man Bouncy Castle view ${activeSlide}`}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  cursor: 'pointer'
-                }}
-                onClick={() => {
-                  trackButtonClick('click_featured_image_zoom');
-                  setSelectedImage(activeCarouselImage);
-                }}
-                title="Tap to enlarge image"
-              />
-            )}
-            <span style={{
-              position: 'absolute',
-              top: 10,
-              left: 10,
-              background: '#0f172a',
-              color: 'white',
-              padding: '5px 9px',
-              borderRadius: 6,
-              fontSize: 11,
-              fontWeight: 800
-            }}>
-              SPIDER-MAN COMBO
-            </span>
-            {promoIsActive && (
-              <span style={{
-                position: 'absolute',
-                top: 10,
-                right: 10,
-                background: '#ea580c',
-                color: 'white',
-                padding: '6px 9px',
-                borderRadius: 6,
-                fontSize: 11,
-                fontWeight: 800
-              }}>
-                🔥 PROMO
-              </span>
-            )}
-            <button
-              type="button"
-              aria-label="Previous photo"
-              onClick={() => changeSlide(-1)}
-              style={{
-                position: 'absolute',
-                left: 10,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: 34,
-                height: 34,
-                border: 0,
-                borderRadius: '50%',
-                background: 'rgba(15,23,42,.78)',
-                color: 'white',
-                fontSize: 22,
-                cursor: 'pointer'
-              }}
-            >‹</button>
-            <button
-              type="button"
-              aria-label="Next photo"
-              onClick={() => changeSlide(1)}
-              style={{
-                position: 'absolute',
-                right: 10,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: 34,
-                height: 34,
-                border: 0,
-                borderRadius: '50%',
-                background: 'rgba(15,23,42,.78)',
-                color: 'white',
-                fontSize: 22,
-                cursor: 'pointer'
-              }}
-            >›</button>
-            <div style={{
-              position: 'absolute',
-              bottom: 9,
-              left: 0,
-              right: 0,
-              display: 'flex',
-              justifyContent: 'center',
-              gap: 5
-            }}>
-              {carouselImages.map((_, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  aria-label={`Show photo ${index + 1}`}
-                  onClick={() => {
-                    setActiveSlide(index);
-                    if (index > 0) trackButtonClick(`click_gallery_image_${index}`);
-                  }}
-                  style={{
-                    width: activeSlide === index ? 17 : 7,
-                    height: 7,
-                    padding: 0,
-                    border: 0,
-                    borderRadius: 10,
-                    background: activeSlide === index ? 'white' : 'rgba(255,255,255,.6)',
-                    cursor: 'pointer'
-                  }}
-                />
-              ))}
+    <div className="trz-redesign">
+      <section className="trz-hero">
+        <div className="trz-shell trz-hero-grid">
+          <div className="trz-hero-copy">
+            <div className="trz-eyebrow"><span className="trz-eyebrow-dot" /> Party rentals & event essentials in Trinidad</div>
+            <h1>Make the day a <em>big deal.</em></h1>
+            <p className="trz-hero-lede">The fun, the equipment and the extra details — brought together to make planning your next celebration easier.</p>
+            <div className="trz-hero-actions">
+              <button className="trz-button trz-button-primary" type="button" onClick={() => { trackButtonClick('clicked_book_now'); if (promoIsActive) handlePromotionalBookClick(); setShowAvailabilityModal(true); }}>
+                Check availability <span aria-hidden="true">↗</span>
+              </button>
+              <a className="trz-button trz-button-quiet" href="#more-rentals">Explore rentals <span aria-hidden="true">↓</span></a>
+            </div>
+            <div className="trz-hero-facts">
+              <span><strong>01</strong> Easy enquiries</span>
+              <span><strong>02</strong> No deposit on bouncer</span>
+              <span><strong>03</strong> Trinidad-wide enquiries</span>
             </div>
           </div>
-
-          <div style={{ padding: '12px 14px 16px' }}>
-            {promoIsActive ? (
-              <div style={{
-                background: '#fff7ed',
-                border: '1px solid #fed7aa',
-                borderRadius: 12,
-                padding: '10px 12px',
-                marginBottom: 10
-              }}>
-                <div style={{
-                  color: '#c2410c',
-                  fontSize: 11,
-                  fontWeight: 800,
-                  textTransform: 'uppercase',
-                  marginBottom: 2
-                }}>Limited-Time Promotion</div>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'baseline',
-                  flexWrap: 'wrap',
-                  gap: 8
-                }}>
-                  <strong style={{
-                    color: '#9a3412',
-                    fontSize: 27,
-                    lineHeight: 1.1
-                  }}>TT${formatMoney(publicPrice)}</strong>
-                  <span style={{ color: '#64748b', fontSize: 13, fontWeight: 700 }}>
-                    for {publicHours} hours
-                  </span>
-                </div>
-                <div style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  alignItems: 'center',
-                  gap: '4px 12px',
-                  marginTop: 5,
-                  fontSize: 12
-                }}>
-                  <span style={{ color: '#7c2d12' }}>Regular: <strong>TT${formatMoney(promotionalRegularValue)}</strong></span>
-                  <strong style={{ color: '#c2410c' }}>Save TT${formatMoney(promotionalSavings)}</strong>
-                </div>
-                <div style={{ color: '#7c2d12', fontSize: 11, marginTop: 4 }}>
-                  No deposit. Pay on delivery.
-                </div>
+          <div className="trz-hero-showcase">
+            <div className="trz-showcase-topline"><span>FEATURED RENTAL</span><span>THE RENTAL ZONE TT</span></div>
+            <div className="trz-showcase-media">
+              {isVideoSlide ? (
+                <video src="/rental_zone_spider_music.mp4" autoPlay muted controls onEnded={handleIntroVideoEnded} playsInline preload="metadata" aria-label="The Rental Zone Spider-Man bouncy castle video" />
+              ) : (
+                <img src={activeCarouselImage || featuredImage} alt="Spider-Man Combo Bouncy Castle" onClick={() => { trackButtonClick('click_featured_image_zoom'); setSelectedImage(activeCarouselImage || featuredImage); }} />
+              )}
+              <button className="trz-gallery-arrow trz-gallery-prev" type="button" aria-label="Previous photo" onClick={() => changeSlide(-1)}>‹</button>
+              <button className="trz-gallery-arrow trz-gallery-next" type="button" aria-label="Next photo" onClick={() => changeSlide(1)}>›</button>
+              <div className="trz-gallery-dots">
+                {Array.from({ length: totalCarouselSlides }).map((_, index) => (
+                  <button key={index} type="button" aria-label="Show gallery slide" className={activeSlide === index ? 'is-current' : ''} onClick={() => setActiveSlide(index)} />
+                ))}
               </div>
-            ) : (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '5px 2px 10px'
-              }}>
-                <div>
-                  <div style={{ color: '#64748b', fontSize: 11, fontWeight: 700, textTransform: 'uppercase' }}>Starting at</div>
-                  <strong style={{ color: '#2563eb', fontSize: 22 }}>TT$650</strong>
-                  <span style={{ color: '#64748b', fontSize: 12 }}> · 2 hours</span>
-                </div>
-                <span style={{ color: '#64748b', fontSize: 11 }}>No deposit required</span>
-              </div>
-            )}
-
-            {promoIsActive ? (
-              <a
-                href="#availability-check"
-                onClick={(event) => {
-                  event.preventDefault();
-                  handlePromotionalBookClick();
-                  setShowAvailabilityModal(true);
-                }}
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  background: '#0f172a',
-                  color: 'white',
-                  fontSize: 14,
-                  fontWeight: 800,
-                  padding: '13px 10px',
-                  borderRadius: 9,
-                  textDecoration: 'none',
-                  textAlign: 'center',
-                  boxSizing: 'border-box'
-                }}
-              >🔥 Get This Promotional Offer</a>
-            ) : (
-              <a
-                href="#availability-check"
-                onClick={(event) => {
-                  event.preventDefault();
-                  trackButtonClick('clicked_book_now');
-                  setShowAvailabilityModal(true);
-                }}
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  background: '#0f172a',
-                  color: 'white',
-                  fontSize: 14,
-                  fontWeight: 800,
-                  padding: '13px 10px',
-                  borderRadius: 9,
-                  textDecoration: 'none',
-                  textAlign: 'center',
-                  boxSizing: 'border-box'
-                }}
-              >Check Availability & Book</a>
-            )}
-
-            <div style={{
-              marginTop: 12,
-              padding: '11px 12px',
-              borderRadius: 10,
-              background: '#f8fafc',
-              border: '1px solid #e2e8f0'
-            }}>
-              <h3 style={{
-                margin: '0 0 5px',
-                color: '#0f172a',
-                fontSize: 17,
-                fontWeight: 800
-              }}>🕷️ Spider-Man Bouncy Castle</h3>
-              <p style={{
-                margin: '0 0 9px',
-                color: '#475569',
-                fontSize: 13,
-                lineHeight: 1.45
-              }}>A high-energy combo bouncer with a climbing wall and slide — ready for backyard fun.</p>
-              <div style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 6,
-                marginBottom: 8
-              }}>
-                <span style={{ background: '#e0f2fe', color: '#075985', borderRadius: 6, padding: '5px 8px', fontSize: 11, fontWeight: 700 }}>26 × 13 × 13 ft</span>
-                <span style={{ background: '#e0f2fe', color: '#075985', borderRadius: 6, padding: '5px 8px', fontSize: 11, fontWeight: 700 }}>Up to 8 kids</span>
-                <span style={{ background: '#e0f2fe', color: '#075985', borderRadius: 6, padding: '5px 8px', fontSize: 11, fontWeight: 700 }}>Combo + slide</span>              </div>
-              <div style={{
-                color: '#475569',
-                fontSize: 12,
-                lineHeight: 1.45
-              }}>Heavy-duty vinyl, fully cleaned and sanitized before every setup.</div>
+              <div className="trz-showcase-label">SPIDER-MAN COMBO BOUNCER</div>
             </div>
-            <p style={{
-              color: '#64748b',
-              fontSize: 12,
-              lineHeight: 1.4,
-              margin: '9px 2px 0',
-              textAlign: 'center'
-            }}>Safe, clean, high-energy fun delivered straight to your yard. Secure your date with zero upfront risk.</p>
+            <div className="trz-showcase-caption">
+              <div><span className="trz-caption-kicker">BACKYARD PARTY FAVOURITE</span><h2>Big energy. Big smiles.</h2><p>Bounce, climb and slide — one standout attraction for your celebration.</p></div>
+              <a href="#our-bouncer" aria-label="View Spider-Man bouncy castle details">View details <span>→</span></a>
+            </div>
+            <div className="trz-showcase-price">
+              <span>{promoIsActive ? 'CURRENT SPECIAL' : 'STARTING FROM'}</span>
+              <strong>{promoIsActive ? 'TT$' + formatMoney(publicPrice) : 'TT$650'}</strong>
+              <small>{promoIsActive ? publicHours + ' hours' : '2 hours · no deposit'}</small>
+            </div>
           </div>
         </div>
-
-
-        {/* MORE RENTALS & EVENT SERVICES — visual discovery cards */}
-        <section
-          id="more-rentals"
-          style={{
-            margin: '8px 0 24px',
-            padding: '20px 14px',
-            background: '#eff6ff',
-            border: '1px solid #dbeafe',
-            borderRadius: 18
-          }}
-        >
-          <div style={{ textAlign: 'center', marginBottom: 16 }}>
-            <span style={{ color: '#1d4ed8', fontSize: 11, fontWeight: 900, letterSpacing: 1, textTransform: 'uppercase' }}>
-              More from The Rental Zone
-            </span>
-            <h2 style={{ margin: '6px 0', color: '#0f172a', fontSize: 23, lineHeight: 1.2, fontWeight: 900 }}>
-              More to rent. More ways to make it happen.
-            </h2>
-            <p style={{ margin: '0 auto', maxWidth: 480, color: '#475569', fontSize: 13, lineHeight: 1.55 }}>
-              Browse equipment rentals and event services. Tap a picture to ask about availability.
-            </p>
-          </div>
-
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
-            gap: 12
-          }}>
-            <article style={{ overflow: 'hidden', borderRadius: 14, background: '#fff', border: '1px solid #dbeafe', boxShadow: '0 5px 16px rgba(15,23,42,.07)' }}>
-              <img
-                src="https://res-de.togroup.com/stc/home_product/emtop/userfiles/1/images/photo/20241011190136894/EGGRD2822.jpg"
-                alt="EMTOP 3000W gasoline generator"
-                loading="lazy"
-                style={{ width: '100%', height: 180, objectFit: 'contain', background: '#f8fafc', display: 'block', padding: 8, boxSizing: 'border-box' }}
-              />
-              <div style={{ padding: '12px 13px 14px' }}>
-                <span style={{ color: '#2563eb', fontSize: 10, fontWeight: 900, letterSpacing: .8, textTransform: 'uppercase' }}>Equipment rental</span>
-                <h3 style={{ margin: '5px 0', color: '#0f172a', fontSize: 18, fontWeight: 900 }}>Generator Rental</h3>
-                <p style={{ margin: '0 0 12px', color: '#64748b', fontSize: 12, lineHeight: 1.5 }}>Portable power for events, home backup and work needs.</p>
-                <a
-                  href="#event-services"
-                  onClick={() => trackButtonClick('click_generator_rental_enquiry')}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ display: 'block', padding: '11px 10px', borderRadius: 9, background: '#0f172a', color: '#fff', textDecoration: 'none', textAlign: 'center', fontSize: 12, fontWeight: 850 }}
-                >View price & rental details →</a>
-              </div>
-            </article>
-
-            <article style={{ overflow: 'hidden', borderRadius: 14, background: '#fff', border: '1px solid #dbeafe', boxShadow: '0 5px 16px rgba(15,23,42,.07)' }}>
-              <img
-                src="https://a-ipower.com/cdn/shop/products/PWF2701SH_R_3QTR_L_2000_2000.png?v=1630521306"
-                alt="A-iPower 2700 PSI pressure washer"
-                loading="lazy"
-                style={{ width: '100%', height: 180, objectFit: 'contain', background: '#f8fafc', display: 'block', padding: 8, boxSizing: 'border-box' }}
-              />
-              <div style={{ padding: '12px 13px 14px' }}>
-                <span style={{ color: '#2563eb', fontSize: 10, fontWeight: 900, letterSpacing: .8, textTransform: 'uppercase' }}>Equipment rental</span>
-                <h3 style={{ margin: '5px 0', color: '#0f172a', fontSize: 18, fontWeight: 900 }}>Pressure Washer Rental</h3>
-                <p style={{ margin: '0 0 12px', color: '#64748b', fontSize: 12, lineHeight: 1.5 }}>For driveways, patios, vehicles and outdoor clean-ups.</p>
-                <a
-                  href="#event-services"
-                  onClick={() => trackButtonClick('click_pressure_washer_enquiry')}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ display: 'block', padding: '11px 10px', borderRadius: 9, background: '#0f172a', color: '#fff', textDecoration: 'none', textAlign: 'center', fontSize: 12, fontWeight: 850 }}
-                >View price & rental details →</a>
-              </div>
-            </article>
-          </div>
-
-          <a
-            href="#event-services"
-            onClick={() => trackButtonClick('click_more_event_services')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 12,
-              marginTop: 13,
-              padding: '14px',
-              borderRadius: 13,
-              background: '#172554',
-              color: '#fff',
-              textDecoration: 'none'
-            }}
-          >
-            <span>
-              <strong style={{ display: 'block', fontSize: 15 }}>Planning an event?</strong>
-              <span style={{ display: 'block', marginTop: 3, color: '#bfdbfe', fontSize: 12 }}>Explore DJs, catering and other event rentals.</span>
-            </span>
-            <span aria-hidden="true" style={{ fontSize: 24, fontWeight: 800 }}>→</span>
-          </a>
-          <p style={{ margin: '10px 2px 0', color: '#64748b', fontSize: 10, lineHeight: 1.45, textAlign: 'center' }}>
-            Photos show the equipment offered. Confirm availability with The Rental Zone before booking.
-          </p>
-        </section>
-
-        {/* Q&A / Guidelines Section */}
-        <div
-          id="space-reqs"
-          style={{
-            background:
-              'white',
-            borderRadius:
-              '16px',
-            border:
-              '1px solid #e2e8f0',
-            padding:
-              '20px',
-            marginBottom:
-              '30px',
-            boxShadow:
-              '0 4px 12px rgba(0, 0, 0, 0.03)'
-          }}
-        >
-          <h3
-            style={{
-              fontSize:
-                '18px',
-              fontWeight:
-                'bold',
-              color:
-                '#0f172a',
-              marginBottom:
-                '16px',
-              textAlign:
-                'center'
-            }}
-          >
-            📋 Setup Guidelines & FAQ
-          </h3>
-
-          <div
-            style={{
-              display:
-                'flex',
-              flexDirection:
-                'column',
-              gap:
-                '14px'
-            }}
-          >
-            {faqs.map(
-              (item, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    paddingBottom:
-                      '12px',
-                    borderBottom:
-                      idx <
-                      faqs.length - 1
-                        ? '1px solid #f1f5f9'
-                        : 'none'
-                  }}
-                >
-                  <h4
-                    style={{
-                      fontSize:
-                        '14px',
-                      fontWeight:
-                        'bold',
-                      color:
-                        '#1e293b',
-                      margin:
-                        '0 0 4px 0'
-                    }}
-                  >
-                    {idx + 1}.{' '}
-                    {item.q}
-                  </h4>
-
-                  <p
-                    style={{
-                      fontSize:
-                        '13px',
-                      color:
-                        '#64748b',
-                      margin: '0',
-                      lineHeight:
-                        '1.4'
-                    }}
-                  >
-                    {item.a}
-                  </p>
-                </div>
-              )
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* TRZ SHARE BUTTONS SECTION */}
-      <section
-        aria-labelledby="trz-share-heading"
-        style={{
-          margin: '0 16px 30px',
-          padding: '20px',
-          border: '1px solid #e2e8f0',
-          borderRadius: '16px',
-          background: '#f8fafc',
-          textAlign: 'center'
-        }}
-      >
-        <h3
-          id="trz-share-heading"
-          style={{
-            margin: '0 0 8px',
-            fontSize: '18px',
-            fontWeight: 800,
-            color: '#0f172a'
-          }}
-        >
-          🎉 Know Someone Planning a Party?
-        </h3>
-
-        <p style={{
-          margin: '0 0 16px',
-          color: '#64748b',
-          fontSize: '14px',
-          lineHeight: 1.5
-        }}>
-          Share The Rental Zone with friends and family.
-        </p>
-
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-          gap: '10px'
-        }}>
-          <button
-            type="button"
-            onClick={() => {
-              const url = new URL(window.location.origin);
-              url.searchParams.set('utm_source', 'whatsapp');
-              url.searchParams.set('utm_medium', 'social');
-              url.searchParams.set('utm_campaign', 'website_share');
-              url.searchParams.set('utm_content', 'landing_share_buttons');
-
-              trackButtonClick('share_whatsapp_clicked', {
-                share_platform: 'whatsapp'
-              });
-
-              window.open(
-                `https://wa.me/?text=${encodeURIComponent(
-                  `Check out The Rental Zone for bouncy castle rentals in Trinidad! ${url.toString()}`
-                )}`,
-                '_blank',
-                'noopener,noreferrer'
-              );
-            }}
-            style={{
-              padding: '12px 8px',
-              border: 0,
-              borderRadius: '10px',
-              background: '#dcfce7',
-              color: '#166534',
-              fontWeight: 800,
-              cursor: 'pointer'
-            }}
-          >
-            💬 WhatsApp
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              const url = new URL(window.location.origin);
-              url.searchParams.set('utm_source', 'facebook');
-              url.searchParams.set('utm_medium', 'social');
-              url.searchParams.set('utm_campaign', 'website_share');
-              url.searchParams.set('utm_content', 'landing_share_buttons');
-
-              trackButtonClick('share_facebook_clicked', {
-                share_platform: 'facebook'
-              });
-
-              window.open(
-                `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url.toString())}`,
-                '_blank',
-                'noopener,noreferrer'
-              );
-            }}
-            style={{
-              padding: '12px 8px',
-              border: 0,
-              borderRadius: '10px',
-              background: '#dbeafe',
-              color: '#1d4ed8',
-              fontWeight: 800,
-              cursor: 'pointer'
-            }}
-          >
-            Facebook
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              const url = new URL(window.location.origin);
-              url.searchParams.set('utm_source', 'x');
-              url.searchParams.set('utm_medium', 'social');
-              url.searchParams.set('utm_campaign', 'website_share');
-              url.searchParams.set('utm_content', 'landing_share_buttons');
-
-              trackButtonClick('share_x_clicked', {
-                share_platform: 'x'
-              });
-
-              window.open(
-                `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                  'Check out The Rental Zone for bouncy castle rentals in Trinidad!'
-                )}&url=${encodeURIComponent(url.toString())}`,
-                '_blank',
-                'noopener,noreferrer'
-              );
-            }}
-            style={{
-              padding: '12px 8px',
-              border: 0,
-              borderRadius: '10px',
-              background: '#e2e8f0',
-              color: '#0f172a',
-              fontWeight: 800,
-              cursor: 'pointer'
-            }}
-          >
-            𝕏 Share
-          </button>
-
-          <button
-            type="button"
-            onClick={async () => {
-              const url = new URL(window.location.origin);
-              url.searchParams.set('utm_source', 'copy_link');
-              url.searchParams.set('utm_medium', 'social');
-              url.searchParams.set('utm_campaign', 'website_share');
-              url.searchParams.set('utm_content', 'landing_share_buttons');
-
-              trackButtonClick('share_copy_link_clicked', {
-                share_platform: 'copy_link'
-              });
-
-              try {
-                await navigator.clipboard.writeText(url.toString());
-                trackButtonClick('share_copy_link_completed');
-                window.alert('Trackable website link copied. Share it with a friend!');
-              } catch {
-                window.prompt('Copy this trackable link:', url.toString());
-              }
-            }}
-            style={{
-              padding: '12px 8px',
-              border: 0,
-              borderRadius: '10px',
-              background: '#f1f5f9',
-              color: '#334155',
-              fontWeight: 800,
-              cursor: 'pointer'
-            }}
-          >
-            🔗 Copy Link
-          </button>
-        </div>
-
-        <button
-          type="button"
-          onClick={async () => {
-            const url = new URL(window.location.origin);
-            url.searchParams.set('utm_source', 'native_share');
-            url.searchParams.set('utm_medium', 'social');
-            url.searchParams.set('utm_campaign', 'website_share');
-            url.searchParams.set('utm_content', 'landing_share_buttons');
-
-            trackButtonClick('share_native_clicked');
-
-            if (navigator.share) {
-              try {
-                await navigator.share({
-                  title: 'The Rental Zone LTD',
-                  text: 'Check out The Rental Zone for bouncy castle rentals in Trinidad!',
-                  url: url.toString()
-                });
-                trackButtonClick('share_native_completed');
-              } catch (error) {
-                if (error?.name !== 'AbortError') {
-                  trackButtonClick('share_native_failed');
-                }
-              }
-            } else {
-              try {
-                await navigator.clipboard.writeText(url.toString());
-                window.alert('Your device does not support the share menu here. Link copied instead.');
-              } catch {
-                window.prompt('Copy this trackable link:', url.toString());
-              }
-            }
-          }}
-          style={{
-            width: '100%',
-            marginTop: '10px',
-            padding: '12px',
-            border: '1px solid #cbd5e1',
-            borderRadius: '10px',
-            background: '#ffffff',
-            color: '#0f172a',
-            fontWeight: 800,
-            cursor: 'pointer'
-          }}
-        >
-          📲 More Sharing Options
-        </button>
-
       </section>
 
-      {/* FLOATING WHATSAPP CONTACT BUTTON — temporary test */}
-      <a
-        href="https://wa.me/18682810670?text=Hi%20Rental%20Zone%2C%20I%20have%20a%20question%20about%20booking%20the%20bouncy%20castle."
-        target="_blank"
-        rel="noreferrer"
-        aria-label="Chat with Rental Zone on WhatsApp"
-        title="Chat with us on WhatsApp"
-        onClick={() => trackButtonClick('whatsapp_clicked')}
-        style={{
-          position: 'fixed',
-          right: '16px',
-          bottom: '92px',
-          zIndex: 9000,
-          width: '56px',
-          height: '56px',
-          borderRadius: '50%',
-          background: '#25D366',
-          color: '#ffffff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          textDecoration: 'none',
-          boxShadow: '0 4px 14px rgba(0, 0, 0, 0.28)',
-          border: '2px solid #ffffff',
-          fontSize: '27px',
-          lineHeight: 1
-        }}
-      >
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 32 32"
-          width="31"
-          height="31"
-          fill="currentColor"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path d="M16.04 3C8.87 3 3.04 8.78 3.04 15.9c0 2.28.6 4.5 1.75 6.46L3 29l6.86-1.79a13.1 13.1 0 0 0 6.18 1.55h.01c7.17 0 13-5.79 13-12.9 0-3.45-1.35-6.69-3.8-9.12A12.9 12.9 0 0 0 16.04 3Zm0 23.55h-.01a10.8 10.8 0 0 1-5.5-1.5l-.4-.23-4.07 1.06 1.09-3.94-.26-.41a10.65 10.65 0 0 1-1.64-5.63c0-5.88 4.84-10.66 10.79-10.66 2.88 0 5.59 1.11 7.63 3.14a10.54 10.54 0 0 1 3.16 7.52c0 5.88-4.84 10.65-10.79 10.65Zm5.92-7.98c-.32-.16-1.9-.93-2.2-1.03-.3-.11-.51-.16-.72.16-.22.32-.83 1.03-1.02 1.24-.19.22-.38.24-.7.08-.32-.16-1.36-.5-2.59-1.59-.96-.85-1.61-1.9-1.8-2.22-.19-.32-.02-.49.14-.65.14-.14.32-.38.48-.57.16-.19.22-.32.32-.54.11-.21.06-.4-.02-.56-.08-.16-.72-1.72-.99-2.36-.26-.62-.53-.54-.72-.55h-.62c-.22 0-.56.08-.86.4-.3.32-1.13 1.1-1.13 2.67s1.16 3.1 1.32 3.31c.16.22 2.28 3.45 5.52 4.84.77.33 1.37.53 1.84.68.77.24 1.47.21 2.02.13.62-.09 1.9-.77 2.17-1.51.27-.75.27-1.4.19-1.53-.08-.13-.29-.21-.61-.37Z"/>
-        </svg>
-      </a>
+      <section className="trz-trustbar">
+        <div className="trz-shell trz-trustbar-inner">
+          <div><span className="trz-trust-icon">✦</span><span><strong>Simple booking</strong><small>Check your date first</small></span></div>
+          <div><span className="trz-trust-icon">⌂</span><span><strong>Setup handled</strong><small>For the bouncer rental</small></span></div>
+          <div><span className="trz-trust-icon">◎</span><span><strong>More than parties</strong><small>Equipment & event partners</small></span></div>
+        </div>
+      </section>
 
-      {/* EXISTING INTENT SELECTION POPUP MODAL */}
+      <section className="trz-section trz-discovery" id="more-rentals">
+        <div className="trz-shell">
+          <div className="trz-section-heading">
+            <div><span className="trz-section-kicker">FIND WHAT YOU NEED</span><h2>One place. More ways to get it done.</h2></div>
+            <a href="#event-services" className="trz-text-link">Browse all rentals & services <span>↗</span></a>
+          </div>
+          <div className="trz-category-grid">
+            <a className="trz-category-card trz-category-featured" href="#our-bouncer">
+              <div className="trz-category-image"><img src={featuredImage} alt="Spider-Man Combo Bouncy Castle" /></div>
+              <div className="trz-category-content"><span className="trz-card-kicker">PARTY RENTAL</span><h3>Spider-Man Combo Bouncer</h3><p>A bounce, climb and slide attraction for birthdays and family events.</p><span className="trz-card-action">Explore bouncer <b>↗</b></span></div>
+            </a>
+            <a className="trz-category-card" href="#event-services" onClick={() => trackButtonClick('click_generator_rental_enquiry')}>
+              <div className="trz-category-image"><img src="https://res-de.togroup.com/stc/home_product/emtop/userfiles/1/images/photo/20241011190136894/EGGRD2822.jpg" alt="Portable generator" loading="lazy" /></div>
+              <div className="trz-category-content"><span className="trz-card-kicker">EQUIPMENT</span><h3>Generator Rental</h3><p>Portable power for events, home backup and work needs.</p><span className="trz-card-action">View rental details <b>↗</b></span></div>
+            </a>
+            <a className="trz-category-card" href="#event-services" onClick={() => trackButtonClick('click_pressure_washer_enquiry')}>
+              <div className="trz-category-image"><img src="https://a-ipower.com/cdn/shop/products/PWF2701SH_R_3QTR_L_2000_2000.png?v=1630521306" alt="Pressure washer" loading="lazy" /></div>
+              <div className="trz-category-content"><span className="trz-card-kicker">EQUIPMENT</span><h3>Pressure Washer</h3><p>For driveways, patios, vehicles and outdoor clean-ups.</p><span className="trz-card-action">View rental details <b>↗</b></span></div>
+            </a>
+            <a className="trz-category-card trz-category-partners" href="#event-services" onClick={() => trackButtonClick('click_more_event_services')}>
+              <div className="trz-partner-art"><span>DJ</span><span>FOOD</span><span>DECOR</span><span>EVENT</span></div>
+              <div className="trz-category-content"><span className="trz-card-kicker">EVENT PARTNERS</span><h3>Build out your event</h3><p>Explore DJs, catering, tents, tables, chairs and décor enquiries.</p><span className="trz-card-action">Explore services <b>↗</b></span></div>
+            </a>
+          </div>
+          <p className="trz-disclaimer">Availability and final arrangements are confirmed directly with The Rental Zone or the relevant service partner.</p>
+        </div>
+      </section>
+
+      <section className="trz-section trz-pricing-section" id="pricing">
+        <div className="trz-shell">
+          <div className="trz-section-heading">
+            <div><span className="trz-section-kicker">SPIDER-MAN COMBO BOUNCER</span><h2>Choose your time.</h2><p>Clear packages. No deposit required. Payment is due on delivery.</p></div>
+            <a href="#our-bouncer" className="trz-text-link">Full rental details <span>↗</span></a>
+          </div>
+          {promoIsActive && (
+            <div className="trz-promo-banner">
+              <div><span>LIMITED-TIME OFFER</span><strong>{publicHours} hours for {'TT$' + formatMoney(publicPrice)}</strong><small>Regular value {'TT$' + formatMoney(promotionalRegularValue)} · Save {'TT$' + formatMoney(promotionalSavings)}</small></div>
+              {promoExpirySeconds !== null && <div className="trz-promo-countdown"><small>Offer ends in</small><strong>{formatCountdown(promoExpirySeconds)}</strong></div>}
+              <button type="button" onClick={() => { handlePromotionalBookClick(); setShowAvailabilityModal(true); }}>Claim offer ↗</button>
+            </div>
+          )}
+          <div className="trz-price-grid">
+            <button className="trz-price-card" type="button" onClick={() => { trackButtonClick('homepage_package_2h_click'); setShowAvailabilityModal(true); }}>
+              <span>QUICK CELEBRATION</span><strong>2 hours</strong><b>TT$650</b><small>Great for a birthday or short event</small><em>Check availability ↗</em>
+            </button>
+            <button className="trz-price-card trz-price-card-popular" type="button" onClick={() => { trackButtonClick('homepage_package_3h_click'); setShowAvailabilityModal(true); }}>
+              <span>MOST POPULAR</span><strong>3 hours</strong><b>TT$900</b><small>More time for everyone to enjoy</small><em>Check availability ↗</em>
+            </button>
+            <button className="trz-price-card" type="button" onClick={() => { trackButtonClick('homepage_package_day_click'); setShowAvailabilityModal(true); }}>
+              <span>ALL-DAY FUN</span><strong>8 hours</strong><b>TT$1,800</b><small>For a full day of celebration</small><em>Check availability ↗</em>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section className="trz-section trz-process-section">
+        <div className="trz-shell">
+          <div className="trz-section-heading trz-section-heading-centered">
+            <div><span className="trz-section-kicker">HOW IT WORKS</span><h2>Three steps to party-ready.</h2><p>Start with your date. We’ll help you take it from there.</p></div>
+          </div>
+          <div className="trz-process-grid">
+            <article><span>01</span><h3>Choose your rental</h3><p>Explore the bouncer, equipment rentals and event services.</p></article>
+            <article><span>02</span><h3>Check your date</h3><p>Send your details so availability and arrangements can be confirmed.</p></article>
+            <article><span>03</span><h3>Get ready for the day</h3><p>We confirm the details with you. Bouncer payment is due on delivery.</p></article>
+          </div>
+        </div>
+      </section>
+
+      <section className="trz-section trz-faq-section" id="setup-faq">
+        <div className="trz-shell trz-faq-layout">
+          <div className="trz-faq-intro"><span className="trz-section-kicker">GOOD TO KNOW</span><h2>Before you book.</h2><p>Quick answers about space, setup, payment and weather for the bouncer rental.</p><a href="#faq" className="trz-text-link">See all FAQs <span>↗</span></a></div>
+          <div className="trz-faq-list">
+            {faqs.map((item, index) => (
+              <details key={index} className="trz-faq-item"><summary><span>{item.q}</span><b>+</b></summary><p>{item.a}</p></details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="trz-bottom-cta">
+        <div className="trz-shell trz-bottom-cta-inner">
+          <div><span className="trz-section-kicker">LET’S GET IT PLANNED</span><h2>Ready to make your event happen?</h2><p>Check the date, choose what you need and send us an enquiry.</p></div>
+          <div className="trz-bottom-actions">
+            <button type="button" className="trz-button trz-button-light" onClick={() => { trackButtonClick('clicked_book_now'); if (promoIsActive) handlePromotionalBookClick(); setShowAvailabilityModal(true); }}>Check availability ↗</button>
+            <a href="https://wa.me/18682810670?text=Hi%20The%20Rental%20Zone%2C%20I%27d%20like%20to%20make%20an%20enquiry." target="_blank" rel="noopener noreferrer" className="trz-button trz-button-outline">WhatsApp us</a>
+          </div>
+        </div>
+      </section>
+    </div>
+{/* EXISTING INTENT SELECTION POPUP MODAL */}
       {showBookingPopup && (
   <div
     onClick={() => {
