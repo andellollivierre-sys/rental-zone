@@ -174,6 +174,7 @@ export default function Contact() {
             href={WHATSAPP_URL}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackTrzEvent('whatsapp_clicked', { service_name: 'General WhatsApp enquiry' })}
             style={contactCardStyle}
           >
             <div>
