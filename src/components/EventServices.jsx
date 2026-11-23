@@ -1,5 +1,8 @@
 import React from 'react';
 
+const WHATSAPP = 'https://wa.me/18682810670';
+const messageLink = (message) => `${WHATSAPP}?text=${encodeURIComponent(message)}`;
+
 const items = [
   {
     key: 'bouncy-castle',
@@ -145,7 +148,9 @@ export default function EventServices() {
               <p style={{ margin: '0 0 7px', color: '#0f172a', fontSize: 12, fontWeight: 850 }}>{item.note}</p>
               <p style={{ margin: '0 0 13px', color: '#64748b', fontSize: 11, lineHeight: 1.45 }}>{item.detail}</p>
               <a
-                href={item.href || '#contact'}
+                href={item.kind === 'internal' ? item.href : messageLink(item.message)}
+                target={item.kind === 'internal' ? undefined : '_blank'}
+                rel={item.kind === 'internal' ? undefined : 'noopener noreferrer'}
                 style={styles.button}
               >
                 {item.action} →
