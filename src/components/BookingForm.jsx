@@ -6,6 +6,9 @@ import { trackTrzEvent, createPageTimer } from '../utils/trzTracker';
 const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1551792830639382571/dxVXhU-U6CJxCGdUfBypOxjy3uOPK1mjismTZgLGNP3kyGPuh0Dn3YAlgmjcFLtHcXpU';
 
 export default function BookingForm() {
+  const today = new Date();
+  const minimumEventDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
   const [formData, setFormData] = useState({
     customer_name: '',
     phone: '',
@@ -438,6 +441,12 @@ export default function BookingForm() {
 
     setSubmitting(true);
     setErrorMessage('');
+
+    if (!formData.event_date || formData.event_date < minimumEventDate) {
+      setErrorMessage('❌ Please choose today or a future event date.');
+      setSubmitting(false);
+      return;
+    }
 
     let selectedPkg =
       availablePackages[formData.package_type];
@@ -1678,6 +1687,7 @@ export default function BookingForm() {
               <input
                 type="date"
                 name="event_date"
+                min={minimumEventDate}
                 value={
                   formData.event_date
                 }
