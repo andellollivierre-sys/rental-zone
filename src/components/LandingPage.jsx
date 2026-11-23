@@ -790,6 +790,7 @@ export default function LandingPage() {
   ];
 
   return (
+    <>
     <div className="trz-redesign">
       <section className="trz-hero">
         <div className="trz-shell trz-hero-grid">
@@ -1465,6 +1466,6 @@ export default function LandingPage() {
           publicPrice={publicPrice}
         />
       )}
-    </div>
+    </>
   );
 }
