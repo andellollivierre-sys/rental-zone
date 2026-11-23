@@ -7,6 +7,7 @@ import HowItWorks from './components/HowItWorks';
 import FAQ from './components/FAQ';
 import Contact from './components/Contact';
 import EventServices from './components/EventServices';
+import EquipmentRentalCheckout from './components/EquipmentRentalCheckout';
 
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState(
@@ -264,7 +265,11 @@ export default function App() {
           paddingBottom: '40px',
         }}
       >
-        {currentRoute === '#event-services' ? (
+        {currentRoute === '#pressure-washer-booking' ? (
+          <EquipmentRentalCheckout product="pressure-washer" />
+        ) : currentRoute === '#generator-booking' ? (
+          <EquipmentRentalCheckout product="generator" />
+        ) : currentRoute === '#event-services' ? (
           <EventServices />
         ) : currentRoute === '#admin' ? (
           <AdminDashboard />
