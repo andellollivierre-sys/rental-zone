@@ -80,7 +80,8 @@ export default function EquipmentRentalCheckout({ product }) {
     const deliveryRequired = config.key === 'generator' || form.delivery === 'delivery';
     const details = [
       'Rental duration: ' + days + (days === 1 ? ' day' : ' days'),
-      'Listed daily rate: TT
+      'Listed daily rate: TTD ' + config.dailyRate,
+      'Estimated rental subtotal: TTD ' + (days * config.dailyRate) + ' (subject to availability and final confirmation)',
       'Arrangement: ' + (deliveryRequired ? (config.key === 'generator' ? 'Supplier delivery requested' : 'Delivery requested; confirm availability') : 'Customer collection and return'),
       'Purpose: ' + (form.purpose.trim() || 'Not provided'),
       'Additional notes: ' + (form.notes.trim() || 'None')
@@ -160,7 +161,8 @@ export default function EquipmentRentalCheckout({ product }) {
           </div>
           <div style={{ marginTop: 12, padding: '13px 14px', borderRadius: 10, background: '#eff6ff', border: '1px solid #bfdbfe', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
             <div><div style={{ color: '#1e3a8a', fontSize: 11, fontWeight: 800 }}>Estimated rental subtotal</div><div style={{ color: '#475569', fontSize: 11 }}>Daily rate × selected days · final price confirmed by us</div></div>
-            <strong style={{ color: '#0f172a', fontSize: 20, whiteSpace: 'nowrap' }}>{estimatedTotal === null ? '—' : 'TT
+            <strong style={{ color: '#0f172a', fontSize: 20, whiteSpace: 'nowrap' }}>{estimatedTotal === null ? '—' : 'TTD ' + estimatedTotal.toLocaleString('en-TT')}</strong>
+          </div>
             <div style={{ marginTop: 13 }}>
               <label style={labelStyle}>Collection / delivery arrangement</label>
               <select value={form.delivery} onChange={e => update('delivery', e.target.value)} style={inputStyle}>
