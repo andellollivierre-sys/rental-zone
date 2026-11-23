@@ -1,4 +1,5 @@
 import React from 'react';
+import { trackTrzEvent } from '../utils/trzTracker';
 
 const WHATSAPP = 'https://wa.me/18682810670';
 const messageLink = (message) => `${WHATSAPP}?text=${encodeURIComponent(message)}`;
@@ -151,6 +152,11 @@ export default function EventServices() {
                 href={item.kind === 'internal' ? item.href : messageLink(item.message)}
                 target={item.kind === 'internal' ? undefined : '_blank'}
                 rel={item.kind === 'internal' ? undefined : 'noopener noreferrer'}
+                onClick={() => {
+                  if (item.kind === 'whatsapp') {
+                    trackTrzEvent('whatsapp_clicked', { service_name: item.title });
+                  }
+                }}
                 style={styles.button}
               >
                 {item.action} →
