@@ -790,151 +790,22 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="trz-redesign">
-      <section className="trz-hero">
-        <div className="trz-shell trz-hero-grid">
-          <div className="trz-hero-copy">
-            <div className="trz-eyebrow"><span className="trz-eyebrow-dot" /> Party rentals & event essentials in Trinidad</div>
-            <h1>Make the day a <em>big deal.</em></h1>
-            <p className="trz-hero-lede">The fun, the equipment and the extra details — brought together to make planning your next celebration easier.</p>
-            <div className="trz-hero-actions">
-              <button className="trz-button trz-button-primary" type="button" onClick={() => { trackButtonClick('clicked_book_now'); if (promoIsActive) handlePromotionalBookClick(); setShowAvailabilityModal(true); }}>
-                Check availability <span aria-hidden="true">↗</span>
-              </button>
-              <a className="trz-button trz-button-quiet" href="#more-rentals">Explore rentals <span aria-hidden="true">↓</span></a>
-            </div>
-            <div className="trz-hero-facts">
-              <span><strong>01</strong> Easy enquiries</span>
-              <span><strong>02</strong> No deposit on bouncer</span>
-              <span><strong>03</strong> Trinidad-wide enquiries</span>
-            </div>
-          </div>
-          <div className="trz-hero-showcase">
-            <div className="trz-showcase-topline"><span>FEATURED RENTAL</span><span>THE RENTAL ZONE TT</span></div>
-            <div className="trz-showcase-media">
-              {isVideoSlide ? (
-                <video src="/rental_zone_spider_music.mp4" autoPlay muted controls onEnded={handleIntroVideoEnded} playsInline preload="metadata" aria-label="The Rental Zone Spider-Man bouncy castle video" />
-              ) : (
-                <img src={activeCarouselImage || featuredImage} alt="Spider-Man Combo Bouncy Castle" onClick={() => { trackButtonClick('click_featured_image_zoom'); setSelectedImage(activeCarouselImage || featuredImage); }} />
-              )}
-              <button className="trz-gallery-arrow trz-gallery-prev" type="button" aria-label="Previous photo" onClick={() => changeSlide(-1)}>‹</button>
-              <button className="trz-gallery-arrow trz-gallery-next" type="button" aria-label="Next photo" onClick={() => changeSlide(1)}>›</button>
-              <div className="trz-gallery-dots">
-                {Array.from({ length: totalCarouselSlides }).map((_, index) => (
-                  <button key={index} type="button" aria-label="Show gallery slide" className={activeSlide === index ? 'is-current' : ''} onClick={() => setActiveSlide(index)} />
-                ))}
-              </div>
-              <div className="trz-showcase-label">SPIDER-MAN COMBO BOUNCER</div>
-            </div>
-            <div className="trz-showcase-caption">
-              <div><span className="trz-caption-kicker">BACKYARD PARTY FAVOURITE</span><h2>Big energy. Big smiles.</h2><p>Bounce, climb and slide — one standout attraction for your celebration.</p></div>
-              <a href="#our-bouncer" aria-label="View Spider-Man bouncy castle details">View details <span>→</span></a>
-            </div>
-            <div className="trz-showcase-price">
-              <span>{promoIsActive ? 'CURRENT SPECIAL' : 'STARTING FROM'}</span>
-              <strong>{promoIsActive ? 'TT$' + formatMoney(publicPrice) : 'TT$650'}</strong>
-              <small>{promoIsActive ? publicHours + ' hours' : '2 hours · no deposit'}</small>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="trz-trustbar">
-        <div className="trz-shell trz-trustbar-inner">
-          <div><span className="trz-trust-icon">✦</span><span><strong>Simple booking</strong><small>Check your date first</small></span></div>
-          <div><span className="trz-trust-icon">⌂</span><span><strong>Setup handled</strong><small>For the bouncer rental</small></span></div>
-          <div><span className="trz-trust-icon">◎</span><span><strong>More than parties</strong><small>Equipment & event partners</small></span></div>
-        </div>
-      </section>
-
-      <section className="trz-section trz-discovery" id="more-rentals">
-        <div className="trz-shell">
-          <div className="trz-section-heading">
-            <div><span className="trz-section-kicker">FIND WHAT YOU NEED</span><h2>One place. More ways to get it done.</h2></div>
-            <a href="#event-services" className="trz-text-link">Browse all rentals & services <span>↗</span></a>
-          </div>
-          <div className="trz-category-grid">
-            <a className="trz-category-card trz-category-featured" href="#our-bouncer">
-              <div className="trz-category-image"><img src={featuredImage} alt="Spider-Man Combo Bouncy Castle" /></div>
-              <div className="trz-category-content"><span className="trz-card-kicker">PARTY RENTAL</span><h3>Spider-Man Combo Bouncer</h3><p>A bounce, climb and slide attraction for birthdays and family events.</p><span className="trz-card-action">Explore bouncer <b>↗</b></span></div>
-            </a>
-            <a className="trz-category-card" href="#event-services" onClick={() => trackButtonClick('click_generator_rental_enquiry')}>
-              <div className="trz-category-image"><img src="https://res-de.togroup.com/stc/home_product/emtop/userfiles/1/images/photo/20241011190136894/EGGRD2822.jpg" alt="Portable generator" loading="lazy" /></div>
-              <div className="trz-category-content"><span className="trz-card-kicker">EQUIPMENT</span><h3>Generator Rental</h3><p>Portable power for events, home backup and work needs.</p><span className="trz-card-action">View rental details <b>↗</b></span></div>
-            </a>
-            <a className="trz-category-card" href="#event-services" onClick={() => trackButtonClick('click_pressure_washer_enquiry')}>
-              <div className="trz-category-image"><img src="https://a-ipower.com/cdn/shop/products/PWF2701SH_R_3QTR_L_2000_2000.png?v=1630521306" alt="Pressure washer" loading="lazy" /></div>
-              <div className="trz-category-content"><span className="trz-card-kicker">EQUIPMENT</span><h3>Pressure Washer</h3><p>For driveways, patios, vehicles and outdoor clean-ups.</p><span className="trz-card-action">View rental details <b>↗</b></span></div>
-            </a>
-            <a className="trz-category-card trz-category-partners" href="#event-services" onClick={() => trackButtonClick('click_more_event_services')}>
-              <div className="trz-partner-art"><span>DJ</span><span>FOOD</span><span>DECOR</span><span>EVENT</span></div>
-              <div className="trz-category-content"><span className="trz-card-kicker">EVENT PARTNERS</span><h3>Build out your event</h3><p>Explore DJs, catering, tents, tables, chairs and décor enquiries.</p><span className="trz-card-action">Explore services <b>↗</b></span></div>
-            </a>
-          </div>
-          <p className="trz-disclaimer">Availability and final arrangements are confirmed directly with The Rental Zone or the relevant service partner.</p>
-        </div>
-      </section>
-
-      <section className="trz-section trz-pricing-section" id="pricing">
-        <div className="trz-shell">
-          <div className="trz-section-heading">
-            <div><span className="trz-section-kicker">SPIDER-MAN COMBO BOUNCER</span><h2>Choose your time.</h2><p>Clear packages. No deposit required. Payment is due on delivery.</p></div>
-            <a href="#our-bouncer" className="trz-text-link">Full rental details <span>↗</span></a>
-          </div>
-          {promoIsActive && (
-            <div className="trz-promo-banner">
-              <div><span>LIMITED-TIME OFFER</span><strong>{publicHours} hours for {'TT$' + formatMoney(publicPrice)}</strong><small>Regular value {'TT$' + formatMoney(promotionalRegularValue)} · Save {'TT$' + formatMoney(promotionalSavings)}</small></div>
-              {promoExpirySeconds !== null && <div className="trz-promo-countdown"><small>Offer ends in</small><strong>{formatCountdown(promoExpirySeconds)}</strong></div>}
-              <button type="button" onClick={() => { handlePromotionalBookClick(); setShowAvailabilityModal(true); }}>Claim offer ↗</button>
-            </div>
-          )}
-          <div className="trz-price-grid">
-            <button className="trz-price-card" type="button" onClick={() => { trackButtonClick('homepage_package_2h_click'); setShowAvailabilityModal(true); }}>
-              <span>QUICK CELEBRATION</span><strong>2 hours</strong><b>TT$650</b><small>Great for a birthday or short event</small><em>Check availability ↗</em>
-            </button>
-            <button className="trz-price-card trz-price-card-popular" type="button" onClick={() => { trackButtonClick('homepage_package_3h_click'); setShowAvailabilityModal(true); }}>
-              <span>MOST POPULAR</span><strong>3 hours</strong><b>TT$900</b><small>More time for everyone to enjoy</small><em>Check availability ↗</em>
-            </button>
-            <button className="trz-price-card" type="button" onClick={() => { trackButtonClick('homepage_package_day_click'); setShowAvailabilityModal(true); }}>
-              <span>ALL-DAY FUN</span><strong>8 hours</strong><b>TT$1,800</b><small>For a full day of celebration</small><em>Check availability ↗</em>
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <section className="trz-section trz-process-section">
-        <div className="trz-shell">
-          <div className="trz-section-heading trz-section-heading-centered">
-            <div><span className="trz-section-kicker">HOW IT WORKS</span><h2>Three steps to party-ready.</h2><p>Start with your date. We’ll help you take it from there.</p></div>
-          </div>
-          <div className="trz-process-grid">
-            <article><span>01</span><h3>Choose your rental</h3><p>Explore the bouncer, equipment rentals and event services.</p></article>
-            <article><span>02</span><h3>Check your date</h3><p>Send your details so availability and arrangements can be confirmed.</p></article>
-            <article><span>03</span><h3>Get ready for the day</h3><p>We confirm the details with you. Bouncer payment is due on delivery.</p></article>
-          </div>
-        </div>
-      </section>
-
-      <section className="trz-section trz-faq-section" id="setup-faq">
-        <div className="trz-shell trz-faq-layout">
-          <div className="trz-faq-intro"><span className="trz-section-kicker">GOOD TO KNOW</span><h2>Before you book.</h2><p>Quick answers about space, setup, payment and weather for the bouncer rental.</p><a href="#faq" className="trz-text-link">See all FAQs <span>↗</span></a></div>
-          <div className="trz-faq-list">
-            {faqs.map((item, index) => (
-              <details key={index} className="trz-faq-item"><summary><span>{item.q}</span><b>+</b></summary><p>{item.a}</p></details>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="trz-bottom-cta">
-        <div className="trz-shell trz-bottom-cta-inner">
-          <div><span className="trz-section-kicker">LET’S GET IT PLANNED</span><h2>Ready to make your event happen?</h2><p>Check the date, choose what you need and send us an enquiry.</p></div>
-          <div className="trz-bottom-actions">
-            <button type="button" className="trz-button trz-button-light" onClick={() => { trackButtonClick('clicked_book_now'); if (promoIsActive) handlePromotionalBookClick(); setShowAvailabilityModal(true); }}>Check availability ↗</button>
-            <a href="https://wa.me/18682810670?text=Hi%20The%20Rental%20Zone%2C%20I%27d%20like%20to%20make%20an%20enquiry." target="_blank" rel="noopener noreferrer" className="trz-button trz-button-outline">WhatsApp us</a>
-          </div>
-        </div>
-      </section>
+    <div className="trz-v3-home">
+      <section className="v3-hero"><div className="v3-hero-copy"><span className="v3-kicker">THE RENTAL ZONE TT · TRINIDAD</span><h1>Make room<br/>for <em>good times.</em></h1><p>Big party energy. Useful equipment. Event extras. Find what you need and send one straightforward enquiry.</p><div className="v3-actions"><button type="button" onClick={() => { trackButtonClick('clicked_book_now'); if (promoIsActive) handlePromotionalBookClick(); setShowAvailabilityModal(true); }}>Check your date <b>↗</b></button><a href="#v3-rentals">Explore rentals ↓</a></div><div className="v3-proof"><span>01 <b>Choose what you need</b></span><span>02 <b>Send your details</b></span><span>03 <b>Confirm directly</b></span></div></div>
+      <div className="v3-hero-image">{isVideoSlide ? <video src="/rental_zone_spider_music.mp4" autoPlay muted controls onEnded={handleIntroVideoEnded} playsInline preload="metadata" aria-label="The Rental Zone Spider-Man bouncy castle video" /> : <img src={activeCarouselImage || featuredImage} alt="Spider-Man Combo Bouncy Castle" onClick={() => { trackButtonClick('click_featured_image_zoom'); setSelectedImage(activeCarouselImage || featuredImage); }} />}<button className="v3-gallery-prev" type="button" aria-label="Previous photo" onClick={() => changeSlide(-1)}>‹</button><button className="v3-gallery-next" type="button" aria-label="Next photo" onClick={() => changeSlide(1)}>›</button><div className="v3-image-tag">FEATURED PARTY RENTAL</div><div className="v3-image-caption"><strong>Spider-Man Combo Bouncer</strong><span>Bounce · Climb · Slide</span></div><div className="v3-dots">{Array.from({length: totalCarouselSlides}).map((_,i)=><button key={i} aria-label="Show photo" className={activeSlide===i?'active':''} onClick={()=>setActiveSlide(i)} />)}</div></div><div className="v3-stamp"><span>MAKE THE DAY</span><strong>A BIG<br/>DEAL.</strong></div></section>
+      <section className="v3-strip"><div><b>01</b><span>Party rentals</span></div><div><b>02</b><span>Equipment hire</span></div><div><b>03</b><span>Event services</span></div><div><b>TT</b><span>Trinidad enquiries</span></div></section>
+      <section className="v3-rentals" id="v3-rentals"><div className="v3-heading"><div><span className="v3-kicker">BROWSE THE ZONE</span><h2>What are we<br/><em>sorting today?</em></h2></div><p>Start with a rental category. Each enquiry takes you to the right details.</p></div><div className="v3-rental-grid">
+      <a href="#our-bouncer" className="v3-rental-card v3-card-main"><img src={featuredImage} alt="Spider-Man Combo Bouncy Castle"/><div className="v3-card-overlay"><small>PARTY RENTAL · FEATURED</small><h3>Spider-Man<br/>Combo Bouncer</h3><span>View the bouncer <b>↗</b></span></div></a>
+      <a href="#event-services" className="v3-rental-card v3-card-generator" onClick={()=>trackButtonClick('click_generator_rental_enquiry')}><img src="https://res-de.togroup.com/stc/home_product/emtop/userfiles/1/images/photo/20241011190136894/EGGRD2822.jpg" alt="Portable generator"/><div className="v3-card-overlay"><small>EQUIPMENT HIRE</small><h3>Generator<br/>Rental</h3><span>View details <b>↗</b></span></div></a>
+      <a href="#event-services" className="v3-rental-card v3-card-washer" onClick={()=>trackButtonClick('click_pressure_washer_enquiry')}><img src="https://a-ipower.com/cdn/shop/products/PWF2701SH_R_3QTR_L_2000_2000.png?v=1630521306" alt="Pressure washer"/><div className="v3-card-overlay"><small>EQUIPMENT HIRE</small><h3>Pressure<br/>Washer</h3><span>View details <b>↗</b></span></div></a>
+      <a href="#event-services" className="v3-rental-card v3-card-services" onClick={()=>trackButtonClick('click_more_event_services')}><div className="v3-service-pattern"><span>DJ</span><span>FOOD</span><span>DECOR</span><span>EVENTS</span></div><div className="v3-card-overlay"><small>EVENT PARTNERS</small><h3>Bring the<br/>whole event together.</h3><span>Explore services <b>↗</b></span></div></a></div></section>
+      <section className="v3-feature"><div className="v3-feature-photo"><img src={featuredImage} alt="Spider-Man Combo Bouncer"/></div><div className="v3-feature-copy"><span className="v3-kicker">THE CROWD-PLEASER</span><h2>One setup.<br/><em>Three ways to play.</em></h2><p>The Spider-Man Combo Bouncer brings together a bounce area, climbing section and dry slide for a standout party attraction.</p><ul><li>26 ft long × 13 ft wide × 13 ft high</li><li>Up to 8 children at a time</li><li>Setup and breakdown handled</li><li>No deposit · Payment on delivery</li></ul><a href="#our-bouncer">See bouncer details <b>↗</b></a></div></section>
+      <section className="v3-pricing"><div className="v3-heading"><div><span className="v3-kicker">SPIDER-MAN COMBO BOUNCER</span><h2>Pick your<br/><em>party time.</em></h2></div><p>Choose a package to start an availability enquiry. Your date is confirmed directly with us.</p></div>
+      {promoIsActive && <div className="v3-promo"><div><small>LIMITED-TIME OFFER</small><strong>{publicHours} hours · {'TT$'}{formatMoney(publicPrice)}</strong><span>Save {'TT$'}{formatMoney(promotionalSavings)} · Offer ends in {promoExpirySeconds===null?'—':formatCountdown(promoExpirySeconds)}</span></div><button type="button" onClick={()=>{handlePromotionalBookClick();setShowAvailabilityModal(true);}}>Claim offer ↗</button></div>}
+      <div className="v3-package-grid"><button type="button" onClick={()=>{trackButtonClick('homepage_package_2h_click');setShowAvailabilityModal(true);}}><small>QUICK CELEBRATION</small><strong>2 hours</strong><b>TT$650</b><span>Check availability ↗</span></button><button type="button" onClick={()=>{trackButtonClick('homepage_package_3h_click');setShowAvailabilityModal(true);}}><small>MORE PARTY TIME</small><strong>3 hours</strong><b>TT$900</b><span>Check availability ↗</span></button><button type="button" onClick={()=>{trackButtonClick('homepage_package_day_click');setShowAvailabilityModal(true);}}><small>ALL-DAY EVENT</small><strong>8 hours</strong><b>TT$1,800</b><span>Check availability ↗</span></button></div><p className="v3-price-note">No deposit required. Payment is due on delivery.</p></section>
+      <section className="v3-how"><div><span className="v3-kicker">NO COMPLICATED PROCESS</span><h2>From browsing<br/>to <em>booked.</em></h2></div><div className="v3-how-steps"><article><b>01</b><h3>Choose</h3><p>Pick the bouncer, equipment or service you need.</p></article><article><b>02</b><h3>Enquire</h3><p>Share your date, location and event details.</p></article><article><b>03</b><h3>Confirm</h3><p>We follow up to confirm availability and arrangements.</p></article></div></section>
+      <section className="v3-faq"><div><span className="v3-kicker">QUICK ANSWERS</span><h2>Good to<br/><em>know.</em></h2><a href="#faq">All FAQs ↗</a></div><div>{faqs.map((item,index)=><details key={index}><summary>{item.q}<b>+</b></summary><p>{item.a}</p></details>)}</div></section>
+      <section className="v3-last-call"><div><span className="v3-kicker">LET’S GET YOUR EVENT MOVING</span><h2>Ready when<br/>you are.</h2><p>Check your date or message us directly to get started.</p></div><div><button type="button" onClick={()=>{trackButtonClick('clicked_book_now');setShowAvailabilityModal(true);}}>Check availability ↗</button><a href="https://wa.me/18682810670?text=Hi%20The%20Rental%20Zone%2C%20I%27d%20like%20to%20make%20an%20enquiry." target="_blank" rel="noopener noreferrer">WhatsApp enquiry ↗</a></div></section>
 {/* EXISTING INTENT SELECTION POPUP MODAL */}
       {showBookingPopup && (
   <div
