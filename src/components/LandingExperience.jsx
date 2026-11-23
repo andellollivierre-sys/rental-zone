@@ -68,7 +68,7 @@ export default function LandingExperience() {
 
     <section className="rz7-rates">
       <div className="rz7-section-top"><div><span className="rz7-kicker">SIMPLE PACKAGE PRICING / 02</span><h2>Choose your<br/><em>party time.</em></h2></div><p>These packages apply to the Spider-Man Combo Bouncer. Confirm your date before making plans.</p></div>
-      {promoIsActive && <div className="rz7-promo"><div><small>LIVE PROMOTIONAL OFFER</small><strong>{promoHours} hours · TT$\{money(promoPrice)}</strong><span>Save TT$\{money(promoSavings)}{offerEnds !== null ? ' · Ends in ' + countdown(offerEnds) : ''}</span></div><button onClick={() => openAvailability('promotion')}>Claim offer ↗</button></div>}
+      {promoIsActive && <div className="rz7-promo"><div><small>LIVE PROMOTIONAL OFFER</small><strong>{promoHours} hours · TT${money(promoPrice)}</strong><span>Save TT${money(promoSavings)}{offerEnds !== null ? ' · Ends in ' + countdown(offerEnds) : ''}</span></div><button onClick={() => openAvailability('promotion')}>Claim offer ↗</button></div>}
       <div className="rz7-rate-table">
         <button onClick={() => openAvailability('package-2-hours')}><span>01 / QUICK CELEBRATION</span><strong>2 hours</strong><b>TT$650</b><i>Check availability ↗</i></button>
         <button onClick={() => openAvailability('package-3-hours')}><span>02 / MORE PARTY TIME</span><strong>3 hours</strong><b>TT$900</b><i>Check availability ↗</i></button>
