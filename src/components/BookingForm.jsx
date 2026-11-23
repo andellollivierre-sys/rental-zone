@@ -6,9 +6,6 @@ import { trackTrzEvent, createPageTimer } from '../utils/trzTracker';
 const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1551792830639382571/dxVXhU-U6CJxCGdUfBypOxjy3uOPK1mjismTZgLGNP3kyGPuh0Dn3YAlgmjcFLtHcXpU';
 
 export default function BookingForm() {
-  const today = new Date();
-  const minimumEventDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-
   const [formData, setFormData] = useState({
     customer_name: '',
     phone: '',
@@ -442,12 +439,6 @@ export default function BookingForm() {
     setSubmitting(true);
     setErrorMessage('');
 
-    if (!formData.event_date || formData.event_date < minimumEventDate) {
-      setErrorMessage('❌ Please choose today or a future event date.');
-      setSubmitting(false);
-      return;
-    }
-
     let selectedPkg =
       availablePackages[formData.package_type];
 
@@ -517,38 +508,34 @@ export default function BookingForm() {
       error: checkError
     } = await supabase
       .from('bookings')
-      .select('start_time, end_time')
+      .select('*')
       .eq(
         'event_date',
         formData.event_date
       )
       .eq('status', 'Confirmed');
 
-    // Fail closed: never accept a booking when availability
-    // could not be checked against confirmed rentals.
-    if (checkError) {
-      console.error('Availability check failed:', checkError);
-      setErrorMessage(
-        '❌ We could not verify availability right now. Please try again or contact us on WhatsApp.'
-      );
-      setSubmitting(false);
-      return;
-    }
+    if (
+      !checkError &&
+      conflictingBookings
+    ) {
+      const hasConflict =
+        conflictingBookings.some((b) => {
+          return (
+            formData.start_time <
+              b.end_time &&
+            endTime > b.start_time
+          );
+        });
 
-    const hasConflict =
-      (conflictingBookings || []).some((b) => {
-        return (
-          formData.start_time < b.end_time &&
-          endTime > b.start_time
+      if (hasConflict) {
+        setErrorMessage(
+          '❌ The selected time slot conflicts with an already confirmed rental. Please choose another time.'
         );
-      });
 
-    if (hasConflict) {
-      setErrorMessage(
-        '❌ The selected time slot conflicts with an already confirmed rental. Please choose another time.'
-      );
-      setSubmitting(false);
-      return;
+        setSubmitting(false);
+        return;
+      }
     }
 
     // All packages are now payment-on-delivery.
@@ -1687,7 +1674,6 @@ export default function BookingForm() {
               <input
                 type="date"
                 name="event_date"
-                min={minimumEventDate}
                 value={
                   formData.event_date
                 }
