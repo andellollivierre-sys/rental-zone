@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import LandingPage from './components/LandingPage';
+import LandingPage from './components/SimpleLandingPage';
 import BookingForm from './components/BookingForm';
 import AdminDashboard from './components/AdminDashboard';
 import OurBouncer from './components/OurBouncer';
@@ -25,13 +25,10 @@ export default function App() {
   }, []);
 
   const navLinks = [
-    { href: '#home', label: 'Home' },
+    { href: '#our-bouncer', label: 'Bouncer' },
     { href: '#booking', label: 'Booking' },
-    { href: '#our-bouncer', label: 'Our Bouncer' },
-    { href: '#how-it-works', label: 'How It Works' },
     { href: '#faq', label: 'FAQ' },
     { href: '#contact', label: 'Contact' },
-    { href: '#admin', label: 'Admin' },
   ];
 
   const isActive = (href) =>
