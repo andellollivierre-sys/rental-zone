@@ -265,6 +265,7 @@ export default function App() {
         </div>
 
         <div>
+          <a href="#admin" style={{ color: "#94a3b8", textDecoration: "none", fontWeight: "bold", marginRight: "14px" }}>Admin</a>
           <a
             href="https://www.instagram.com/therentalzonett/"
             target="_blank"
