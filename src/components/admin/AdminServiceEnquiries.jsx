@@ -46,7 +46,7 @@ export default function AdminServiceEnquiries() {
     setSavingId(null);
   };
 
-  const visible = rows.filter(row => filter === 'All' || row.status === filter);
+  const visible = rows.filter(row => (filter === 'All' || row.status === filter) && (serviceFilter === 'All services' || row.service_name === serviceFilter));
   const countNew = rows.filter(row => row.status === 'New').length;
   const countQuote = rows.filter(row => ['Supplier quote requested','Supplier quote received','Customer quote sent'].includes(row.status)).length;
   const countEquipment = rows.filter(row => ['pressure-washer','generator'].includes(row.service_key)).length;
