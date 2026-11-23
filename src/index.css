@@ -1,0 +1,33 @@
+
+
+/* Simple homepage: one message, one product, one next step */
+.simple-home{width:100%;max-width:800px;margin:0 auto;background:#fff;color:#172033;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.simple-hero{padding:38px 22px 26px;text-align:center}
+.simple-eyebrow{margin:0 0 14px;color:#64748b;font-size:10px;font-weight:800;letter-spacing:.13em}
+.simple-hero h1{margin:0;color:#111827;font-size:clamp(32px,7vw,48px);line-height:1.08;letter-spacing:-.045em;font-weight:850}
+.simple-hero h1 span{color:#2563eb}
+.simple-lead{max-width:460px;margin:15px auto 20px;color:#586477;font-size:15px;line-height:1.6}
+.simple-primary{border:0;border-radius:8px;background:#2563eb;color:#fff;padding:14px 23px;font-size:14px;font-weight:800;cursor:pointer}
+.simple-photo{margin:27px auto 0;max-width:680px;height:clamp(230px,62vw,390px);background:#f1f5f9;border-radius:10px;overflow:hidden}
+.simple-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.simple-caption{margin:10px 0 0;color:#778194;font-size:11px}
+.simple-price{padding:30px 22px;background:#f7f8fa;text-align:center;border-top:1px solid #edf0f4;border-bottom:1px solid #edf0f4}
+.simple-price .simple-eyebrow{margin-bottom:18px}
+.simple-packages{display:grid;grid-template-columns:repeat(3,1fr);max-width:600px;margin:0 auto;border:1px solid #dfe4eb;border-radius:9px;background:#fff;overflow:hidden}
+.simple-packages>div{padding:17px 8px;display:flex;flex-direction:column;gap:7px;border-right:1px solid #dfe4eb}
+.simple-packages>div:last-child{border:0}
+.simple-packages span{font-size:12px;color:#667085}
+.simple-packages strong{font-size:18px;color:#172033}
+.simple-payment{font-size:11px;color:#667085;margin:14px 0 18px}
+.simple-wide{min-width:220px}
+.simple-promo{margin:-5px auto 17px;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;color:#9a3412;font-size:12px}
+.simple-promo strong{font-size:17px}
+.simple-details{padding:32px 25px;max-width:600px;margin:0 auto}
+.simple-details h2,.simple-contact h2{font-size:23px;letter-spacing:-.03em;margin:0 0 15px}
+.simple-details p{font-size:13px;line-height:1.55;color:#566174;margin:9px 0}
+.simple-details strong{color:#172033}
+.simple-contact{padding:32px 22px 38px;background:#172033;color:#fff;text-align:center}
+.simple-contact h2{margin-bottom:8px}
+.simple-contact p{font-size:13px;color:#cbd5e1;margin:0 0 18px}
+.simple-contact a{display:block;width:max-content;max-width:100%;margin:15px auto 0;color:#dbeafe;font-size:12px;text-decoration:underline}
+@media(max-width:420px){.simple-hero{padding:30px 16px 23px}.simple-hero h1{font-size:34px}.simple-lead{font-size:14px}.simple-photo{height:245px}.simple-price{padding:27px 13px}.simple-packages strong{font-size:15px}.simple-packages span{font-size:11px}.simple-details{padding:28px 20px}}
