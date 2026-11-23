@@ -816,6 +816,7 @@ export default function LandingPage() {
 
   return (
     <div
+      className="trz-live-home"
       style={{
         width: '100%',
         padding: '16px 0',
@@ -827,19 +828,9 @@ export default function LandingPage() {
         margin: '0 auto'
       }}
     >
-      <div
-        style={{
-          padding: '0 16px'
-        }}
-      >
+      <div className="trz-live-home__content" style={{ padding: '0 16px' }}>
         {/* Hero Section */}
-        <div
-          style={{
-            textAlign: 'center',
-            padding:
-              '12px 10px 32px 10px'
-          }}
-        >
+        <div className="trz-live-hero" style={{ textAlign: 'center', padding: '12px 10px 32px 10px' }}>
           <span
             style={{
               background: '#e0f2fe',
@@ -1056,6 +1047,7 @@ export default function LandingPage() {
         {/* Featured Inventory Card */}
         <div
           id="pricing"
+          className="trz-live-product"
           style={{
             background: 'white',
             borderRadius: '16px',
@@ -1463,11 +1455,7 @@ export default function LandingPage() {
         </div>
 
         {/* Photo Gallery Grid */}
-        <div
-          style={{
-            marginBottom: '30px'
-          }}
-        >
+        <div className="trz-live-gallery" style={{ marginBottom: '30px' }}>
           <h3
             style={{
               fontSize: '16px',
@@ -1484,8 +1472,7 @@ export default function LandingPage() {
             📸 Event & Unit Gallery
           </h3>
 
-          <div
-            style={{
+          <div className="trz-live-gallery__grid" style={{
               display:
                 'grid',
               gridTemplateColumns:
@@ -1543,6 +1530,7 @@ export default function LandingPage() {
         {/* Q&A / Guidelines Section */}
         <div
           id="space-reqs"
+          className="trz-live-guidelines"
           style={{
             background:
               'white',
@@ -1637,6 +1625,7 @@ export default function LandingPage() {
 
       {/* TRZ SHARE BUTTONS SECTION */}
       <section
+        className="trz-live-share"
         aria-labelledby="trz-share-heading"
         style={{
           margin: '0 16px 30px',
