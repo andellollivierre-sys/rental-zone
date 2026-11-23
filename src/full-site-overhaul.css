@@ -640,3 +640,169 @@ a { -webkit-tap-highlight-color: transparent; }
     width:100%;
   }
 }
+
+
+/* V6 — cleaner, lighter rental-business redesign */
+:root{
+  --trz-ink:#24211e !important;
+  --trz-navy:#24211e !important;
+  --trz-navy-2:#3a332d !important;
+  --trz-blue:#c85a32 !important;
+  --trz-blue-bright:#db7045 !important;
+  --trz-paper:#f7f4ee !important;
+  --trz-muted:#766e65 !important;
+  --trz-line:#e6dfd5 !important;
+}
+body,.trz-app,.trz-content-area,.trz-redesign{background:#f7f4ee !important;color:#24211e !important}
+.trz-utility-bar{background:#292521 !important;color:#e9e2d8 !important}
+.trz-utility-inner{min-height:30px !important}
+.trz-utility-inner a{color:#f1a27d !important}
+.trz-site-header{position:sticky;background:rgba(250,248,243,.97) !important;border-bottom:1px solid #e8e1d7 !important;backdrop-filter:blur(12px)}
+.trz-header-inner{min-height:74px !important}
+.trz-brand img{width:42px !important;height:42px !important;border-radius:8px !important}
+.trz-brand strong{font-size:17px !important;letter-spacing:-.04em !important}
+.trz-desktop-nav{gap:clamp(12px,1.4vw,21px) !important}
+.trz-desktop-nav a{font-size:11px !important;color:#625b53 !important}
+.trz-desktop-nav a:hover,.trz-desktop-nav a.is-active{color:#c85a32 !important}
+.trz-header-book,.trz-mobile-book{background:#c85a32 !important;border-radius:5px !important;box-shadow:none !important;padding:12px 16px !important}
+.trz-header-book:hover,.trz-mobile-book:hover{background:#a94425 !important}
+.trz-test-banner{top:74px !important}
+
+/* Home: lighter editorial layout; product and video remain the focus. */
+.trz-v3-home{background:#f7f4ee !important;color:#24211e !important}
+.v3-video-stage{background:#eee8df !important;color:#24211e !important;padding:22px max(6vw,28px) 12px !important}
+.v3-video-frame{height:min(68vh,650px) !important;min-height:270px !important;background:#171513 !important;border:1px solid #d8cec2 !important;box-shadow:0 10px 30px rgba(36,33,30,.09) !important}
+.v3-video-frame video{object-fit:contain !important}
+.v3-video-label{color:#766e65 !important;font-size:9px !important;letter-spacing:.12em !important}
+.v3-video-label span:last-child{color:#c85a32 !important}
+.v3-hero{background:#f7f4ee !important;color:#24211e !important;padding:58px 0 62px !important}
+.v3-hero:before{display:none !important}
+.v3-hero-copy{max-width:620px !important}
+.v3-kicker,.v3-hero .v3-kicker{color:#b34c2a !important;letter-spacing:.14em !important}
+.v3-hero h1{color:#24211e !important;font-size:clamp(42px,5.4vw,68px) !important;line-height:1.02 !important;letter-spacing:-.065em !important}
+.v3-hero h1 em,.v3-heading h2 em,.v3-feature-copy h2 em,.v3-how h2 em,.v3-faq h2 em{color:#c85a32 !important}
+.v3-hero-copy>p{color:#71685f !important;font-size:15px !important;line-height:1.75 !important}
+.v3-actions button,.v3-last-call button{background:#c85a32 !important;border-radius:5px !important;box-shadow:none !important}
+.v3-actions a{color:#4e463e !important}
+.v3-proof{border-top:1px solid #e2d9ce !important;color:#62594f !important}
+.v3-proof b{color:#c85a32 !important}
+.v3-hero-image{border:1px solid #e0d7cc !important;border-radius:8px !important;box-shadow:0 14px 34px rgba(36,33,30,.10) !important}
+.v3-image-tag{background:#292521 !important}
+.v3-image-caption{background:rgba(36,33,30,.88) !important}
+.v3-stamp{background:#fffaf3 !important;border:1px solid #e6dace !important;color:#24211e !important;box-shadow:0 8px 20px rgba(36,33,30,.08) !important}
+.v3-stamp strong{color:#c85a32 !important}
+.v3-strip{background:#292521 !important;color:#f6f0e8 !important}
+.v3-strip div:last-child{border:0 !important}
+.v3-strip b{color:#f1a27d !important}
+.v3-rentals,.v3-pricing,.v3-faq{background:#f7f4ee !important}
+.v3-heading h2,.v3-feature-copy h2,.v3-how h2,.v3-faq h2,.v3-last-call h2{color:#24211e !important;letter-spacing:-.055em !important}
+.v3-heading p,.v3-feature-copy p,.v3-how-steps p,.v3-faq details p{color:#766e65 !important}
+.v3-rental-card{border:1px solid #e5ddd2 !important;border-radius:7px !important;box-shadow:0 5px 18px rgba(36,33,30,.045) !important}
+.v3-card-overlay{background:linear-gradient(0deg,rgba(27,24,21,.88),rgba(27,24,21,0)) !important}
+.v3-card-overlay>span b{color:#f1a27d !important}
+.v3-feature{background:#eee8df !important}
+.v3-feature-copy{color:#24211e !important}
+.v3-feature-copy ul li{color:#62594f !important}
+.v3-feature-copy>a,.v3-faq>div:first-child>a{color:#bd512c !important}
+.v3-package-grid button{background:#fffaf4 !important;border:1px solid #e1d7cb !important;border-radius:7px !important;box-shadow:none !important;color:#24211e !important}
+.v3-package-grid button:hover{border-color:#c85a32 !important;transform:translateY(-2px)}
+.v3-package-grid small,.v3-package-grid span{color:#766e65 !important}
+.v3-package-grid b{color:#c85a32 !important}
+.v3-price-note{color:#766e65 !important}
+.v3-promo{background:#292521 !important;border-radius:7px !important}
+.v3-promo button{background:#c85a32 !important}
+.v3-how{background:#eee8df !important}
+.v3-how-steps article{background:#fffaf4 !important;border:1px solid #e5ddd2 !important;border-radius:7px !important;box-shadow:none !important}
+.v3-how-steps article>b{background:#c85a32 !important}
+.v3-faq>div:last-child details{background:#fffaf4 !important;border:1px solid #e5ddd2 !important;border-radius:6px !important;box-shadow:none !important}
+.v3-faq summary{color:#24211e !important}
+.v3-last-call{background:#292521 !important;color:#fffaf4 !important}
+.v3-last-call h2{color:#fffaf4 !important}
+.v3-last-call p{color:#d0c5b9 !important}
+.v3-last-call .v3-kicker{color:#f1a27d !important}
+.v3-last-call a{color:#f1a27d !important}
+
+/* Public inner pages: restrained title band, consistent white cards. */
+.trz-route-panel:not(.trz-admin-panel){background:#f7f4ee !important}
+.trz-route-panel:not(.trz-admin-panel)>div{background:#f7f4ee !important;color:#24211e !important}
+.trz-route-panel:not(.trz-admin-panel)>div>section:first-child{
+ background:#eee8df !important;color:#24211e !important;
+ padding:clamp(38px,5vw,66px) max(6vw,24px) !important;
+ border-bottom:1px solid #e1d8cd !important;
+}
+.trz-route-panel:not(.trz-admin-panel)>div>section:first-child:after{display:none !important}
+.trz-route-panel:not(.trz-admin-panel)>div>section:first-child h1,
+.trz-route-panel:not(.trz-admin-panel)>div>section:first-child h2,
+.trz-route-panel:not(.trz-admin-panel)>div>section:first-child h3{color:#24211e !important}
+.trz-route-panel:not(.trz-admin-panel)>div>section:first-child p{color:#70675e !important}
+.trz-route-panel:not(.trz-admin-panel)>div>section:first-child>span,
+.trz-route-panel:not(.trz-admin-panel)>div>section:first-child>div>div:first-child{
+ background:#f8f2e9 !important;color:#b34c2a !important;border-color:#e5cbbb !important;
+}
+.trz-route-panel:not(.trz-admin-panel)>div>section:not(:first-child){background:#f7f4ee !important}
+.trz-route-panel:not(.trz-admin-panel)>div>section:nth-child(2n+3){background:#eee8df !important}
+.trz-route-panel:not(.trz-admin-panel) h2,.trz-route-panel:not(.trz-admin-panel) h3,.trz-route-panel:not(.trz-admin-panel) h4{color:#24211e !important}
+.trz-route-panel:not(.trz-admin-panel) article,
+.trz-route-panel:not(.trz-admin-panel) details{
+ background:#fffdf9 !important;border:1px solid #e5ddd2 !important;border-radius:7px !important;
+ box-shadow:0 5px 18px rgba(36,33,30,.045) !important;
+}
+.trz-route-panel:not(.trz-admin-panel) article img{background:#eee8df !important}
+.trz-route-panel:not(.trz-admin-panel) button,
+.trz-route-panel:not(.trz-admin-panel) a[role="button"]{background:#c85a32 !important;border-color:#c85a32 !important;border-radius:5px !important;box-shadow:none !important}
+.trz-route-panel:not(.trz-admin-panel) button:hover{background:#a94425 !important}
+.trz-route-panel:not(.trz-admin-panel) input,
+.trz-route-panel:not(.trz-admin-panel) select,
+.trz-route-panel:not(.trz-admin-panel) textarea{background:#fff !important;border-color:#ded5ca !important;border-radius:5px !important}
+
+/* More rentals: override component inline styles without changing its enquiry links. */
+.trz-route-panel:not(.trz-admin-panel)>div:has(>div>article) > div:has(>article){max-width:1120px !important}
+.trz-route-panel:not(.trz-admin-panel) article img{object-fit:cover}
+.trz-route-panel:not(.trz-admin-panel) article h3{font-size:19px !important}
+.trz-route-panel:not(.trz-admin-panel) article a{background:#c85a32 !important;color:#fff !important;border-radius:5px !important}
+
+/* Booking form: simple, bright, readable. */
+.trz-route-panel:not(.trz-admin-panel)>div:has(>div>form)>div{
+ background:#fffdf9 !important;border:1px solid #e5ddd2 !important;border-radius:8px !important;
+ box-shadow:0 8px 28px rgba(36,33,30,.06) !important;
+}
+.trz-route-panel:not(.trz-admin-panel)>div:has(>div>form) form button{background:#c85a32 !important;border-radius:5px !important}
+
+/* Footer: quiet contrast, not a second hero. */
+.trz-site-footer{background:#292521 !important;color:#f4eee6 !important}
+.trz-footer-main{padding-top:42px !important;padding-bottom:34px !important}
+.trz-site-footer p,.trz-footer-links a,.trz-footer-bottom{color:#c9bfb4 !important}
+.trz-footer-links strong{color:#f1a27d !important}
+.trz-footer-bottom{border-color:#514940 !important}
+
+@media(max-width:850px){
+ .trz-desktop-nav{display:none !important}
+ .trz-mobile-toggle{display:flex !important}
+ .trz-header-inner{min-height:68px !important}
+ .v3-video-stage{padding:14px 14px 9px !important}
+ .v3-video-frame{height:min(58vh,520px) !important;min-height:220px !important}
+ .v3-hero{padding:38px 0 42px !important}
+ .v3-hero h1{font-size:clamp(39px,10vw,56px) !important}
+ .v3-rental-grid{grid-template-columns:1fr 1fr !important}
+}
+@media(max-width:560px){
+ .trz-utility-inner{width:calc(100% - 28px) !important;font-size:8px !important}
+ .trz-utility-inner span{max-width:62%;line-height:1.35}
+ .trz-header-inner{width:calc(100% - 28px) !important}
+ .trz-brand strong{font-size:15px !important}
+ .trz-brand small{font-size:7px !important}
+ .v3-video-frame{height:min(52vh,430px) !important;min-height:200px !important}
+ .v3-video-label{font-size:7px !important}
+ .v3-hero{padding:32px 0 36px !important}
+ .v3-hero h1{font-size:clamp(37px,11vw,48px) !important}
+ .v3-proof{gap:10px !important;flex-wrap:wrap !important}
+ .v3-rental-grid{grid-template-columns:1fr !important}
+ .v3-feature{grid-template-columns:1fr !important}
+ .v3-feature-photo{min-height:230px !important}
+ .v3-package-grid{grid-template-columns:1fr !important}
+ .trz-route-panel:not(.trz-admin-panel)>div>section:first-child{padding:38px 19px !important}
+ .trz-route-panel:not(.trz-admin-panel)>div>section:not(:first-child){padding:30px 18px !important}
+ .trz-route-panel:not(.trz-admin-panel)>div:has(>div>form){padding:20px 12px 36px !important}
+ .trz-route-panel:not(.trz-admin-panel)>div:has(>div>form)>div{padding:20px 15px !important}
+ .trz-footer-main{grid-template-columns:1fr !important;gap:25px !important}
+}
