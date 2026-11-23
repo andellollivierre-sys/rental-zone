@@ -136,19 +136,19 @@ export default function AdminDashboard() {
   const packages = {
     '2 Hours': {
       price: 650,
-      deposit: 100,
+      deposit: 0,
       cogs: 35,
       maintenance: 10
     },
     '3 Hours': {
       price: 900,
-      deposit: 100,
+      deposit: 0,
       cogs: 45,
       maintenance: 15
     },
     'Full Day / 8 Hours': {
       price: 1800,
-      deposit: 100,
+      deposit: 0,
       cogs: 220,
       maintenance: 40
     }
@@ -755,7 +755,7 @@ export default function AdminDashboard() {
     const pkgInfo =
       packages[pkgName] || {
         price: 650,
-        deposit: 100,
+        deposit: 0,
         cogs: 35,
         maintenance: 10
       };
@@ -1633,7 +1633,7 @@ export default function AdminDashboard() {
               marginBottom: '4px'
             }}
           >
-            Pending Deposits
+            Pending Bookings
           </span>
 
           <span
@@ -3597,7 +3597,7 @@ export default function AdminDashboard() {
                         pkgName
                       ] || {
                         price: 650,
-                        deposit: 100
+                        deposit: 0
                       };
 
                     const totalPrice =
