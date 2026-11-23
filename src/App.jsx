@@ -10,7 +10,7 @@ import EventServices from './components/EventServices';
 
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState(
-    window.location.hash || '#home'
+    window.location.hash.split('?')[0] || '#home'
   );
   const [menuOpen, setMenuOpen] = useState(false);
   const [testMode, setTestMode] = useState(
@@ -42,7 +42,7 @@ export default function App() {
 
   useEffect(() => {
     const handleHashChange = () => {
-      setCurrentRoute(window.location.hash || '#home');
+      setCurrentRoute(window.location.hash.split('?')[0] || '#home');
       setMenuOpen(false);
     };
 
