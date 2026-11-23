@@ -126,6 +126,20 @@ NEXT:
 export default function OurBouncer() {
   const [offer, setOffer] = useState(null);
   const [timeLeft, setTimeLeft] = useState(null);
+  const galleryImages = [
+    '/featured image.jpg',
+    '/image 1.png',
+    '/image 2.png',
+    '/image 3.jpg',
+    '/1000151156.jpg',
+    '/1000151155.jpg',
+    '/1000151154.jpg',
+    '/1000151153.jpg',
+    '/1000151152.jpg',
+    '/1000151151.jpg',
+    '/1000151150.jpg',
+  ];
+  const [activeImage, setActiveImage] = useState(galleryImages[0]);
 
   useEffect(() => {
     const loadOffer = async () => {
@@ -864,114 +878,63 @@ export default function OurBouncer() {
                 </span>
               </div>
 
-              {/* UNIFIED BOUNCER / PHOTO PLACEHOLDER */}
-
-              <div style={styles.heroVisual}>
-
-                <span style={styles.balloonOne}>
-                  🎈
-                </span>
-
-                <span style={styles.balloonTwo}>
-                  🎈
-                </span>
-
-                <span style={styles.balloonThree}>
-                  🎈
-                </span>
-
-                <div style={styles.heroVisualInner}>
-
-                  <div style={styles.heroVisualIcon}>
-                    🕷️
-                  </div>
-
-                  <h2 style={styles.heroVisualTitle}>
-                    Spider-Man Combo Bouncer
-                  </h2>
-
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                      margin: '18px auto 14px',
-                      maxWidth: '620px',
-                      flexWrap: 'wrap',
-                    }}
-                  >
-
-                    <span
+              {/* REAL TRZ BOUNCER PHOTO GALLERY */}
+              <div style={{ ...styles.heroVisual, padding: 12 }}>
+                <img
+                  src={activeImage}
+                  alt="Spider-Man Combo Bouncer at a rental event"
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    height: 'clamp(220px, 58vw, 460px)',
+                    objectFit: 'contain',
+                    background: '#e2e8f0',
+                    borderRadius: 12,
+                  }}
+                />
+                <div
+                  aria-label="Bouncer photo gallery"
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+                    gap: 8,
+                    marginTop: 10,
+                  }}
+                >
+                  {galleryImages.map((image, index) => (
+                    <button
+                      key={image}
+                      type="button"
+                      onClick={() => setActiveImage(image)}
+                      aria-label={`View bouncer photo ${index + 1}`}
+                      aria-pressed={activeImage === image}
                       style={{
-                        padding: '10px 14px',
-                        borderRadius: '12px',
-                        background: '#ffffff',
-                        border: '1px solid #bae6fd',
-                        fontSize: '12px',
-                        fontWeight: '900',
-                        color: '#0369a1',
+                        padding: 0,
+                        border: activeImage === image ? '3px solid #0284c7' : '1px solid #cbd5e1',
+                        borderRadius: 8,
+                        overflow: 'hidden',
+                        background: '#fff',
+                        cursor: 'pointer',
+                        aspectRatio: '1 / 1',
                       }}
                     >
-                      🏰 Bounce
-                    </span>
-
-                    <span
-                      style={{
-                        color: '#7dd3fc',
-                        fontWeight: '950',
-                        fontSize: '18px',
-                      }}
-                    >
-                      →
-                    </span>
-
-                    <span
-                      style={{
-                        padding: '10px 14px',
-                        borderRadius: '12px',
-                        background: '#ffffff',
-                        border: '1px solid #bae6fd',
-                        fontSize: '12px',
-                        fontWeight: '900',
-                        color: '#0369a1',
-                      }}
-                    >
-                      🧗 Climb
-                    </span>
-
-                    <span
-                      style={{
-                        color: '#7dd3fc',
-                        fontWeight: '950',
-                        fontSize: '18px',
-                      }}
-                    >
-                      →
-                    </span>
-
-                    <span
-                      style={{
-                        padding: '10px 14px',
-                        borderRadius: '12px',
-                        background: '#ffffff',
-                        border: '1px solid #bae6fd',
-                        fontSize: '12px',
-                        fontWeight: '900',
-                        color: '#0369a1',
-                      }}
-                    >
-                      🛝 Slide
-                    </span>
-
-                  </div>
-
-                  <p style={styles.heroVisualText}>
-                    Photos and video coming soon.
-                  </p>
-
+                      <img
+                        src={image}
+                        alt={`Spider-Man Combo Bouncer photo ${index + 1}`}
+                        loading="lazy"
+                        style={{
+                          display: 'block',
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    </button>
+                  ))}
                 </div>
-
+                <p style={{ margin: '10px 2px 0', color: '#475569', fontSize: 12, textAlign: 'center' }}>
+                  Select a photo to view the bouncer
+                </p>
               </div>
 
             </div>
