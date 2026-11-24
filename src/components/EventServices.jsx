@@ -140,10 +140,10 @@ export default function EventServices() {
 
       <div style={styles.grid}>
         {items.map((item) => (
-          <article key={item.key} style={styles.card}>
+          <article key={item.key} style={{ ...styles.card, ...((item.key === 'pressure-washer' || item.key === 'generator') ? { background: '#ffffff' } : {}) }}>
             {(item.key === 'pressure-washer' || item.key === 'generator') ? (
-              <div style={{ width: '100%', aspectRatio: '4 / 3', backgroundColor: '#ffffff', borderRadius: 12, overflow: 'hidden' }}>
-                <img src={item.image} alt={item.alt} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', padding: 8, boxSizing: 'border-box' }} />
+              <div style={{ width: '100%', aspectRatio: '4 / 3', backgroundColor: '#ffffff', colorScheme: 'only light', borderRadius: 12, overflow: 'hidden' }}>
+                <img src={item.image} alt={item.alt} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', background: '#ffffff', padding: 8, boxSizing: 'border-box' }} />
               </div>
             ) : (
               <img src={item.image} alt={item.alt} loading="lazy" style={{ width: '100%', height: 180, objectFit: 'cover', display: 'block', background: '#e2e8f0' }} />
