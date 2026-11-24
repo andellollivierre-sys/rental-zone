@@ -43,12 +43,6 @@ export default function AvailabilityDatePicker({ value, onChange, startTime, ren
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState(false);
 
-  useEffect(() => {
-    if (selectedDate && (selectedDate.getFullYear() !== visibleMonth.getFullYear() || selectedDate.getMonth() !== visibleMonth.getMonth())) {
-      setVisibleMonth(selectedDate);
-    }
-  }, [value]);
-
   const year = visibleMonth.getFullYear();
   const month = visibleMonth.getMonth();
   const monthStart = `${year}-${pad(month + 1)}-01`;
