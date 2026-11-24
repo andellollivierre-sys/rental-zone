@@ -1246,7 +1246,7 @@ export default function LandingPage() {
                   src="https://a-ipower.com/cdn/shop/products/PWF2701SH_R_3QTR_L_2000_2000.png?v=1630521306"
                   alt="A-iPower 2700 PSI pressure washer"
                   loading="lazy"
-                  style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', padding: 8, boxSizing: 'border-box' }}
+                  style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', background: '#ffffff', padding: 8, boxSizing: 'border-box' }}
                 />
               </div>
               <div style={{ padding: '12px 13px 14px' }}>
