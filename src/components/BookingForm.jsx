@@ -453,7 +453,7 @@ export default function BookingForm() {
           const bookedEnd = String(booking.end_time).slice(0, 5);
           return formData.start_time < bookedEnd && selectedEndTime > bookedStart;
         }));
-        const status = hasConflict ? 'unavailable' : confirmedSlots.length ? 'limited' : 'available';
+        const status = hasConflict ? 'unavailable' : 'available';
         setAvailabilityNotice((previous) => ({
           ...(previous || {}),
           event_date: formData.event_date,
