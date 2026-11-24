@@ -1747,28 +1747,11 @@ export default function BookingForm() {
               display:
                 'grid',
               gridTemplateColumns:
-                '1fr 1fr',
+                '1fr',
               gap: '10px'
             }}
           >
             <div>
-              <label
-                style={{
-                  display:
-                    'block',
-                  fontSize:
-                    '12px',
-                  fontWeight:
-                    'bold',
-                  color:
-                    '#334155',
-                  marginBottom:
-                    '4px'
-                }}
-              >
-                Event Date
-              </label>
-
               <AvailabilityDatePicker
                 label="Event Date"
                 value={formData.event_date}
@@ -2000,7 +1983,10 @@ export default function BookingForm() {
             type="submit"
             disabled={
               submitting ||
-              loadingPromotion
+              loadingPromotion ||
+              checkingAvailability ||
+              availabilityNotice?.availability_status === 'unavailable' ||
+              availabilityNotice?.availability_status === 'unverified'
             }
             style={{
               background:
@@ -2019,7 +2005,10 @@ export default function BookingForm() {
                 '15px',
               cursor:
                 submitting ||
-                loadingPromotion
+                loadingPromotion ||
+                checkingAvailability ||
+                availabilityNotice?.availability_status === 'unavailable' ||
+                availabilityNotice?.availability_status === 'unverified'
                   ? 'not-allowed'
                   : 'pointer',
               marginTop:
