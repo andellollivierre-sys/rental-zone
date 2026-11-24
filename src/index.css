@@ -1,2 +1,22 @@
 :root { color-scheme: only light; }
 html, body { background-color: #ffffff; }
+
+
+/* Equipment image stages stay pure white, including when the device uses dark mode. */
+.equipment-image-background,
+.equipment-image-background img {
+  background: #fff !important;
+  background-color: #fff !important;
+  color-scheme: only light !important;
+  forced-color-adjust: none;
+  filter: none !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  .equipment-image-background,
+  .equipment-image-background img {
+    background: #fff !important;
+    background-color: #fff !important;
+    color-scheme: only light !important;
+  }
+}
