@@ -37,6 +37,7 @@ const STATUS_STYLES = {
 export default function AvailabilityDatePicker({ value, onChange, startTime, rentalHours, minDate, label = 'Event date' }) {
   const today = toDateKey(new Date());
   const earliestDate = minDate || today;
+  const earliestMonth = new Date(earliestDate + 'T12:00:00');
   const selectedDate = value ? new Date(`${value}T12:00:00`) : null;
   const [visibleMonth, setVisibleMonth] = useState(() => selectedDate || new Date());
   const [bookingsByDate, setBookingsByDate] = useState({});
@@ -95,7 +96,7 @@ export default function AvailabilityDatePicker({ value, onChange, startTime, ren
       <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#334155' }}>{label}</label>
       <div style={{ border: '1px solid #cbd5e1', borderRadius: 12, padding: 12, background: '#fff' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
-          <button type="button" onClick={() => changeMonth(-1)} disabled={year === new Date(earliestDate + 'T12:00:00').getFullYear() && month <= new Date(earliestDate + 'T12:00:00').getMonth()} aria-label="Previous month" style={{ border: '1px solid #e2e8f0', background: '#f8fafc', borderRadius: 8, padding: '6px 10px', cursor: 'pointer' }}>‹</button>
+          <button type="button" onClick={() => changeMonth(-1)} disabled={year < earliestMonth.getFullYear() || (year === earliestMonth.getFullYear() && month <= earliestMonth.getMonth())} aria-label="Previous month" style={{ border: '1px solid #e2e8f0', background: '#f8fafc', borderRadius: 8, padding: '6px 10px', cursor: 'pointer' }}>‹</button>
           <strong style={{ color: '#0f172a', fontSize: 14 }}>{monthLabel}</strong>
           <button type="button" onClick={() => changeMonth(1)} aria-label="Next month" style={{ border: '1px solid #e2e8f0', background: '#f8fafc', borderRadius: 8, padding: '6px 10px', cursor: 'pointer' }}>›</button>
         </div>
