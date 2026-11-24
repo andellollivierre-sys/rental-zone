@@ -8,7 +8,7 @@ function toDateKey(date) {
 }
 
 const STATUS_STYLES = {
-  booked: { background: '#fee2e2', color: '#991b1b', border: '#fca5a5', label: 'Existing booking' },
+  partial: { background: '#fef3c7', color: '#92400e', border: '#fcd34d', label: 'Booked time slots — other times may be available' },
   normal: { background: '#ffffff', color: '#334155', border: '#e2e8f0', label: 'No booking shown' },
   unknown: { background: '#f1f5f9', color: '#64748b', border: '#cbd5e1', label: 'Checking' }
 };
@@ -88,7 +88,7 @@ export default function AvailabilityDatePicker({ value, onChange, startTime, ren
             const date = new Date(year, month, day);
             const dateKey = toDateKey(date);
             const isPast = dateKey < earliestDate;
-            const status = loadError ? 'unknown' : (bookingsByDate[dateKey] || []).length ? 'booked' : 'normal';
+            const status = loadError ? 'unknown' : (bookingsByDate[dateKey] || []).length ? 'partial' : 'normal';
             const style = STATUS_STYLES[status];
             const isSelected = value === dateKey;
             return (
@@ -97,9 +97,9 @@ export default function AvailabilityDatePicker({ value, onChange, startTime, ren
                 type="button"
                 disabled={isPast || loading || loadError}
                 onClick={() => onChange(dateKey)}
-                aria-label={`${dateKey}${status === 'booked' ? ': confirmed booking on this date' : ''}`}
+                aria-label={`${dateKey}${status === 'partial' ? ': some time slots are booked; date remains selectable' : ''}`}
                 aria-pressed={isSelected}
-                title={status === 'booked' ? 'Confirmed booking on this date — check your preferred time' : 'Select date'}
+                title={status === 'partial' ? 'Some times are booked. Select this date to check other times.' : 'Select date'}
                 style={{
                   minWidth: 0,
                   padding: '9px 2px',
@@ -119,7 +119,7 @@ export default function AvailabilityDatePicker({ value, onChange, startTime, ren
           })}
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 12, fontSize: 11, color: '#475569' }}>
-          {['booked'].map((status) => (
+          {['partial'].map((status) => (
             <span key={status} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
               <span style={{ width: 10, height: 10, borderRadius: 3, background: STATUS_STYLES[status].background, border: `1px solid ${STATUS_STYLES[status].border}` }} />
               {STATUS_STYLES[status].label}
@@ -128,7 +128,7 @@ export default function AvailabilityDatePicker({ value, onChange, startTime, ren
         </div>
         {loading && <p role="status" style={{ margin: '8px 0 0', color: '#64748b', fontSize: 11 }}>Loading confirmed bookings…</p>}
         {loadError && <p role="alert" style={{ margin: '8px 0 0', color: '#b91c1c', fontSize: 11 }}>Availability colours could not load. Try again shortly.</p>}
-        {value && <p style={{ margin: '8px 0 0', color: (bookingsByDate[value] || []).length ? '#991b1b' : '#334155', fontSize: 12 }}>{(bookingsByDate[value] || []).length ? 'This date has confirmed bookings. Your selected time will be checked before you continue.' : 'Selected date: '}{!((bookingsByDate[value] || []).length) && <strong>{value}</strong>}</p>}
+        {value && <div style={{ margin: '8px 0 0', color: '#334155', fontSize: 12 }}><div>Selected date: <strong>{value}</strong></div>{(bookingsByDate[value] || []).length > 0 && <div style={{ marginTop: 5, padding: '8px 10px', borderRadius: 8, background: '#fffbeb', border: '1px solid #fcd34d', color: '#92400e' }}><strong>Booked times:</strong> {(bookingsByDate[value] || []).map((booking) => `${String(booking.start_time).slice(0, 5)}–${String(booking.end_time).slice(0, 5)}`).join(', ')}. Other non-overlapping times can still be requested.</div>}</div>}
       </div>
     </div>
   );
