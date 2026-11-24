@@ -1240,8 +1240,8 @@ export default function LandingPage() {
               </div>
             </article>
 
-            <article style={{ overflow: 'hidden', borderRadius: 14, background: '#fff', border: '1px solid #dbeafe', boxShadow: '0 5px 16px rgba(15,23,42,.07)' }}>
-              <div style={{ width: '100%', aspectRatio: '4 / 3', backgroundColor: '#ffffff', borderRadius: 12, overflow: 'hidden' }}>
+            <article style={{ overflow: 'hidden', borderRadius: 14, background: '#ffffff', border: '1px solid #dbeafe', boxShadow: '0 5px 16px rgba(15,23,42,.07)' }}>
+              <div style={{ width: '100%', aspectRatio: '4 / 3', backgroundColor: '#ffffff', colorScheme: 'only light', borderRadius: 12, overflow: 'hidden' }}>
                 <img
                   src="https://a-ipower.com/cdn/shop/products/PWF2701SH_R_3QTR_L_2000_2000.png?v=1630521306"
                   alt="A-iPower 2700 PSI pressure washer"
