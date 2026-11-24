@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { trackTrzEvent, createPageTimer, getAttributionData, getSessionData, getVisitorId } from '../utils/trzTracker';
+import AvailabilityDatePicker from './AvailabilityDatePicker';
 
 // Keep your existing Discord webhook URL in this constant.
 const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1551792830639382571/dxVXhU-U6CJxCGdUfBypOxjy3uOPK1mjismTZgLGNP3kyGPuh0Dn3YAlgmjcFLtHcXpU';
@@ -12,7 +13,6 @@ export default function BookingForm() {
       savedSelection = JSON.parse(
         sessionStorage.getItem('trz_availability_selection') || 'null'
       );
-      sessionStorage.removeItem('trz_availability_selection');
     } catch (error) {
       console.warn('Could not restore availability selection:', error);
     }
@@ -28,6 +28,19 @@ export default function BookingForm() {
       notes: ''
     };
   });
+
+  const [showAvailabilityNotice, setShowAvailabilityNotice] = useState(() => Boolean(sessionStorage.getItem('trz_availability_selection')));
+  const [availabilityNotice, setAvailabilityNotice] = useState(() => {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem('trz_availability_selection') || 'null');
+      sessionStorage.removeItem('trz_availability_selection');
+      return saved;
+    } catch (error) {
+      console.warn('Could not restore availability result:', error);
+      return null;
+    }
+  });
+  const [availabilityRechecked, setAvailabilityRechecked] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -349,6 +362,10 @@ export default function BookingForm() {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
+    if (name === 'event_date' || name === 'start_time') {
+      setShowAvailabilityNotice(false);
+    }
+
     trackBookingStarted();
 
     setFormData((prev) => ({
@@ -367,6 +384,7 @@ export default function BookingForm() {
 
     if (!selectedPackage) return;
 
+    setShowAvailabilityNotice(false);
     trackBookingStarted();
 
     setFormData((prev) => ({
@@ -393,34 +411,62 @@ export default function BookingForm() {
   useEffect(() => {
     if (!formData.event_date) {
       setBookedSlots([]);
+      setAvailabilityNotice(null);
+      setAvailabilityRechecked(true);
       return;
     }
 
+    let active = true;
     const fetchConfirmedSlots = async () => {
       setCheckingAvailability(true);
+      setAvailabilityRechecked(false);
 
       const { data, error } = await supabase
         .from('bookings')
-        .select(
-          'start_time, end_time, package_type'
-        )
-        .eq(
-          'event_date',
-          formData.event_date
-        )
+        .select('start_time, end_time, package_type')
+        .eq('event_date', formData.event_date)
         .eq('status', 'Confirmed');
 
-      if (!error && data) {
-        setBookedSlots(data);
-      } else {
+      if (!active) return;
+      if (error) {
+        console.error('Booking-page availability recheck failed:', error);
         setBookedSlots([]);
+        setAvailabilityNotice((previous) => ({
+          ...(previous || {}),
+          event_date: formData.event_date,
+          start_time: formData.start_time,
+          availability_status: 'unverified'
+        }));
+      } else {
+        const confirmedSlots = data || [];
+        setBookedSlots(confirmedSlots);
+        const selectedPackage = formData.package_type === 'promotion'
+          ? { hours: Number(promotionalOffer?.offer_hours) || Number(availabilityNotice?.rental_hours) || 3 }
+          : packages[formData.package_type] || packages['3_hours'];
+        const selectedEndTime = calculateEndTime(formData.start_time, selectedPackage.hours);
+        const hasConflict = Boolean(formData.start_time && selectedEndTime && confirmedSlots.some((booking) => {
+          const bookedStart = String(booking.start_time).slice(0, 5);
+          const bookedEnd = String(booking.end_time).slice(0, 5);
+          return formData.start_time < bookedEnd && selectedEndTime > bookedStart;
+        }));
+        const status = hasConflict ? 'unavailable' : confirmedSlots.length ? 'limited' : 'available';
+        setAvailabilityNotice((previous) => ({
+          ...(previous || {}),
+          event_date: formData.event_date,
+          start_time: formData.start_time,
+          availability_status: status,
+          rental_hours: selectedPackage.hours,
+          checked_at: previous?.checked_at || new Date().toISOString()
+        }));
       }
 
       setCheckingAvailability(false);
+      setAvailabilityRechecked(true);
     };
 
     fetchConfirmedSlots();
-  }, [formData.event_date]);
+    return () => { active = false; };
+  }, [formData.event_date, formData.start_time, formData.package_type, promotionalOffer?.offer_hours]);
 
   const calculateEndTime = (
     startTime,
@@ -1077,6 +1123,21 @@ export default function BookingForm() {
           'system-ui, sans-serif'
       }}
     >
+      {showAvailabilityNotice && availabilityNotice && availabilityRechecked && (
+        <div role="dialog" aria-modal="true" aria-labelledby="availability-result-title" style={{ position: 'fixed', inset: 0, zIndex: 15000, background: 'rgba(15,23,42,.68)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div style={{ width: '100%', maxWidth: 360, background: '#fff', borderRadius: 16, padding: 22, textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,.3)' }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>{availabilityNotice.availability_status === 'unavailable' ? '🔴' : availabilityNotice.availability_status === 'limited' ? '🟡' : availabilityNotice.availability_status === 'available' ? '🟢' : '⚠️'}</div>
+            <h3 id="availability-result-title" style={{ margin: '0 0 8px', color: '#0f172a', fontSize: 20 }}>
+              {availabilityNotice.availability_status === 'unavailable' ? 'Not available' : availabilityNotice.availability_status === 'limited' ? 'Limited availability' : availabilityNotice.availability_status === 'available' ? 'Date available' : 'Availability could not be verified'}
+            </h3>
+            <p style={{ margin: '0 0 16px', color: '#475569', fontSize: 14, lineHeight: 1.5 }}>
+              {availabilityNotice.event_date}{availabilityNotice.start_time ? ` · ${availabilityNotice.start_time}` : ''}
+              {availabilityNotice.availability_status === 'unavailable' ? ' conflicts with a confirmed booking. Please choose another time.' : availabilityNotice.availability_status === 'limited' ? ' has other confirmed bookings, but your selected time is currently open.' : availabilityNotice.availability_status === 'available' ? ' has no confirmed bookings at this time.' : ' Please try again before submitting your booking.'}
+            </p>
+            <button type="button" onClick={() => setShowAvailabilityNotice(false)} style={{ width: '100%', border: 0, borderRadius: 9, padding: 12, background: '#2563eb', color: '#fff', fontWeight: 800, cursor: 'pointer' }}>Continue to booking</button>
+          </div>
+        </div>
+      )}
       <div
         style={{
           background: '#ffffff',
@@ -1704,28 +1765,13 @@ export default function BookingForm() {
                 Event Date
               </label>
 
-              <input
-                type="date"
-                name="event_date"
-                value={
-                  formData.event_date
-                }
-                onChange={
-                  handleChange
-                }
-                required
-                style={{
-                  width:
-                    '100%',
-                  padding:
-                    '10px',
-                  borderRadius:
-                    '8px',
-                  border:
-                    '1px solid #cbd5e1',
-                  fontSize:
-                    '14px'
-                }}
+              <AvailabilityDatePicker
+                label="Event Date"
+                value={formData.event_date}
+                minDate={`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`}
+                startTime={formData.start_time}
+                rentalHours={formData.package_type === 'promotion' ? promotionalOffer?.offer_hours : packages[formData.package_type]?.hours}
+                onChange={(nextDate) => handleChange({ target: { name: 'event_date', value: nextDate } })}
               />
             </div>
 
@@ -1775,101 +1821,32 @@ export default function BookingForm() {
 
           {formData.event_date && (
             <div
+              role="status"
               style={{
-                background:
-                  '#f8fafc',
-                padding:
-                  '10px 12px',
-                borderRadius:
-                  '8px',
-                border:
-                  '1px solid #e2e8f0',
-                fontSize:
-                  '13px',
-                color:
-                  '#475569'
+                background: availabilityNotice?.availability_status === 'unavailable' ? '#fee2e2' : availabilityNotice?.availability_status === 'limited' ? '#fef3c7' : availabilityNotice?.availability_status === 'available' ? '#dcfce7' : '#f1f5f9',
+                border: `1px solid ${availabilityNotice?.availability_status === 'unavailable' ? '#fca5a5' : availabilityNotice?.availability_status === 'limited' ? '#fcd34d' : availabilityNotice?.availability_status === 'available' ? '#86efac' : '#cbd5e1'}`,
+                color: availabilityNotice?.availability_status === 'unavailable' ? '#991b1b' : availabilityNotice?.availability_status === 'limited' ? '#92400e' : availabilityNotice?.availability_status === 'available' ? '#166534' : '#475569',
+                padding: '10px 12px',
+                borderRadius: '8px',
+                fontSize: '13px'
               }}
             >
-              {checkingAvailability ? (
-                <span>
-                  Checking date availability...
-                </span>
-              ) : bookedSlots.length >
-                0 ? (
-                <div>
-                  <span
-                    style={{
-                      color:
-                        '#d97706',
-                      fontWeight:
-                        'bold'
-                    }}
-                  >
-                    ⚠️ Note for{' '}
-                    {
-                      formData.event_date
-                    }:
-                  </span>
-
-                  <div
-                    style={{
-                      marginTop:
-                        '4px',
-                      fontSize:
-                        '12px'
-                    }}
-                  >
-                    Already booked slots:{' '}
-                    {bookedSlots.map(
-                      (
-                        slot,
-                        idx
-                      ) => (
-                        <span
-                          key={idx}
-                          style={{
-                            display:
-                              'inline-block',
-                            background:
-                              '#fef3c7',
-                            color:
-                              '#b45309',
-                            padding:
-                              '2px 6px',
-                            borderRadius:
-                              '4px',
-                            marginRight:
-                              '4px',
-                            marginTop:
-                              '2px'
-                          }}
-                        >
-                          {
-                            slot.start_time
-                          }{' '}
-                          -{' '}
-                          {
-                            slot.end_time
-                          }
-                        </span>
-                      )
+              {checkingAvailability ? 'Checking selected date and time…' : (
+                <>
+                  <strong>
+                    {availabilityNotice?.availability_status === 'unavailable' ? '🔴 Not available for this time' : availabilityNotice?.availability_status === 'limited' ? '🟡 Limited availability' : availabilityNotice?.availability_status === 'available' ? '🟢 Available' : 'Availability not verified'}
+                  </strong>
+                  <div style={{ marginTop: 4 }}>
+                    {formData.event_date} {formData.start_time ? `· ${formData.start_time}` : ''}
+                    {bookedSlots.length > 0 && (
+                      <div style={{ marginTop: 5, fontSize: 12 }}>
+                        Confirmed bookings: {bookedSlots.map((slot, index) => `${String(slot.start_time).slice(0, 5)}–${String(slot.end_time).slice(0, 5)}`).join(', ')}
+                      </div>
                     )}
+                    {availabilityNotice?.availability_status === 'unavailable' && ' Choose another time or date before submitting.'}
+                    {availabilityNotice?.availability_status === 'limited' && ' Your selected time does not overlap existing confirmed bookings.'}
                   </div>
-                </div>
-              ) : (
-                <span
-                  style={{
-                    color:
-                      '#166534',
-                    fontWeight:
-                      'bold'
-                  }}
-                >
-                  ✅ Selected date is
-                  fully open! No
-                  conflicting
-                  bookings.
-                </span>
+                </>
               )}
             </div>
           )}
