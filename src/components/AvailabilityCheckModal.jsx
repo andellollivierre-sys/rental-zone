@@ -90,7 +90,7 @@ export default function AvailabilityCheckModal({
         return;
       }
 
-      const availabilityStatus = (data || []).length ? 'limited' : 'available';
+      const availabilityStatus = 'available';
       const selection = {
         event_date: eventDate,
         availability_status: availabilityStatus,
@@ -108,7 +108,7 @@ export default function AvailabilityCheckModal({
         sessionStorage.removeItem('trz_promo_intent');
       }
 
-      trackTrzEvent(availabilityStatus === 'limited' ? 'availability_check_limited' : 'availability_check_available', {
+      trackTrzEvent('availability_check_available', {
         event_date: eventDate,
         start_time: startTime,
         end_time: endTime,
