@@ -578,7 +578,7 @@ export default function BookingForm() {
       error: checkError
     } = await supabase
       .from('bookings')
-      .select('*')
+      .select('start_time, end_time')
       .eq(
         'event_date',
         formData.event_date
