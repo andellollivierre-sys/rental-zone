@@ -1217,13 +1217,13 @@ export default function LandingPage() {
             gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
             gap: 12
           }}>
-            <article style={{ overflow: 'hidden', borderRadius: 14, background: '#fff', border: '1px solid #dbeafe', boxShadow: '0 5px 16px rgba(15,23,42,.07)' }}>
-              <div style={{ width: '100%', aspectRatio: '4 / 3', backgroundColor: '#ffffff', borderRadius: 12, overflow: 'hidden' }}>
+            <article style={{ overflow: 'hidden', borderRadius: 14, background: '#ffffff', border: '1px solid #dbeafe', boxShadow: '0 5px 16px rgba(15,23,42,.07)' }}>
+              <div style={{ width: '100%', aspectRatio: '4 / 3', backgroundColor: '#ffffff', colorScheme: 'only light', borderRadius: 12, overflow: 'hidden' }}>
                 <img
                   src="https://res-de.togroup.com/stc/home_product/emtop/userfiles/1/images/photo/20241011190136894/EGGRD2822.jpg"
                   alt="EMTOP 3000W gasoline generator"
                   loading="lazy"
-                  style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', padding: 8, boxSizing: 'border-box' }}
+                  style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', background: '#ffffff', padding: 8, boxSizing: 'border-box' }}
                 />
               </div>
               <div style={{ padding: '12px 13px 14px' }}>
