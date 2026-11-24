@@ -440,10 +440,14 @@ export default function BookingForm() {
       } else {
         const confirmedSlots = data || [];
         setBookedSlots(confirmedSlots);
-        const selectedPackage = formData.package_type === 'promotion'
-          ? { hours: Number(promotionalOffer?.offer_hours) || Number(availabilityNotice?.rental_hours) || 3 }
-          : packages[formData.package_type] || packages['3_hours'];
-        const selectedEndTime = calculateEndTime(formData.start_time, selectedPackage.hours);
+        const selectedHours = formData.package_type === 'promotion'
+          ? Number(promotionalOffer?.offer_hours) || 3
+          : formData.package_type === '2_hours' ? 2 : formData.package_type === 'full_day' ? 8 : 3;
+        const timeParts = formData.start_time ? formData.start_time.split(':').map(Number) : null;
+        const endMinutes = timeParts ? timeParts[0] * 60 + timeParts[1] + selectedHours * 60 : 1440;
+        const selectedEndTime = timeParts && endMinutes < 1440
+          ? `${String(Math.floor(endMinutes / 60)).padStart(2, '0')}:${String(endMinutes % 60).padStart(2, '0')}`
+          : null;
         const hasConflict = Boolean(formData.start_time && selectedEndTime && confirmedSlots.some((booking) => {
           const bookedStart = String(booking.start_time).slice(0, 5);
           const bookedEnd = String(booking.end_time).slice(0, 5);
@@ -455,7 +459,7 @@ export default function BookingForm() {
           event_date: formData.event_date,
           start_time: formData.start_time,
           availability_status: status,
-          rental_hours: selectedPackage.hours,
+          rental_hours: selectedHours,
           checked_at: previous?.checked_at || new Date().toISOString()
         }));
       }
