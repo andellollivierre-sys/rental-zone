@@ -1218,12 +1218,14 @@ export default function LandingPage() {
             gap: 12
           }}>
             <article style={{ overflow: 'hidden', borderRadius: 14, background: '#fff', border: '1px solid #dbeafe', boxShadow: '0 5px 16px rgba(15,23,42,.07)' }}>
-              <img
-                src="https://res-de.togroup.com/stc/home_product/emtop/userfiles/1/images/photo/20241011190136894/EGGRD2822.jpg"
-                alt="EMTOP 3000W gasoline generator"
-                loading="lazy"
-                style={{ width: '100%', height: 180, objectFit: 'contain', background: '#f8fafc', display: 'block', padding: 8, boxSizing: 'border-box' }}
-              />
+              <div style={{ width: '100%', aspectRatio: '4 / 3', backgroundColor: '#ffffff', borderRadius: 12, overflow: 'hidden' }}>
+                <img
+                  src="https://res-de.togroup.com/stc/home_product/emtop/userfiles/1/images/photo/20241011190136894/EGGRD2822.jpg"
+                  alt="EMTOP 3000W gasoline generator"
+                  loading="lazy"
+                  style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', padding: 8, boxSizing: 'border-box' }}
+                />
+              </div>
               <div style={{ padding: '12px 13px 14px' }}>
                 <span style={{ color: '#2563eb', fontSize: 10, fontWeight: 900, letterSpacing: .8, textTransform: 'uppercase' }}>Equipment rental</span>
                 <h3 style={{ margin: '5px 0', color: '#0f172a', fontSize: 18, fontWeight: 900 }}>Generator Rental</h3>
@@ -1239,12 +1241,14 @@ export default function LandingPage() {
             </article>
 
             <article style={{ overflow: 'hidden', borderRadius: 14, background: '#fff', border: '1px solid #dbeafe', boxShadow: '0 5px 16px rgba(15,23,42,.07)' }}>
-              <img
-                src="https://a-ipower.com/cdn/shop/products/PWF2701SH_R_3QTR_L_2000_2000.png?v=1630521306"
-                alt="A-iPower 2700 PSI pressure washer"
-                loading="lazy"
-                style={{ width: '100%', height: 180, objectFit: 'contain', background: '#f8fafc', display: 'block', padding: 8, boxSizing: 'border-box' }}
-              />
+              <div style={{ width: '100%', aspectRatio: '4 / 3', backgroundColor: '#ffffff', borderRadius: 12, overflow: 'hidden' }}>
+                <img
+                  src="https://a-ipower.com/cdn/shop/products/PWF2701SH_R_3QTR_L_2000_2000.png?v=1630521306"
+                  alt="A-iPower 2700 PSI pressure washer"
+                  loading="lazy"
+                  style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', padding: 8, boxSizing: 'border-box' }}
+                />
+              </div>
               <div style={{ padding: '12px 13px 14px' }}>
                 <span style={{ color: '#2563eb', fontSize: 10, fontWeight: 900, letterSpacing: .8, textTransform: 'uppercase' }}>Equipment rental</span>
                 <h3 style={{ margin: '5px 0', color: '#0f172a', fontSize: 18, fontWeight: 900 }}>Pressure Washer Rental</h3>
