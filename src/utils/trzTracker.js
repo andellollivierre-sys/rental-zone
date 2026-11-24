@@ -232,7 +232,12 @@ function trackMetaStandardEvent(eventName, additionalData = {}) {
     availability_check_available: {
       name: 'AvailabilityResult',
       custom: true,
-      data: { content_name: 'Spider-Man Combo Bouncer availability', content_category: 'Bouncer rental', availability: 'available' }
+      data: { content_name: 'Spider-Man Combo Bouncer availability', content_category: 'Bouncer rental', availability: additionalData.availability_status || 'available' }
+    },
+    availability_check_limited: {
+      name: 'AvailabilityResult',
+      custom: true,
+      data: { content_name: 'Spider-Man Combo Bouncer availability', content_category: 'Bouncer rental', availability: 'limited' }
     },
     availability_check_unavailable: {
       name: 'AvailabilityResult',
