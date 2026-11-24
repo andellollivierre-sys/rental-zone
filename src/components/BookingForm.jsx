@@ -1831,7 +1831,7 @@ export default function BookingForm() {
                       </div>
                     )}
                     {availabilityNotice?.availability_status === 'unavailable' && ' Choose another time or date before submitting.'}
-                    {availabilityNotice?.availability_status === 'limited' && ' Your selected time does not overlap existing confirmed bookings.'}
+                    {availabilityNotice?.availability_status === 'limited' && (formData.start_time ? ' Your selected time does not overlap existing confirmed bookings.' : ' This date has existing confirmed bookings. Choose a start time to check your slot.')}
                   </div>
                 </>
               )}
