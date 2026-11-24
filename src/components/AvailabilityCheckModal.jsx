@@ -108,7 +108,7 @@ export default function AvailabilityCheckModal({
         sessionStorage.removeItem('trz_promo_intent');
       }
 
-      trackTrzEvent('availability_check_available', {
+      trackTrzEvent(availabilityStatus === 'limited' ? 'availability_check_limited' : 'availability_check_available', {
         event_date: eventDate,
         start_time: startTime,
         end_time: endTime,
