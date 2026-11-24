@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { trackTrzEvent } from '../utils/trzTracker';
+import AvailabilityDatePicker from './AvailabilityDatePicker';
 
 const PACKAGES = {
   '2_hours': { label: '2 Hours', hours: 2 },
@@ -79,7 +80,7 @@ export default function AvailabilityCheckModal({
       });
 
       if (conflicts.length) {
-        setResult({ available: false, conflicts });
+        setResult({ available: false, status: 'unavailable', conflicts });
         trackTrzEvent('availability_check_unavailable', {
           event_date: eventDate,
           start_time: startTime,
@@ -89,8 +90,10 @@ export default function AvailabilityCheckModal({
         return;
       }
 
+      const availabilityStatus = (data || []).length ? 'limited' : 'available';
       const selection = {
         event_date: eventDate,
+        availability_status: availabilityStatus,
         start_time: startTime,
         package_type: packageType,
         delivery_area: deliveryArea,
@@ -110,7 +113,8 @@ export default function AvailabilityCheckModal({
         start_time: startTime,
         end_time: endTime,
         package_type: packageType,
-        rental_hours: selectedPackage.hours
+        rental_hours: selectedPackage.hours,
+        availability_status: availabilityStatus
       });
 
       window.location.hash = '#booking';
@@ -142,10 +146,14 @@ export default function AvailabilityCheckModal({
         <p style={{ color: '#64748b', fontSize: 14, lineHeight: 1.5 }}>Choose your event date, start time and rental length. We’ll check confirmed bookings before you continue.</p>
 
         <form onSubmit={handleCheck} style={{ display: 'grid', gap: 13 }}>
-          <label style={{ display: 'grid', gap: 5, fontSize: 13, fontWeight: 700, color: '#334155' }}>
-            Event date
-            <input type="date" min={minDate} required value={eventDate} onChange={(e) => { setEventDate(e.target.value); setResult(null); }} style={{ padding: 12, border: '1px solid #cbd5e1', borderRadius: 9, fontSize: 16 }} />
-          </label>
+          <AvailabilityDatePicker
+            label="Event date"
+            value={eventDate}
+            minDate={minDate}
+            startTime={startTime}
+            rentalHours={selectedPackage?.hours}
+            onChange={(nextDate) => { setEventDate(nextDate); setResult(null); }}
+          />
           <label style={{ display: 'grid', gap: 5, fontSize: 13, fontWeight: 700, color: '#334155' }}>
             Preferred start time
             <input type="time" required value={startTime} onChange={(e) => { setStartTime(e.target.value); setResult(null); }} style={{ padding: 12, border: '1px solid #cbd5e1', borderRadius: 9, fontSize: 16 }} />
