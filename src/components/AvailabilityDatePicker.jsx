@@ -7,30 +7,9 @@ function toDateKey(date) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
-function getEndTime(startTime, hours) {
-  if (!startTime || !Number.isFinite(Number(hours))) return null;
-  const [hour, minute] = startTime.split(':').map(Number);
-  const total = hour * 60 + minute + Number(hours) * 60;
-  if (total >= 1440) return null;
-  return `${pad(Math.floor(total / 60))}:${pad(total % 60)}`;
-}
-
-function getDayStatus(bookings, startTime, rentalHours) {
-  if (!bookings.length) return 'available';
-  const endTime = getEndTime(startTime, rentalHours);
-  if (!startTime || !endTime) return 'limited';
-  const overlaps = bookings.some((booking) => {
-    const bookedStart = String(booking.start_time).slice(0, 5);
-    const bookedEnd = String(booking.end_time).slice(0, 5);
-    return startTime < bookedEnd && endTime > bookedStart;
-  });
-  return overlaps ? 'unavailable' : 'limited';
-}
-
 const STATUS_STYLES = {
-  available: { background: '#dcfce7', color: '#166534', border: '#86efac', label: 'Available' },
-  limited: { background: '#fef3c7', color: '#92400e', border: '#fcd34d', label: 'Limited' },
-  unavailable: { background: '#fee2e2', color: '#991b1b', border: '#fca5a5', label: 'Not available' },
+  booked: { background: '#fee2e2', color: '#991b1b', border: '#fca5a5', label: 'Existing booking' },
+  normal: { background: '#ffffff', color: '#334155', border: '#e2e8f0', label: 'No booking shown' },
   unknown: { background: '#f1f5f9', color: '#64748b', border: '#cbd5e1', label: 'Checking' }
 };
 
@@ -109,7 +88,7 @@ export default function AvailabilityDatePicker({ value, onChange, startTime, ren
             const date = new Date(year, month, day);
             const dateKey = toDateKey(date);
             const isPast = dateKey < earliestDate;
-            const status = loadError ? 'unknown' : getDayStatus(bookingsByDate[dateKey] || [], startTime, rentalHours);
+            const status = loadError ? 'unknown' : (bookingsByDate[dateKey] || []).length ? 'booked' : 'normal';
             const style = STATUS_STYLES[status];
             const isSelected = value === dateKey;
             return (
@@ -118,9 +97,9 @@ export default function AvailabilityDatePicker({ value, onChange, startTime, ren
                 type="button"
                 disabled={isPast || loading || loadError}
                 onClick={() => onChange(dateKey)}
-                aria-label={`${dateKey}: ${style.label}`}
+                aria-label={`${dateKey}${status === 'booked' ? ': confirmed booking on this date' : ''}`}
                 aria-pressed={isSelected}
-                title={style.label}
+                title={status === 'booked' ? 'Confirmed booking on this date — check your preferred time' : 'Select date'}
                 style={{
                   minWidth: 0,
                   padding: '9px 2px',
@@ -140,7 +119,7 @@ export default function AvailabilityDatePicker({ value, onChange, startTime, ren
           })}
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 12, fontSize: 11, color: '#475569' }}>
-          {['available', 'limited', 'unavailable'].map((status) => (
+          {['booked'].map((status) => (
             <span key={status} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
               <span style={{ width: 10, height: 10, borderRadius: 3, background: STATUS_STYLES[status].background, border: `1px solid ${STATUS_STYLES[status].border}` }} />
               {STATUS_STYLES[status].label}
@@ -149,7 +128,7 @@ export default function AvailabilityDatePicker({ value, onChange, startTime, ren
         </div>
         {loading && <p role="status" style={{ margin: '8px 0 0', color: '#64748b', fontSize: 11 }}>Loading confirmed bookings…</p>}
         {loadError && <p role="alert" style={{ margin: '8px 0 0', color: '#b91c1c', fontSize: 11 }}>Availability colours could not load. Try again shortly.</p>}
-        {value && <p style={{ margin: '8px 0 0', color: '#334155', fontSize: 12 }}>Selected: <strong>{value}</strong> · {STATUS_STYLES[loadError ? 'unknown' : getDayStatus(bookingsByDate[value] || [], startTime, rentalHours)].label}</p>}
+        {value && <p style={{ margin: '8px 0 0', color: (bookingsByDate[value] || []).length ? '#991b1b' : '#334155', fontSize: 12 }}>{(bookingsByDate[value] || []).length ? 'This date has confirmed bookings. Your selected time will be checked before you continue.' : 'Selected date: '}{!((bookingsByDate[value] || []).length) && <strong>{value}</strong>}</p>}
       </div>
     </div>
   );
