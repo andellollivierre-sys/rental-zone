@@ -423,7 +423,7 @@ export default function BookingForm() {
 
       const { data, error } = await supabase
         .from('bookings')
-        .select('start_time, end_time, package_type')
+        .select('start_time, end_time')
         .eq('event_date', formData.event_date)
         .eq('status', 'Confirmed');
 
