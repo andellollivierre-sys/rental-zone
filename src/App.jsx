@@ -53,12 +53,12 @@ export default function App() {
 
   const navLinks = [
     { href: '#home', label: 'Home' },
-    { href: '#booking', label: 'Booking' },
+    { href: '#booking', label: 'Bouncy Castle Booking' },
     { href: '#our-bouncer', label: 'Our Bouncer' },
-    { href: '#event-services', label: 'More Rentals & Services' },
+    { href: '#event-services', label: 'Rentals & Services' },
     { href: '/articles/', label: 'Guides' },
-    { href: '#how-it-works', label: 'How It Works' },
-    { href: '#faq', label: 'FAQ' },
+    { href: '#how-it-works', label: 'Bouncy Castle Booking Guide' },
+    { href: '#faq', label: 'Bouncy Castle FAQs' },
     { href: '#contact', label: 'Contact' },
     { href: '#admin', label: 'Admin' },
   ];
