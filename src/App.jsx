@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import LandingPage from './components/LandingPage';
 import BookingForm from './components/BookingForm';
+import BookingPreview from './components/BookingPreview';
 import AdminDashboard from './components/AdminDashboard';
 import OurBouncer from './components/OurBouncer';
 import HowItWorks from './components/HowItWorks';
@@ -264,7 +265,9 @@ export default function App() {
           paddingBottom: '40px',
         }}
       >
-        {currentRoute === '#event-services' ? (
+        {currentRoute === '#booking-preview' ? (
+          <BookingPreview />
+        ) : currentRoute === '#event-services' ? (
           <EventServices />
         ) : currentRoute === '#admin' ? (
           <AdminDashboard />
