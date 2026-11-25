@@ -35,7 +35,7 @@ const items = [
     key: 'generator',
     title: 'Generator Rental',
     tag: 'Supplier arranged',
-    image: 'https://res-de.togroup.com/stc/home_product/emtop/userfiles/1/images/photo/20241011190136894/EGGRD2822.jpg',
+    image: '/1795605347909.jpg',
     alt: 'Portable generator equipment',
     description: 'We can check with our supplier and arrange a generator for your needs.',
     note: 'TT$400 per day',
@@ -143,7 +143,7 @@ export default function EventServices() {
           <article key={item.key} style={{ ...styles.card, ...((item.key === 'pressure-washer' || item.key === 'generator') ? { background: '#ffffff' } : {}) }}>
             {(item.key === 'pressure-washer' || item.key === 'generator') ? (
               <div className="equipment-image-background" style={{ position: 'relative', width: '100%', aspectRatio: '4 / 3', backgroundColor: '#ffffff', colorScheme: 'only light', borderRadius: 12, overflow: 'hidden' }}>
-                <img src={item.image} alt={item.alt} loading="lazy" style={{ position: 'absolute', width: '122%', height: '122%', left: '-11%', top: '-11%', objectFit: 'cover', display: 'block', background: '#ffffff', padding: 0, boxSizing: 'border-box' }} />
+                <img src={item.image} alt={item.alt} loading="lazy" style={item.key === 'generator' ? { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', display: 'block', background: '#ffffff', padding: 12, boxSizing: 'border-box' } : { position: 'absolute', width: '122%', height: '122%', left: '-11%', top: '-11%', objectFit: 'cover', display: 'block', background: '#ffffff', padding: 0, boxSizing: 'border-box' }} />
               </div>
             ) : (
               <img src={item.image} alt={item.alt} loading="lazy" style={{ width: '100%', height: 180, objectFit: 'cover', display: 'block', background: '#e2e8f0' }} />
