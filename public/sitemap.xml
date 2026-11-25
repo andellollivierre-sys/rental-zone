@@ -3,4 +3,10 @@
   <url>
     <loc>https://rental-zone-taupe.vercel.app/</loc>
   </url>
+  <url>
+    <loc>https://rental-zone-taupe.vercel.app/articles/</loc>
+  </url>
+  <url>
+    <loc>https://rental-zone-taupe.vercel.app/articles/generator-rental-trinidad/</loc>
+  </url>
 </urlset>
