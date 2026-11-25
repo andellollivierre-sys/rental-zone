@@ -140,7 +140,7 @@ export default function Contact() {
             lineHeight: 1.6,
             color: '#475569'
           }}>
-            Have a question about the bouncer, availability, delivery, or your booking?
+            Have a question about the bouncy castle, equipment rentals, partner services, availability or an existing booking?
           </p>
         </div>
       </section>
@@ -349,14 +349,14 @@ export default function Contact() {
           fontSize: '27px',
           fontWeight: '900'
         }}>
-          Ready to book?
+          Booking the bouncy castle?
         </h2>
 
         <p style={{
           margin: '0 0 20px',
           color: '#64748b'
         }}>
-          Check your date and start your booking request.
+          Check your event date and submit a bouncy castle booking request. The other rentals and services are arranged through WhatsApp.
         </p>
 
         <button
