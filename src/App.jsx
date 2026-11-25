@@ -51,6 +51,11 @@ export default function App() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
+  // Every in-app page change starts at the top, including links clicked in the footer.
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [currentRoute]);
+
   const navLinks = [
     { href: '#home', label: 'Home' },
     { href: '#booking', label: 'Bouncy Castle Booking' },
