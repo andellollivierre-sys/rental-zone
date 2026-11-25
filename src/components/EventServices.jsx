@@ -22,7 +22,7 @@ const items = [
     key: 'pressure-washer',
     title: 'Pressure Washer Rental',
     tag: 'Our equipment',
-    image: '/pressure-washer-1500x1125.png',
+    image: '/1795604636353.jpg',
     alt: 'Pressure washing equipment',
     description: 'Rent a pressure washer for your cleaning project.',
     note: 'TT$300 per day',
