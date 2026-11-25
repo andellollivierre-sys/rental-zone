@@ -136,7 +136,7 @@ export default function FAQ() {
             fontSize: 'clamp(30px, 7vw, 46px)',
             fontWeight: '900'
           }}>
-            Frequently Asked Questions
+            Bouncy Castle FAQs
           </h1>
 
           <p style={{

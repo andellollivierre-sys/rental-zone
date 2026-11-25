@@ -1233,8 +1233,6 @@ export default function LandingPage() {
                 <a
                   href="#event-services"
                   onClick={() => trackButtonClick('click_generator_rental_enquiry')}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   style={{ display: 'block', padding: '11px 10px', borderRadius: 9, background: '#0f172a', color: '#fff', textDecoration: 'none', textAlign: 'center', fontSize: 12, fontWeight: 850 }}
                 >View price & rental details →</a>
               </div>
@@ -1256,8 +1254,6 @@ export default function LandingPage() {
                 <a
                   href="#event-services"
                   onClick={() => trackButtonClick('click_pressure_washer_enquiry')}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   style={{ display: 'block', padding: '11px 10px', borderRadius: 9, background: '#0f172a', color: '#fff', textDecoration: 'none', textAlign: 'center', fontSize: 12, fontWeight: 850 }}
                 >View price & rental details →</a>
               </div>
