@@ -1220,10 +1220,10 @@ export default function LandingPage() {
             <article style={{ overflow: 'hidden', borderRadius: 14, background: '#ffffff', border: '1px solid #dbeafe', boxShadow: '0 5px 16px rgba(15,23,42,.07)' }}>
               <div className="equipment-image-background" style={{ width: '100%', aspectRatio: '4 / 3', backgroundColor: '#ffffff', colorScheme: 'only light', borderRadius: 12, overflow: 'hidden' }}>
                 <img
-                  src="https://res-de.togroup.com/stc/home_product/emtop/userfiles/1/images/photo/20241011190136894/EGGRD2822.jpg"
+                  src="/1795605347909.jpg"
                   alt="EMTOP 3000W gasoline generator"
                   loading="lazy"
-                  style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', background: '#ffffff', padding: 8, boxSizing: 'border-box' }}
+                  style={{ position: 'absolute', width: '122%', height: '122%', left: '-11%', top: '-11%', objectFit: 'cover', display: 'block', background: '#ffffff', padding: 0, boxSizing: 'border-box' }}
                 />
               </div>
               <div style={{ padding: '12px 13px 14px' }}>
