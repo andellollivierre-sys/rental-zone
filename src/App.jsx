@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import LandingPage from './components/LandingPage';
 import BookingForm from './components/BookingForm';
+import BookingPreview from './components/BookingPreview';
 import AdminDashboard from './components/AdminDashboard';
 import OurBouncer from './components/OurBouncer';
 import HowItWorks from './components/HowItWorks';
@@ -27,6 +28,7 @@ export default function App() {
   const navLinks = [
     { href: '#home', label: 'Home' },
     { href: '#booking', label: 'Booking' },
+    { href: '#booking-preview', label: 'Booking Preview' },
     { href: '#our-bouncer', label: 'Our Bouncer' },
     { href: '#how-it-works', label: 'How It Works' },
     { href: '#faq', label: 'FAQ' },
@@ -228,7 +230,9 @@ export default function App() {
           paddingBottom: '40px',
         }}
       >
-        {currentRoute === '#admin' ? (
+        {currentRoute === '#booking-preview' ? (
+          <BookingPreview />
+        ) : currentRoute === '#admin' ? (
           <AdminDashboard />
         ) : currentRoute === '#booking' ? (
           <BookingForm />
