@@ -1243,7 +1243,7 @@ export default function LandingPage() {
             <article style={{ overflow: 'hidden', borderRadius: 14, background: '#ffffff', border: '1px solid #dbeafe', boxShadow: '0 5px 16px rgba(15,23,42,.07)' }}>
               <div className="equipment-image-background" style={{ position: 'relative', width: '100%', aspectRatio: '4 / 3', backgroundColor: '#ffffff', colorScheme: 'only light', borderRadius: 12, overflow: 'hidden' }}>
                 <img
-                  src="/pressure-washer-1500x1125.png"
+                  src="/1795604636353.jpg"
                   alt="A-iPower 2700 PSI pressure washer"
                   loading="lazy"
                   style={{ position: 'absolute', width: '122%', height: '122%', left: '-11%', top: '-11%', objectFit: 'cover', display: 'block', background: '#ffffff', padding: 0, boxSizing: 'border-box' }}
