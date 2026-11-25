@@ -56,6 +56,7 @@ export default function App() {
     { href: '#booking', label: 'Booking' },
     { href: '#our-bouncer', label: 'Our Bouncer' },
     { href: '#event-services', label: 'More Rentals & Services' },
+    { href: '/articles/', label: 'Guides' },
     { href: '#how-it-works', label: 'How It Works' },
     { href: '#faq', label: 'FAQ' },
     { href: '#contact', label: 'Contact' },

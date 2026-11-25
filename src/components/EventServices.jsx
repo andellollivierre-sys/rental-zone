@@ -167,6 +167,14 @@ export default function EventServices() {
               >
                 {item.action} →
               </a>
+              {item.key === 'generator' && (
+                <a
+                  href="/articles/generator-rental-trinidad/"
+                  style={{ display: 'inline-block', marginTop: 10, color: '#075985', fontSize: 12, fontWeight: 800, textDecoration: 'none' }}
+                >
+                  Read: What size generator do you need? →
+                </a>
+              )}
             </div>
           </article>
         ))}
