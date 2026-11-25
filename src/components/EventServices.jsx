@@ -142,8 +142,8 @@ export default function EventServices() {
         {items.map((item) => (
           <article key={item.key} style={{ ...styles.card, ...((item.key === 'pressure-washer' || item.key === 'generator') ? { background: '#ffffff' } : {}) }}>
             {(item.key === 'pressure-washer' || item.key === 'generator') ? (
-              <div className="equipment-image-background" style={{ width: '100%', aspectRatio: '4 / 3', backgroundColor: '#ffffff', colorScheme: 'only light', borderRadius: 12, overflow: 'hidden' }}>
-                <img src={item.image} alt={item.alt} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', background: '#ffffff', padding: 8, boxSizing: 'border-box' }} />
+              <div className="equipment-image-background" style={{ position: 'relative', width: '100%', aspectRatio: '4 / 3', backgroundColor: '#ffffff', colorScheme: 'only light', borderRadius: 12, overflow: 'hidden' }}>
+                <img src={item.image} alt={item.alt} loading="lazy" style={{ position: 'absolute', width: '122%', height: '122%', left: '-11%', top: '-11%', objectFit: 'cover', display: 'block', background: '#ffffff', padding: 0, boxSizing: 'border-box' }} />
               </div>
             ) : (
               <img src={item.image} alt={item.alt} loading="lazy" style={{ width: '100%', height: 180, objectFit: 'cover', display: 'block', background: '#e2e8f0' }} />
