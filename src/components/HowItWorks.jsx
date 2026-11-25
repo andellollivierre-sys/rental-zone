@@ -202,7 +202,7 @@ export default function HowItWorks() {
               fontWeight: '900',
             }}
           >
-            How It Works
+            Bouncy Castle Booking Guide
           </h1>
 
           <p
@@ -213,8 +213,7 @@ export default function HowItWorks() {
               color: '#475569',
             }}
           >
-            Simple booking. Clear process. Here is exactly what happens
-            when you book with The Rental Zone.
+            This guide explains the online booking process for our Spider-Man Combo Bouncer. Other rentals and partner services are arranged separately through WhatsApp.
           </p>
         </div>
       </section>
@@ -235,7 +234,7 @@ export default function HowItWorks() {
               textAlign: 'center',
             }}
           >
-            Your booking process
+            Your bouncy castle booking process
           </h2>
 
           <p
@@ -246,7 +245,7 @@ export default function HowItWorks() {
               fontSize: '14px',
             }}
           >
-            The booking form takes you through these steps.
+            Follow these steps to submit a bouncy castle booking request.
           </p>
 
           <div style={{ display: 'grid', gap: '16px' }}>
