@@ -284,41 +284,122 @@ export default function App() {
         )}
       </main>
 
-      {/* Professional Company Footer */}
+      {/* Executive company footer */}
       <footer
         style={{
-          background: '#0f172a',
-          color: '#94a3b8',
-          padding: '20px',
-          textAlign: 'center',
-          fontSize: '13px',
-          fontFamily: 'system-ui, sans-serif',
-          borderTop: '1px solid #1e293b',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '8px',
           marginTop: 'auto',
+          background: '#0b1220',
+          color: '#cbd5e1',
+          borderTop: '1px solid #243247',
+          fontFamily: 'system-ui, sans-serif',
         }}
       >
-        <div>
-          © {new Date().getFullYear()} The Rental Zone TT. All rights
-          reserved.
-        </div>
-
-        <div>
-          <a
-            href="https://www.instagram.com/therentalzonett/"
-            target="_blank"
-            rel="noopener noreferrer"
+        <div
+          style={{
+            maxWidth: '1100px',
+            margin: '0 auto',
+            padding: '44px 24px 22px',
+          }}
+        >
+          <div
             style={{
-              color: '#38bdf8',
-              textDecoration: 'none',
-              fontWeight: 'bold',
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '38px',
+              justifyContent: 'space-between',
+              paddingBottom: '34px',
             }}
           >
-            Connect on Instagram
-          </a>
+            <div style={{ flex: '2 1 250px', minWidth: 0, maxWidth: '390px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                <img
+                  src="https://lh3.googleusercontent.com/d/1zK7oIDhE4G-hDWsoq9C527Y-EcXWiQRV"
+                  alt="The Rental Zone logo"
+                  style={{ width: '46px', height: '46px', borderRadius: '50%', objectFit: 'cover' }}
+                />
+                <div>
+                  <div style={{ color: '#f8fafc', fontSize: '17px', fontWeight: 800, letterSpacing: '0.01em' }}>THE RENTAL ZONE TT</div>
+                  <div style={{ color: '#94a3b8', fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', marginTop: '3px' }}>Rentals &amp; Event Services</div>
+                </div>
+              </div>
+              <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: 1.75, margin: '0 0 20px' }}>
+                Straightforward rental solutions for celebrations, equipment needs and event support in Trinidad &amp; Tobago.
+              </p>
+              <a
+                href="https://wa.me/18682810670"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '9px',
+                  padding: '11px 15px',
+                  borderRadius: '7px',
+                  background: '#e2e8f0',
+                  color: '#0f172a',
+                  textDecoration: 'none',
+                  fontSize: '13px',
+                  fontWeight: 800,
+                }}
+              >
+                Enquire on WhatsApp <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+
+            <div style={{ flex: '1 1 145px' }}>
+              <h3 style={{ color: '#f8fafc', fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', margin: '4px 0 17px' }}>Explore</h3>
+              <div style={{ display: 'grid', gap: '12px' }}>
+                {[
+                  ['Home', '#home'],
+                  ['Bouncy Castle Booking', '#booking'],
+                  ['Our Bouncer', '#our-bouncer'],
+                  ['Rentals & Services', '#event-services'],
+                ].map(([label, href]) => (
+                  <a key={href} href={href} style={{ color: '#a8b5c7', textDecoration: 'none', fontSize: '13px' }}>{label}</a>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ flex: '1 1 145px' }}>
+              <h3 style={{ color: '#f8fafc', fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', margin: '4px 0 17px' }}>Information</h3>
+              <div style={{ display: 'grid', gap: '12px' }}>
+                {[
+                  ['Booking Guide', '#how-it-works'],
+                  ['Bouncy Castle FAQs', '#faq'],
+                  ['Rental Guides', '/articles/'],
+                  ['Contact', '#contact'],
+                ].map(([label, href]) => (
+                  <a key={href} href={href} style={{ color: '#a8b5c7', textDecoration: 'none', fontSize: '13px' }}>{label}</a>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ flex: '1 1 165px' }}>
+              <h3 style={{ color: '#f8fafc', fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', margin: '4px 0 17px' }}>Get in touch</h3>
+              <div style={{ color: '#a8b5c7', fontSize: '13px', lineHeight: 1.8 }}>
+                <div style={{ color: '#f8fafc', fontWeight: 700, marginBottom: '4px' }}>Trinidad &amp; Tobago</div>
+                <div>WhatsApp: +1 (868) 281-0670</div>
+                <a href="https://www.instagram.com/therentalzonett/" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', color: '#cbd5e1', textDecoration: 'none', marginTop: '10px' }}>Instagram ↗</a>
+              </div>
+            </div>
+          </div>
+
+          <div
+            style={{
+              borderTop: '1px solid #243247',
+              paddingTop: '18px',
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '10px',
+              color: '#718096',
+              fontSize: '12px',
+            }}
+          >
+            <span>© {new Date().getFullYear()} The Rental Zone TT. All rights reserved.</span>
+            <span>Clear options. Simple enquiries. Reliable service.</span>
+          </div>
         </div>
       </footer>
     </div>
