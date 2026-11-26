@@ -28,6 +28,42 @@ export default function EmailLeadCapturePreview() {
             #f3f5f8;
           font-family: 'DM Sans', Arial, sans-serif;
         }
+        .trz-celebration-rain {
+          position: fixed;
+          inset: 0;
+          z-index: 5;
+          overflow: hidden;
+          pointer-events: none;
+          contain: strict;
+        }
+        .trz-celebration-piece {
+          position: absolute;
+          top: -48px;
+          display: block;
+          color: #f47721;
+          font-size: 19px;
+          line-height: 1;
+          opacity: .72;
+          filter: drop-shadow(0 2px 3px rgba(20,34,58,.14));
+          animation: trz-confetti-fall 13s linear infinite;
+          will-change: transform;
+        }
+        .trz-celebration-piece-0 { font-size: 22px; opacity: .9; }
+        .trz-celebration-piece-1 { color: #f47721; font-size: 17px; }
+        .trz-celebration-piece-2 { font-size: 18px; }
+        .trz-celebration-piece-3 { color: #e6a33c; font-size: 22px; }
+        .trz-celebration-piece-4 { color: #243b60; font-size: 20px; opacity: .65; }
+        .trz-celebration-piece-5 { font-size: 21px; }
+        @keyframes trz-confetti-fall {
+          0% { transform: translate3d(0, -8vh, 0) rotate(0deg); }
+          25% { transform: translate3d(24px, 28vh, 0) rotate(100deg); }
+          50% { transform: translate3d(-18px, 56vh, 0) rotate(210deg); }
+          75% { transform: translate3d(20px, 84vh, 0) rotate(300deg); }
+          100% { transform: translate3d(-8px, 116vh, 0) rotate(420deg); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .trz-celebration-rain { display: none; }
+        }
         .trz-offer-topline {
           height: 7px;
           background: linear-gradient(90deg, #f47721 0%, #ffb04f 52%, #f47721 100%);
@@ -412,6 +448,21 @@ export default function EmailLeadCapturePreview() {
       `}</style>
 
       <div className="trz-offer-topline" />
+      <div className="trz-celebration-rain" aria-hidden="true">
+        {Array.from({ length: 22 }, (_, i) => (
+          <span
+            key={i}
+            className={`trz-celebration-piece trz-celebration-piece-${i % 6}`}
+            style={{
+              left: `${(i * 37 + 7) % 100}%`,
+              animationDelay: `-${(i * 1.73) % 14}s`,
+              animationDuration: `${10 + (i % 5) * 2}s`,
+            }}
+          >
+            {['🕷️', '✦', '🎉', '✧', '🕸️', '🎇'][i % 6]}
+          </span>
+        ))}
+      </div>
       <header className="trz-offer-header">
         <div className="trz-offer-brand">
           <img className="trz-offer-logo" src="/logo-full-white.svg" alt="The Rental Zone TT logo" />
