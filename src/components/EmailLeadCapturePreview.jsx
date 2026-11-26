@@ -36,17 +36,19 @@ export default function EmailLeadCapturePreview() {
           position: relative;
           z-index: 2;
           width: 100%;
-          height: 86px;
+          min-height: 104px;
           margin: 0 auto;
-          padding: 0 max(24px, calc((100% - 1180px) / 2));
+          padding: 12px max(24px, calc((100% - 1180px) / 2));
           display: flex;
           align-items: center;
           justify-content: space-between;
           background: #ffffff;
-          border-bottom: 1px solid #e8edf3;
-          box-shadow: 0 3px 14px rgba(23,36,58,.06);
+          border-bottom: 3px solid #f47721;
+          box-shadow: 0 4px 18px rgba(23,36,58,.10);
         }
-        .trz-offer-logo { width: 68px; height: 68px; max-height: 68px; padding: 5px; object-fit: contain; background: #ffffff; border: 2px solid #f47721; border-radius: 14px; box-shadow: 0 3px 12px rgba(23,36,58,.10); }
+        .trz-offer-brand { display: flex; align-items: center; gap: 15px; min-width: 0; }
+        .trz-offer-logo { display: block; flex: 0 0 80px; width: 80px; height: 80px; max-height: 80px; padding: 6px; object-fit: contain; object-position: center; background: #ffffff; border: 2px solid #f47721; border-radius: 14px; box-shadow: 0 3px 12px rgba(23,36,58,.12); }
+        .trz-offer-brand-name { color: #14223a; font-family: 'Manrope', sans-serif; font-size: 19px; font-weight: 900; letter-spacing: .02em; }
         .trz-offer-header-note {
           color: #59677d;
           font-size: 12px;
@@ -354,11 +356,13 @@ export default function EmailLeadCapturePreview() {
           .trz-offer-topline { height: 4px; }
           .trz-offer-header {
             width: 100%;
-            height: 60px;
-            padding: 0 14px;
+            min-height: 76px;
+            padding: 8px 12px;
           }
-          .trz-offer-logo { width: 52px; height: 52px; max-height: 52px; padding: 4px; border-radius: 12px; }
-          .trz-offer-header-note { font-size: 8px; letter-spacing: .07em; }
+          .trz-offer-brand { gap: 9px; }
+          .trz-offer-logo { flex-basis: 58px; width: 58px; height: 58px; max-height: 58px; padding: 4px; border-radius: 11px; }
+          .trz-offer-brand-name { font-size: 13px; letter-spacing: 0; }
+          .trz-offer-header-note { font-size: 8px; letter-spacing: .04em; }
           .trz-offer-shell {
             width: calc(100% - 16px);
             margin-top: 3px;
@@ -409,7 +413,10 @@ export default function EmailLeadCapturePreview() {
 
       <div className="trz-offer-topline" />
       <header className="trz-offer-header">
-        <img className="trz-offer-logo" src="/logo-full.png" alt="The Rental Zone TT" />
+        <div className="trz-offer-brand">
+          <img className="trz-offer-logo" src="/logo-full.png" alt="The Rental Zone TT logo" />
+          <span className="trz-offer-brand-name">THE RENTAL ZONE TT</span>
+        </div>
         <div className="trz-offer-header-note">Trinidad &amp; Tobago</div>
       </header>
 
