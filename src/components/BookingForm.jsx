@@ -422,7 +422,7 @@ export default function BookingForm() {
       setAvailabilityRechecked(false);
 
       const { data, error } = await supabase
-        .from('bookings')
+        .from('public_booking_availability')
         .select('start_time, end_time')
         .eq('event_date', formData.event_date)
         .eq('status', 'Confirmed');
@@ -577,7 +577,7 @@ export default function BookingForm() {
       data: conflictingBookings,
       error: checkError
     } = await supabase
-      .from('bookings')
+      .from('public_booking_availability')
       .select('start_time, end_time')
       .eq(
         'event_date',
