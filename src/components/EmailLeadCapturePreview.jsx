@@ -16,7 +16,11 @@ export default function EmailLeadCapturePreview() {
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800;900&display=swap');
         * { box-sizing: border-box; }
         .trz-offer-page {
+          color-scheme: only light;
+          isolation: isolate;
+          width: 100%;
           min-height: 100vh;
+          background-color: #f3f5f8;
           padding: 0 0 28px;
           color: #17243a;
           background:
