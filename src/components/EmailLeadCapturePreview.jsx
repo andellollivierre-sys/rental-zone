@@ -36,7 +36,7 @@ export default function EmailLeadCapturePreview() {
           align-items: center;
           justify-content: space-between;
         }
-        .trz-offer-logo { width: 62px; height: 62px; max-height: 62px; object-fit: contain; }
+        .trz-offer-logo { width: 68px; height: 68px; max-height: 68px; padding: 5px; object-fit: contain; background: #fff7ef; border: 1px solid #f4c9a8; border-radius: 14px; box-shadow: 0 3px 12px rgba(23,36,58,.10); }
         .trz-offer-header-note {
           color: #59677d;
           font-size: 12px;
@@ -346,7 +346,7 @@ export default function EmailLeadCapturePreview() {
             width: calc(100% - 28px);
             height: 54px;
           }
-          .trz-offer-logo { width: 48px; height: 48px; max-height: 48px; }
+          .trz-offer-logo { width: 52px; height: 52px; max-height: 52px; padding: 4px; border-radius: 12px; }
           .trz-offer-header-note { font-size: 8px; letter-spacing: .07em; }
           .trz-offer-shell {
             width: calc(100% - 16px);
