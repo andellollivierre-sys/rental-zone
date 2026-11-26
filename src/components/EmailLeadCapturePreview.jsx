@@ -445,9 +445,10 @@ export default function EmailLeadCapturePreview() {
               JOIN &amp; GET MY TT$500 REWARD <span className="trz-offer-arrow">→</span>
             </button>
             <p className="trz-offer-terms">
-              Your reward is issued after you verify your email. It does not expire, but can only be
-              redeemed while the qualifying four-hour promotion is active. Delivery fees may apply
-              depending on your area.
+              Once you register and verify your email, your TT$500 reward never expires while you
+              remain subscribed to our promotional emails. If you unsubscribe, your reward is
+              forfeited and can no longer be used. Redemption is available when the qualifying
+              four-hour promotion is active. Delivery fees may apply depending on your area.
             </p>
             {showPreviewNotice && (
               <div className="trz-offer-preview-note" role="status">
