@@ -47,7 +47,7 @@ export default function EmailLeadCapturePreview() {
           box-shadow: 0 4px 18px rgba(23,36,58,.10);
         }
         .trz-offer-brand { display: flex; align-items: center; gap: 15px; min-width: 0; }
-        .trz-offer-logo { display: block; flex: 0 0 80px; width: 80px; height: 80px; max-height: 80px; padding: 6px; object-fit: contain; object-position: center; background: #ffffff; border: 2px solid #f47721; border-radius: 14px; box-shadow: 0 3px 12px rgba(23,36,58,.12); }
+        .trz-offer-logo { display: block; flex: 0 0 80px; width: 80px; height: 80px; max-height: 80px; padding: 6px; object-fit: contain; object-position: center; background: transparent; border: 0; border-radius: 14px; box-shadow: 0 3px 12px rgba(23,36,58,.12); }
         .trz-offer-brand-name { color: #14223a; font-family: 'Manrope', sans-serif; font-size: 19px; font-weight: 900; letter-spacing: .02em; }
         .trz-offer-header-note {
           color: #59677d;
@@ -414,7 +414,7 @@ export default function EmailLeadCapturePreview() {
       <div className="trz-offer-topline" />
       <header className="trz-offer-header">
         <div className="trz-offer-brand">
-          <img className="trz-offer-logo" src="/logo-full.png" alt="The Rental Zone TT logo" />
+          <img className="trz-offer-logo" src="/logo-full-white.svg" alt="The Rental Zone TT logo" />
           <span className="trz-offer-brand-name">THE RENTAL ZONE TT</span>
         </div>
         <div className="trz-offer-header-note">Trinidad &amp; Tobago</div>
