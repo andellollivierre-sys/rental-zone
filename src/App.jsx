@@ -7,6 +7,7 @@ import HowItWorks from './components/HowItWorks';
 import FAQ from './components/FAQ';
 import Contact from './components/Contact';
 import EventServices from './components/EventServices';
+import EmailMembershipPreview from './components/EmailMembershipPreview';
 
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState(
@@ -61,6 +62,7 @@ export default function App() {
     { href: '#faq', label: 'Bouncy Castle FAQs' },
     { href: '#contact', label: 'Contact' },
     { href: '#admin', label: 'Admin' },
+    { href: '#email-system-preview', label: 'Email Preview' },
   ];
 
   const isActive = (href) =>
@@ -265,7 +267,9 @@ export default function App() {
           paddingBottom: '40px',
         }}
       >
-        {currentRoute === '#event-services' ? (
+        {currentRoute === '#email-system-preview' ? (
+          <EmailMembershipPreview />
+        ) : currentRoute === '#event-services' ? (
           <EventServices />
         ) : currentRoute === '#admin' ? (
           <AdminDashboard />
