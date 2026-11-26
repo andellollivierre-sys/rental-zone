@@ -49,7 +49,7 @@ export default function EmailLeadCapturePreview() {
           min-height: 650px;
           margin: 12px auto 0;
           display: grid;
-          grid-template-columns: 1.02fr .98fr;
+          grid-template-columns: 1fr;
           overflow: hidden;
           border-radius: 25px;
           background: #fff;
@@ -57,6 +57,7 @@ export default function EmailLeadCapturePreview() {
           border: 1px solid rgba(255,255,255,.9);
         }
         .trz-offer-content {
+          order: 1;
           position: relative;
           padding: 54px 52px 42px;
           display: flex;
@@ -259,6 +260,7 @@ export default function EmailLeadCapturePreview() {
           line-height: 1.6;
         }
         .trz-offer-visual {
+          order: 0;
           position: relative;
           min-height: 650px;
           overflow: hidden;
@@ -331,11 +333,11 @@ export default function EmailLeadCapturePreview() {
           line-height: 1.5;
         }
         @media (max-width: 850px) {
-          .trz-offer-shell { grid-template-columns: 1fr .82fr; }
+          .trz-offer-shell { grid-template-columns: 1fr; }
           .trz-offer-content { padding: 38px 30px; }
           .trz-offer-pricebox { gap: 12px; padding: 14px; }
           .trz-offer-save { font-size: 10px; }
-          .trz-offer-visual { min-height: 680px; }
+          .trz-offer-visual { min-height: 420px; }
         }
         @media (max-width: 680px) {
           .trz-offer-page { padding-bottom: 18px; }
@@ -371,7 +373,7 @@ export default function EmailLeadCapturePreview() {
           .trz-offer-form h2 { font-size: 19px; }
           .trz-offer-input { height: 52px; }
           .trz-offer-button { min-height: 55px; font-size: 12px; }
-          .trz-offer-visual { min-height: 330px; order: 2; }
+          .trz-offer-visual { min-height: 330px; order: 0; }
           .trz-offer-visual-caption { left: 22px; right: 22px; bottom: 22px; }
           .trz-offer-visual-caption strong { font-size: 28px; }
           .trz-offer-foot {
