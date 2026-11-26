@@ -425,7 +425,7 @@ export default function BookingForm() {
         .from('public_booking_availability')
         .select('start_time, end_time')
         .eq('event_date', formData.event_date)
-        .eq('status', 'Confirmed');
+        ;
 
       if (!active) return;
       if (error) {
@@ -583,7 +583,7 @@ export default function BookingForm() {
         'event_date',
         formData.event_date
       )
-      .eq('status', 'Confirmed');
+      ;
 
     if (checkError) {
       console.error('Final booking availability check failed:', checkError);
