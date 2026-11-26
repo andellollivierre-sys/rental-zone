@@ -340,50 +340,59 @@ export default function EmailLeadCapturePreview() {
           .trz-offer-visual { min-height: 420px; }
         }
         @media (max-width: 680px) {
-          .trz-offer-page { padding-bottom: 18px; }
+          .trz-offer-page { padding-bottom: 0; }
+          .trz-offer-topline { height: 4px; }
           .trz-offer-header {
-            width: calc(100% - 32px);
-            height: 70px;
+            width: calc(100% - 28px);
+            height: 54px;
           }
-          .trz-offer-logo { width: 155px; max-height: 52px; }
-          .trz-offer-header-note { font-size: 9px; letter-spacing: .08em; }
+          .trz-offer-logo { width: 132px; max-height: 44px; }
+          .trz-offer-header-note { font-size: 8px; letter-spacing: .07em; }
           .trz-offer-shell {
-            width: calc(100% - 24px);
-            margin-top: 5px;
+            width: calc(100% - 16px);
+            margin-top: 3px;
             display: flex;
             flex-direction: column;
-            border-radius: 18px;
+            border-radius: 14px;
           }
-          .trz-offer-content { padding: 28px 21px 25px; }
+          .trz-offer-content { padding: 15px 15px 17px; }
+          .trz-offer-eyebrow { gap: 7px; padding: 5px 9px; font-size: 9px; }
+          .trz-offer-dot { width: 6px; height: 6px; }
           .trz-offer-title {
-            margin: 18px 0 12px;
-            font-size: clamp(37px, 10.5vw, 49px);
+            margin: 9px 0 6px;
+            font-size: clamp(30px, 8.2vw, 38px);
+            line-height: 1.02;
           }
-          .trz-offer-description { font-size: 14px; line-height: 1.6; }
+          .trz-offer-description { font-size: 12px; line-height: 1.35; }
           .trz-offer-pricebox {
             width: 100%;
             justify-content: space-between;
-            gap: 8px;
-            margin: 20px 0 21px;
-            padding: 13px 12px;
+            gap: 7px;
+            margin: 10px 0 12px;
+            padding: 8px 10px;
+            border-radius: 10px;
           }
-          .trz-offer-regular s { font-size: 16px; }
-          .trz-offer-special strong { font-size: 30px; }
-          .trz-offer-save { padding: 7px 8px; font-size: 9px; }
-          .trz-offer-form h2 { font-size: 19px; }
-          .trz-offer-input { height: 52px; }
-          .trz-offer-button { min-height: 55px; font-size: 12px; }
-          .trz-offer-visual { min-height: 330px; order: 0; }
-          .trz-offer-visual-caption { left: 22px; right: 22px; bottom: 22px; }
-          .trz-offer-visual-caption strong { font-size: 28px; }
-          .trz-offer-foot {
-            width: calc(100% - 32px);
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            gap: 5px;
-            line-height: 1.5;
-          }
+          .trz-offer-regular { font-size: 9px; }
+          .trz-offer-regular s { font-size: 14px; }
+          .trz-offer-divider { height: 32px; }
+          .trz-offer-special small { font-size: 8px; }
+          .trz-offer-special strong { font-size: 25px; }
+          .trz-offer-save { padding: 6px 7px; font-size: 8px; }
+          .trz-offer-form { padding-top: 0; }
+          .trz-offer-form h2 { margin-bottom: 2px; font-size: 16px; }
+          .trz-offer-form-intro { margin-bottom: 7px; font-size: 10px; line-height: 1.3; }
+          .trz-offer-label { margin-bottom: 4px; font-size: 10px; }
+          .trz-offer-input { height: 42px; padding: 0 11px; font-size: 13px; }
+          .trz-offer-consent { gap: 7px; margin: 8px 0 9px; font-size: 9px; line-height: 1.3; }
+          .trz-offer-consent input { width: 15px; height: 15px; }
+          .trz-offer-button { min-height: 46px; padding: 9px 10px; font-size: 10px; }
+          .trz-offer-arrow { font-size: 16px; }
+          .trz-offer-terms { margin-top: 7px; font-size: 9px; line-height: 1.3; }
+          .trz-offer-visual { min-height: 142px; height: 142px; order: 0; }
+          .trz-offer-visual-caption { left: 13px; right: 13px; bottom: 10px; }
+          .trz-offer-visual-caption span { margin-bottom: 4px; padding: 4px 7px; font-size: 8px; }
+          .trz-offer-visual-caption strong { font-size: 17px; }
+          .trz-offer-foot { display: none; }
         }
       `}</style>
 
