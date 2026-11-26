@@ -7,6 +7,7 @@ import HowItWorks from './components/HowItWorks';
 import FAQ from './components/FAQ';
 import Contact from './components/Contact';
 import EventServices from './components/EventServices';
+import EmailLeadCapturePreview from './components/EmailLeadCapturePreview';
 
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState(
@@ -66,6 +67,10 @@ export default function App() {
   const isActive = (href) =>
     currentRoute === href || (href === '#home' && currentRoute === '');
   const isHomePage = currentRoute === '#home' || currentRoute === '';
+
+  if (currentRoute === '#email-offer-preview') {
+    return <EmailLeadCapturePreview />;
+  }
 
   return (
     <div
