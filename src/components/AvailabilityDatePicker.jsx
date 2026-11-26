@@ -34,7 +34,7 @@ export default function AvailabilityDatePicker({ value, onChange, startTime, ren
       setLoading(true);
       setLoadError(false);
       const { data, error } = await supabase
-        .from('bookings')
+        .from('public_booking_availability')
         .select('event_date, start_time, end_time')
         .eq('status', 'Confirmed')
         .gte('event_date', monthStart)
