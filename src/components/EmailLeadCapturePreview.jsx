@@ -36,7 +36,7 @@ export default function EmailLeadCapturePreview() {
           align-items: center;
           justify-content: space-between;
         }
-        .trz-offer-logo { width: 68px; height: 68px; max-height: 68px; padding: 5px; object-fit: contain; background: #fff7ef; border: 1px solid #f4c9a8; border-radius: 14px; box-shadow: 0 3px 12px rgba(23,36,58,.10); }
+        .trz-offer-logo { width: 68px; height: 68px; max-height: 68px; padding: 5px; object-fit: contain; background: #ffffff; border: 2px solid #f47721; border-radius: 14px; box-shadow: 0 3px 12px rgba(23,36,58,.10); }
         .trz-offer-header-note {
           color: #59677d;
           font-size: 12px;
