@@ -11,7 +11,7 @@ import EmailLeadCapturePreview from './components/EmailLeadCapturePreview';
 
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState(
-    window.location.hash || '#home'
+    window.location.hash || (window.location.pathname === '/email-offer-preview' ? '#email-offer-preview' : '#home')
   );
   const [menuOpen, setMenuOpen] = useState(false);
   const [testMode, setTestMode] = useState(
